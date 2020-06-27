@@ -2,6 +2,7 @@
 // Microsoft Developer Studio generated include file.
 // Used by dxview.rc
 //
+#define IDC_STATIC                      -1
 #define IDS_PRINT_WARNING               1
 #define IDS_PRINT_NEEDSELECT            2
 #define IDS_PRINT_NOROOT                3

@@ -8,13 +8,13 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <winresrc.h>
-#define IDC_STATIC -1
-#include "dxverinfo.h"
-#define VER_INTERNALNAME_STR       "dxcapsviewer.exe\0"
-#define VER_FILEDESCRIPTION_STR    "Microsoft DirectX Caps Viewer\0"
-#define VER_FILETYPE               VFT_APP
-#define VER_FILESUBTYPE            VFT2_UNKNOWN
-#include "dxverinfo.ver"
+#include <verinfo.h>
+
+#define VERSIONTYPE                     VFT_APP
+#define VERSIONSUBTYPE                  VFT2_UNKNOWN
+#define VERSIONDESCRIPTION              "Microsoft DirectX Caps Viewer\0"
+#define VERSIONNAME                     "dxcapsviewer.exe\0"
+#include <verinfo.ver>
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -93,7 +93,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDI_DIRECTX,IDC_STATIC,11,23,21,20
     LTEXT           "Version %s",IDC_VERSION,40,24,284,8,SS_NOPREFIX
-    LTEXT           "© 2009 Microsoft Corporation.  All rights reserved.",IDC_STATIC,40,36,284,8
+    LTEXT           "ï¿½ Microsoft Corporation.  All rights reserved.",IDC_STATIC,40,36,284,8
     DEFPUSHBUTTON   "OK",IDOK,140,102,50,16,WS_GROUP
     LTEXT           "",IDC_WARNING,7,68,317,28
 END

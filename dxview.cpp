@@ -62,20 +62,14 @@ VOID    InvokeHelp();
 VOID DXGI_FillTree( HWND hwndTV );
 VOID DXG_FillTree( HWND hwndTV );
 VOID DD_FillTree( HWND hwndTV );
-VOID DS_FillTree( HWND hwndTV );
-VOID DI_FillTree( HWND hwndTV );
-
 
 VOID DXGI_Init();
 VOID DXG_Init();
 VOID DD_Init();
-VOID DS_Init();
-VOID DI_Init();
 
 VOID DXGI_CleanUp();
 VOID DXG_CleanUp();
 VOID DD_CleanUp();
-VOID DS_CleanUp();
 
 BOOL DXG_Is9Ex();
 
@@ -105,7 +99,7 @@ HRESULT Int2Str( _Out_z_cap_(nDestLen) LPTSTR strDest, UINT nDestLen, DWORD i )
     if( pstrDec != NULL )
         *pstrDec = '\0';
     
-    if( strcpy_s( strDest, nDestLen, strOut ) != 0 )
+    if( strcpy_s( strDest, nDestLen, strOut ) != 0)
     {
         *strDest = 0;
         return E_FAIL;
@@ -215,8 +209,8 @@ HRESULT PrintStringLine(const char * szText, PRINTCBINFO *lpInfo)
 // Name: 
 // Desc: 
 //-----------------------------------------------------------------------------
-int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                    LPSTR strCmdLine, int nCmdShow )
+int WINAPI WinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
+                    _In_ LPSTR strCmdLine, _In_ int nCmdShow )
 {
     g_hInstance = hInstance; // Store instance handle in our global variable
     g_PrintToFilePath[0] = TEXT('\0');
@@ -230,9 +224,6 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
     DXGI_Init();
     DXG_Init();
     DD_Init();
-    DS_Init();
-    DI_Init();
-
 
     // Register window class
     WNDCLASS  wc;
@@ -548,10 +539,6 @@ BOOL DXView_OnCreate(HWND hWnd)
     DXGI_FillTree( g_hwndTV );
     DXG_FillTree( g_hwndTV );
     DD_FillTree( g_hwndTV );
-    DS_FillTree( g_hwndTV );
-
-    DI_FillTree( g_hwndTV );
-
 
     TreeView_SelectItem( g_hwndTV, TreeView_GetRoot( g_hwndTV ) );
 
@@ -1089,13 +1076,11 @@ void DXView_OnCommand(HWND hWnd, WPARAM wParam)
 //-----------------------------------------------------------------------------
 void DXView_Cleanup()
 {
-        DXGI_CleanUp();
+    DXGI_CleanUp();
 
     DXG_CleanUp();
 
     DD_CleanUp();
-
-    DS_CleanUp();
 
     if( g_hImageList )
         ImageList_Destroy( g_hImageList );
@@ -1486,6 +1471,12 @@ VOID InvokeHelp()
     ::HtmlHelp( NULL, strHelp, HH_DISPLAY_TOPIC, NULL );
 #endif
 }
+
+#ifdef _X86_
+#pragma optimize("", on)
+#endif
+
+
 
 
 //-----------------------------------------------------------------------------

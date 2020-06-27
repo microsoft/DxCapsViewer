@@ -196,7 +196,7 @@ BOOL CALLBACK PrintTreeStats( HINSTANCE hInstance, HWND hWnd, HWND hTreeWnd,
     BOOL        fDisableWindow  = FALSE;
     LPTSTR      pstrTitle       = NULL;
     LPTSTR      pstrBuff        = NULL;
-    TEXTMETRIC  tm;
+    TEXTMETRIC  tm = {0};
     DWORD       dwCurrCopy;
     HANDLE      hHeap = NULL;
     DWORD       cbSize;

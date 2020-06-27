@@ -73,7 +73,7 @@ struct CAPDEF
     CHAR*  strName;        // Name of cap
     DWORD  dwOffset;       // Offset to cap
     DWORD  dwFlag;         // Bit flag for cal
-	DWORD  dwCapsFlags;	   // used for optional caps and such (see DXV_ values above)
+    DWORD  dwCapsFlags;	   // used for optional caps and such (see DXV_ values above)
 };
 
 struct CAPDEFS
@@ -86,15 +86,15 @@ struct CAPDEFS
 
 struct LV_INSTANCEGUIDSTRUCT
 {
-	GUID	guidInstance;
-	DWORD	dwRefresh;
+    GUID	guidInstance;
+    DWORD	dwRefresh;
 };
 
 
 struct LOCALAPP
 {
-	LOCALAPP* pNext;
-	GUID      guidApplication;
+    LOCALAPP* pNext;
+    GUID      guidApplication;
     CHAR      strAppNameA[1];
 };
 
