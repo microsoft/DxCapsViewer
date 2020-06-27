@@ -1,0 +1,176 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include <winresrc.h>
+#define IDC_STATIC -1
+#include "dxverinfo.h"
+#define VER_INTERNALNAME_STR       "dxcapsviewer.exe\0"
+#define VER_FILEDESCRIPTION_STR    "Microsoft DirectX Caps Viewer\0"
+#define VER_FILETYPE               VFT_APP
+#define VER_FILESUBTYPE            VFT2_UNKNOWN
+#include "dxverinfo.ver"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "DxCapsViewer.manifest"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "Print whole tree to printer", IDM_PRINTWHOLETREETOPRINTER
+        MENUITEM "Print subtree to printer",    IDM_PRINTSUBTREETOPRINTER
+        MENUITEM "Print whole tree to file",    IDM_PRINTWHOLETREETOFILE
+        MENUITEM "Print subtree to file",       IDM_PRINTSUBTREETOFILE
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       IDM_EXIT
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "A&vailable caps only",        IDM_VIEWAVAIL
+        MENUITEM "&All caps",                   IDM_VIEWALL
+        MENUITEM SEPARATOR
+        MENUITEM "Show Direct3D9Ex caps",		IDM_VIEW9EX
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Help",                       IDM_HELP
+        MENUITEM SEPARATOR
+        MENUITEM "&About",                      IDM_ABOUT
+    END
+END
+
+POPUP MENU DISCARDABLE 
+BEGIN
+    POPUP "Popup"
+    BEGIN
+        MENUITEM "Copy ""%s""",                 IDM_COPY
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_DIRECTX             ICON    DISCARDABLE     "dxview.ico"
+IDI_CAPS                ICON    DISCARDABLE     "folder.ico"
+IDI_CAPSOPEN            ICON    DISCARDABLE     "folderop.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+ABOUT DIALOGEX 0, 0, 331, 125
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About DirectX Caps Viewer"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    ICON            IDI_DIRECTX,IDC_STATIC,11,23,21,20
+    LTEXT           "Version %s",IDC_VERSION,40,24,284,8,SS_NOPREFIX
+    LTEXT           "© 2009 Microsoft Corporation.  All rights reserved.",IDC_STATIC,40,36,284,8
+    DEFPUSHBUTTON   "OK",IDOK,140,102,50,16,WS_GROUP
+    LTEXT           "",IDC_WARNING,7,68,317,28
+END
+
+IDD_ABORTPRINTDLG DIALOG DISCARDABLE  40, 40, 120, 40
+STYLE DS_3DLOOK | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+FONT 8, "MS Shell Dlg"
+BEGIN
+    CTEXT           "Cancel Printing",-1,0,6,119,12
+    DEFPUSHBUTTON   "Cancel",IDCANCEL,44,22,32,14,WS_GROUP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_SPLIT               CURSOR  DISCARDABLE     "Split.cur"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include <winresrc.h>\r\n"
+    "#define IDC_STATIC -1\r\n"
+    "#include ""verinfo.h""\r\n"
+    "#define VERSIONNAME               ""dxcapsviewer.exe\\0""\r\n"
+    "#define VERSIONDESCRIPTION        ""Microsoft DirectX Caps Viewer\\0""\r\n"
+    "#define VERSIONTYPE               VFT_APP\r\n"
+    "#define VERSIONSUBTYPE            VFT2_UNKNOWN\r\n"
+    "#include ""verinfo.ver""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_PRINT_WARNING       "Print Warning"
+    IDS_PRINT_NEEDSELECT    "Unable to print, as there is no current selection."
+    IDS_PRINT_NOROOT        "Unable to print, DX View Tree not properly set up."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
