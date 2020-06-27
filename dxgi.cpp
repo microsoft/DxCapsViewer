@@ -8,8 +8,10 @@
 #include "dxview.h"
 #include <D3Dcommon.h>
 #include <dxgi1_4.h>
+#include <dxgi1_5.h>
 #include <d3d10_1.h>
 #include <d3d11_3.h>
+#include <d3d11_4.h>
 #include <d3d12.h>
 
 // Define for some debug output
@@ -31,20 +33,23 @@ enum FLMASK
 };
 
 //-----------------------------------------------------------------------------
+namespace
+{
+    const char* D3D10_NOTE = "Most Direct3D 10 features are required. Tool only shows optional features.";
+    const char* D3D10_NOTE1 = "Most Direct3D 10.1 features are required. Tool only shows optional features.";
+    const char* D3D11_NOTE = "Most Direct3D 11 features are required. Tool only shows optional features.";
+    const char* D3D11_NOTE1 = "Most Direct3D 11.1 features are required. Tool only shows optional features.";
+    const char* D3D11_NOTE2 = "Most Direct3D 11.2 features are required. Tool only shows optional features.";
+    const char* D3D11_NOTE3 = "Most Direct3D 11.3 features are required. Tool only shows optional features.";
+    const char* D3D11_NOTE4 = "Most Direct3D 11.3/11.4 features are required. Tool only shows optional features.";
+    const char* _10L9_NOTE = "Most 10level9 features are required. Tool only shows optional features.";
+    const char* SEE_D3D10 = "See Direct3D 10 node for device details.";
+    const char* SEE_D3D10_1 = "See Direct3D 10.1 node for device details.";
+    const char* SEE_D3D11 = "See Direct3D 11 node for device details.";
+    const char* SEE_D3D11_1 = "See Direct3D 11.1 node for device details.";
 
-const char* D3D10_NOTE = "Most Direct3D 10 features are required. Tool only shows optional features.";
-const char* D3D10_NOTE1 = "Most Direct3D 10.1 features are required. Tool only shows optional features.";
-const char* D3D11_NOTE = "Most Direct3D 11 features are required. Tool only shows optional features.";
-const char* D3D11_NOTE1 = "Most Direct3D 11.1 features are required. Tool only shows optional features.";
-const char* D3D11_NOTE2 = "Most Direct3D 11.2 features are required. Tool only shows optional features.";
-const char* D3D11_NOTE3 = "Most Direct3D 11.3 features are required. Tool only shows optional features.";
-const char* _10L9_NOTE = "Most 10level9 features are required. Tool only shows optional features.";
-const char* SEE_D3D10 = "See Direct3D 10 node for device details.";
-const char* SEE_D3D10_1 = "See Direct3D 10.1 node for device details.";
-const char* SEE_D3D11 = "See Direct3D 11 node for device details.";
-const char* SEE_D3D11_1 = "See Direct3D 11.1 node for device details.";
-
-const char* FL_NOTE = "This feature summary is derived from hardware feature level";
+    const char* FL_NOTE = "This feature summary is derived from hardware feature level";
+}
 
 //-----------------------------------------------------------------------------
 
@@ -52,172 +57,33 @@ typedef HRESULT ( WINAPI* LPCREATEDXGIFACTORY )( REFIID, void** );
 typedef HRESULT ( WINAPI* LPD3D10CREATEDEVICE )( IDXGIAdapter*, D3D10_DRIVER_TYPE, HMODULE, UINT, UINT32,
                                                  ID3D10Device** );
 
-IDXGIFactory* g_DXGIFactory = NULL;
-IDXGIFactory1* g_DXGIFactory1 = NULL;
-IDXGIFactory2* g_DXGIFactory2 = NULL;
-IDXGIFactory3* g_DXGIFactory3 = nullptr;
-IDXGIFactory4* g_DXGIFactory4 = nullptr;
-HMODULE g_dxgi = NULL;
+namespace
+{
+    IDXGIFactory* g_DXGIFactory = nullptr;
+    IDXGIFactory1* g_DXGIFactory1 = nullptr;
+    IDXGIFactory2* g_DXGIFactory2 = nullptr;
+    IDXGIFactory3* g_DXGIFactory3 = nullptr;
+    IDXGIFactory4* g_DXGIFactory4 = nullptr;
+    IDXGIFactory5* g_DXGIFactory5 = nullptr;
+    HMODULE g_dxgi = nullptr;
 
-LPD3D10CREATEDEVICE g_D3D10CreateDevice = NULL;
-HMODULE g_d3d10 = NULL;
+    LPD3D10CREATEDEVICE g_D3D10CreateDevice = nullptr;
+    HMODULE g_d3d10 = nullptr;
 
-PFN_D3D10_CREATE_DEVICE1 g_D3D10CreateDevice1 = nullptr;
-HMODULE g_d3d10_1 = NULL;
+    PFN_D3D10_CREATE_DEVICE1 g_D3D10CreateDevice1 = nullptr;
+    HMODULE g_d3d10_1 = nullptr;
 
-PFN_D3D11_CREATE_DEVICE g_D3D11CreateDevice = nullptr;
-HMODULE g_d3d11 = NULL;
+    PFN_D3D11_CREATE_DEVICE g_D3D11CreateDevice = nullptr;
+    HMODULE g_d3d11 = nullptr;
 
-PFN_D3D12_CREATE_DEVICE g_D3D12CreateDevice = nullptr;
-HMODULE g_d3d12 = nullptr;
+    PFN_D3D12_CREATE_DEVICE g_D3D12CreateDevice = nullptr;
+    HMODULE g_d3d12 = nullptr;
+}
 
 extern HRESULT PrintValueLine( const CHAR* szText, DWORD dwValue, PRINTCBINFO *lpInfo );
 extern HRESULT PrintHexValueLine( const CHAR* szText, DWORD dwValue, PRINTCBINFO *lpInfo );
 extern HRESULT PrintStringValueLine( const CHAR* szText, const CHAR* szText2, PRINTCBINFO *lpInfo );
 extern HRESULT PrintStringLine( const CHAR * szText, PRINTCBINFO *lpInfo );
-
-const char* szRotation[] = 
-{
-    "DXGI_MODE_ROTATION_UNSPECIFIED",
-    "DXGI_MODE_ROTATION_IDENTITY",
-    "DXGI_MODE_ROTATION_ROTATE90",
-    "DXGI_MODE_ROTATION_ROTATE180",
-    "DXGI_MODE_ROTATION_ROTATE270"
-};
-
-// The DXGI formats that can be used as display devices
-DXGI_FORMAT AdapterFormatArray[] = 
-{
-DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
-DXGI_FORMAT_R8G8B8A8_UNORM,
-DXGI_FORMAT_R16G16B16A16_FLOAT,
-DXGI_FORMAT_R10G10B10A2_UNORM,
-DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM, // DXGI 1.1
-DXGI_FORMAT_B8G8R8A8_UNORM,             // DXGI 1.1
-DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,        // DXGI 1.1
-};
-const UINT NumAdapterFormats = sizeof(AdapterFormatArray) / sizeof(AdapterFormatArray[0]);
-
-static const DXGI_FORMAT g_cfsMSAA_10level9[] = 
-{
-    DXGI_FORMAT_R8G8B8A8_UNORM,
-    DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
-    DXGI_FORMAT_D24_UNORM_S8_UINT,
-    DXGI_FORMAT_D16_UNORM,
-    DXGI_FORMAT_B8G8R8A8_UNORM
-};
-
-static const DXGI_FORMAT g_cfsMSAA_10[] =
-{
-    DXGI_FORMAT_R32G32B32A32_FLOAT,
-    DXGI_FORMAT_R32G32B32A32_UINT,
-    DXGI_FORMAT_R32G32B32A32_SINT,
-    DXGI_FORMAT_R32G32B32_FLOAT,
-    DXGI_FORMAT_R32G32B32_UINT,
-    DXGI_FORMAT_R32G32B32_SINT,
-    DXGI_FORMAT_R16G16B16A16_FLOAT,
-    DXGI_FORMAT_R16G16B16A16_UNORM,
-    DXGI_FORMAT_R16G16B16A16_UINT,
-    DXGI_FORMAT_R16G16B16A16_SNORM,
-    DXGI_FORMAT_R16G16B16A16_SINT,
-    DXGI_FORMAT_R32G32_FLOAT,
-    DXGI_FORMAT_R32G32_UINT,
-    DXGI_FORMAT_R32G32_SINT,
-    DXGI_FORMAT_D32_FLOAT_S8X24_UINT,
-    DXGI_FORMAT_R10G10B10A2_UNORM,
-    DXGI_FORMAT_R10G10B10A2_UINT,
-    DXGI_FORMAT_R11G11B10_FLOAT,
-    DXGI_FORMAT_R8G8B8A8_UNORM,
-    DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
-    DXGI_FORMAT_R8G8B8A8_UINT,
-    DXGI_FORMAT_R8G8B8A8_SNORM,
-    DXGI_FORMAT_R8G8B8A8_SINT,
-    DXGI_FORMAT_R16G16_FLOAT,
-    DXGI_FORMAT_R16G16_UNORM,
-    DXGI_FORMAT_R16G16_UINT,
-    DXGI_FORMAT_R16G16_SNORM,
-    DXGI_FORMAT_R16G16_SINT,
-    DXGI_FORMAT_D32_FLOAT,
-    DXGI_FORMAT_R32_FLOAT,
-    DXGI_FORMAT_R32_UINT,
-    DXGI_FORMAT_R32_SINT,
-    DXGI_FORMAT_D24_UNORM_S8_UINT, 
-    DXGI_FORMAT_R8G8_UNORM,
-    DXGI_FORMAT_R8G8_UINT,
-    DXGI_FORMAT_R8G8_SNORM,
-    DXGI_FORMAT_R8G8_SINT,
-    DXGI_FORMAT_R16_FLOAT,
-    DXGI_FORMAT_D16_UNORM,
-    DXGI_FORMAT_R16_UNORM,
-    DXGI_FORMAT_R16_UINT,
-    DXGI_FORMAT_R16_SNORM,
-    DXGI_FORMAT_R16_SINT,
-    DXGI_FORMAT_R8_UNORM,
-    DXGI_FORMAT_R8_UINT,
-    DXGI_FORMAT_R8_SNORM,
-    DXGI_FORMAT_R8_SINT,
-    DXGI_FORMAT_A8_UNORM
-};
-
-static const DXGI_FORMAT g_cfsMSAA_11[] =
-{
-    DXGI_FORMAT_R32G32B32A32_FLOAT,
-    DXGI_FORMAT_R32G32B32A32_UINT,
-    DXGI_FORMAT_R32G32B32A32_SINT,
-    DXGI_FORMAT_R32G32B32_FLOAT,
-    DXGI_FORMAT_R32G32B32_UINT,
-    DXGI_FORMAT_R32G32B32_SINT,
-    DXGI_FORMAT_R16G16B16A16_FLOAT,
-    DXGI_FORMAT_R16G16B16A16_UNORM,
-    DXGI_FORMAT_R16G16B16A16_UINT,
-    DXGI_FORMAT_R16G16B16A16_SNORM,
-    DXGI_FORMAT_R16G16B16A16_SINT,
-    DXGI_FORMAT_R32G32_FLOAT,
-    DXGI_FORMAT_R32G32_UINT,
-    DXGI_FORMAT_R32G32_SINT,
-    DXGI_FORMAT_D32_FLOAT_S8X24_UINT,
-    DXGI_FORMAT_R10G10B10A2_UNORM,
-    DXGI_FORMAT_R10G10B10A2_UINT,
-    DXGI_FORMAT_R11G11B10_FLOAT,
-    DXGI_FORMAT_R8G8B8A8_UNORM,
-    DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
-    DXGI_FORMAT_R8G8B8A8_UINT,
-    DXGI_FORMAT_R8G8B8A8_SNORM,
-    DXGI_FORMAT_R8G8B8A8_SINT,
-    DXGI_FORMAT_R16G16_FLOAT,
-    DXGI_FORMAT_R16G16_UNORM,
-    DXGI_FORMAT_R16G16_UINT,
-    DXGI_FORMAT_R16G16_SNORM,
-    DXGI_FORMAT_R16G16_SINT,
-    DXGI_FORMAT_D32_FLOAT,
-    DXGI_FORMAT_R32_FLOAT,
-    DXGI_FORMAT_R32_UINT,
-    DXGI_FORMAT_R32_SINT,
-    DXGI_FORMAT_D24_UNORM_S8_UINT,
-    DXGI_FORMAT_R8G8_UNORM,
-    DXGI_FORMAT_R8G8_UINT,
-    DXGI_FORMAT_R8G8_SNORM,
-    DXGI_FORMAT_R8G8_SINT,
-    DXGI_FORMAT_R16_FLOAT,
-    DXGI_FORMAT_D16_UNORM,
-    DXGI_FORMAT_R16_UNORM,
-    DXGI_FORMAT_R16_UINT,
-    DXGI_FORMAT_R16_SNORM,
-    DXGI_FORMAT_R16_SINT,
-    DXGI_FORMAT_R8_UNORM,
-    DXGI_FORMAT_R8_UINT,
-    DXGI_FORMAT_R8_SNORM,
-    DXGI_FORMAT_R8_SINT,
-    DXGI_FORMAT_A8_UNORM,
-    DXGI_FORMAT_B8G8R8A8_UNORM,
-    DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,
-    DXGI_FORMAT_B8G8R8X8_UNORM,
-    DXGI_FORMAT_B8G8R8X8_UNORM_SRGB,
-    DXGI_FORMAT_B5G6R5_UNORM,
-    DXGI_FORMAT_B5G5R5A1_UNORM,
-    DXGI_FORMAT_B4G4R4A4_UNORM,
-};
-
 
 extern DWORD g_dwViewState;
 extern char c_szYes[];
@@ -225,10 +91,180 @@ extern char c_szNo[];
 
 char c_szNA[] = "n/a";
 
-static BOOL g_sampCount10[D3D10_MAX_MULTISAMPLE_SAMPLE_COUNT];
-static BOOL g_sampCount10_1[D3D10_MAX_MULTISAMPLE_SAMPLE_COUNT];
-static BOOL g_sampCount11[D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT];
-static BOOL g_sampCount11_1[D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT];
+namespace
+{
+    const char* szRotation[] =
+    {
+        "DXGI_MODE_ROTATION_UNSPECIFIED",
+        "DXGI_MODE_ROTATION_IDENTITY",
+        "DXGI_MODE_ROTATION_ROTATE90",
+        "DXGI_MODE_ROTATION_ROTATE180",
+        "DXGI_MODE_ROTATION_ROTATE270"
+    };
+
+    // The DXGI formats that can be used as display devices
+    DXGI_FORMAT AdapterFormatArray[] =
+    {
+    DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
+    DXGI_FORMAT_R8G8B8A8_UNORM,
+    DXGI_FORMAT_R16G16B16A16_FLOAT,
+    DXGI_FORMAT_R10G10B10A2_UNORM,
+    DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM, // DXGI 1.1
+    DXGI_FORMAT_B8G8R8A8_UNORM,             // DXGI 1.1
+    DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,        // DXGI 1.1
+    };
+    const UINT NumAdapterFormats = sizeof(AdapterFormatArray) / sizeof(AdapterFormatArray[0]);
+
+    const DXGI_FORMAT g_cfsMSAA_10level9[] =
+    {
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
+        DXGI_FORMAT_D24_UNORM_S8_UINT,
+        DXGI_FORMAT_D16_UNORM,
+        DXGI_FORMAT_B8G8R8A8_UNORM
+    };
+
+    const DXGI_FORMAT g_cfsMSAA_10[] =
+    {
+        DXGI_FORMAT_R32G32B32A32_FLOAT,
+        DXGI_FORMAT_R32G32B32A32_UINT,
+        DXGI_FORMAT_R32G32B32A32_SINT,
+        DXGI_FORMAT_R32G32B32_FLOAT,
+        DXGI_FORMAT_R32G32B32_UINT,
+        DXGI_FORMAT_R32G32B32_SINT,
+        DXGI_FORMAT_R16G16B16A16_FLOAT,
+        DXGI_FORMAT_R16G16B16A16_UNORM,
+        DXGI_FORMAT_R16G16B16A16_UINT,
+        DXGI_FORMAT_R16G16B16A16_SNORM,
+        DXGI_FORMAT_R16G16B16A16_SINT,
+        DXGI_FORMAT_R32G32_FLOAT,
+        DXGI_FORMAT_R32G32_UINT,
+        DXGI_FORMAT_R32G32_SINT,
+        DXGI_FORMAT_D32_FLOAT_S8X24_UINT,
+        DXGI_FORMAT_R10G10B10A2_UNORM,
+        DXGI_FORMAT_R10G10B10A2_UINT,
+        DXGI_FORMAT_R11G11B10_FLOAT,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
+        DXGI_FORMAT_R8G8B8A8_UINT,
+        DXGI_FORMAT_R8G8B8A8_SNORM,
+        DXGI_FORMAT_R8G8B8A8_SINT,
+        DXGI_FORMAT_R16G16_FLOAT,
+        DXGI_FORMAT_R16G16_UNORM,
+        DXGI_FORMAT_R16G16_UINT,
+        DXGI_FORMAT_R16G16_SNORM,
+        DXGI_FORMAT_R16G16_SINT,
+        DXGI_FORMAT_D32_FLOAT,
+        DXGI_FORMAT_R32_FLOAT,
+        DXGI_FORMAT_R32_UINT,
+        DXGI_FORMAT_R32_SINT,
+        DXGI_FORMAT_D24_UNORM_S8_UINT,
+        DXGI_FORMAT_R8G8_UNORM,
+        DXGI_FORMAT_R8G8_UINT,
+        DXGI_FORMAT_R8G8_SNORM,
+        DXGI_FORMAT_R8G8_SINT,
+        DXGI_FORMAT_R16_FLOAT,
+        DXGI_FORMAT_D16_UNORM,
+        DXGI_FORMAT_R16_UNORM,
+        DXGI_FORMAT_R16_UINT,
+        DXGI_FORMAT_R16_SNORM,
+        DXGI_FORMAT_R16_SINT,
+        DXGI_FORMAT_R8_UNORM,
+        DXGI_FORMAT_R8_UINT,
+        DXGI_FORMAT_R8_SNORM,
+        DXGI_FORMAT_R8_SINT,
+        DXGI_FORMAT_A8_UNORM
+    };
+
+    const DXGI_FORMAT g_cfsMSAA_11[] =
+    {
+        DXGI_FORMAT_R32G32B32A32_FLOAT,
+        DXGI_FORMAT_R32G32B32A32_UINT,
+        DXGI_FORMAT_R32G32B32A32_SINT,
+        DXGI_FORMAT_R32G32B32_FLOAT,
+        DXGI_FORMAT_R32G32B32_UINT,
+        DXGI_FORMAT_R32G32B32_SINT,
+        DXGI_FORMAT_R16G16B16A16_FLOAT,
+        DXGI_FORMAT_R16G16B16A16_UNORM,
+        DXGI_FORMAT_R16G16B16A16_UINT,
+        DXGI_FORMAT_R16G16B16A16_SNORM,
+        DXGI_FORMAT_R16G16B16A16_SINT,
+        DXGI_FORMAT_R32G32_FLOAT,
+        DXGI_FORMAT_R32G32_UINT,
+        DXGI_FORMAT_R32G32_SINT,
+        DXGI_FORMAT_D32_FLOAT_S8X24_UINT,
+        DXGI_FORMAT_R10G10B10A2_UNORM,
+        DXGI_FORMAT_R10G10B10A2_UINT,
+        DXGI_FORMAT_R11G11B10_FLOAT,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
+        DXGI_FORMAT_R8G8B8A8_UINT,
+        DXGI_FORMAT_R8G8B8A8_SNORM,
+        DXGI_FORMAT_R8G8B8A8_SINT,
+        DXGI_FORMAT_R16G16_FLOAT,
+        DXGI_FORMAT_R16G16_UNORM,
+        DXGI_FORMAT_R16G16_UINT,
+        DXGI_FORMAT_R16G16_SNORM,
+        DXGI_FORMAT_R16G16_SINT,
+        DXGI_FORMAT_D32_FLOAT,
+        DXGI_FORMAT_R32_FLOAT,
+        DXGI_FORMAT_R32_UINT,
+        DXGI_FORMAT_R32_SINT,
+        DXGI_FORMAT_D24_UNORM_S8_UINT,
+        DXGI_FORMAT_R8G8_UNORM,
+        DXGI_FORMAT_R8G8_UINT,
+        DXGI_FORMAT_R8G8_SNORM,
+        DXGI_FORMAT_R8G8_SINT,
+        DXGI_FORMAT_R16_FLOAT,
+        DXGI_FORMAT_D16_UNORM,
+        DXGI_FORMAT_R16_UNORM,
+        DXGI_FORMAT_R16_UINT,
+        DXGI_FORMAT_R16_SNORM,
+        DXGI_FORMAT_R16_SINT,
+        DXGI_FORMAT_R8_UNORM,
+        DXGI_FORMAT_R8_UINT,
+        DXGI_FORMAT_R8_SNORM,
+        DXGI_FORMAT_R8_SINT,
+        DXGI_FORMAT_A8_UNORM,
+        DXGI_FORMAT_B8G8R8A8_UNORM,
+        DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,
+        DXGI_FORMAT_B8G8R8X8_UNORM,
+        DXGI_FORMAT_B8G8R8X8_UNORM_SRGB,
+        DXGI_FORMAT_B5G6R5_UNORM,
+        DXGI_FORMAT_B5G5R5A1_UNORM,
+        DXGI_FORMAT_B4G4R4A4_UNORM,
+    };
+
+    BOOL g_sampCount10[D3D10_MAX_MULTISAMPLE_SAMPLE_COUNT];
+    BOOL g_sampCount10_1[D3D10_MAX_MULTISAMPLE_SAMPLE_COUNT];
+    BOOL g_sampCount11[D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT];
+    BOOL g_sampCount11_1[D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT];
+
+    const D3D_FEATURE_LEVEL g_featureLevels[] =
+    {
+          D3D_FEATURE_LEVEL_12_1,
+          D3D_FEATURE_LEVEL_12_0,
+          D3D_FEATURE_LEVEL_11_1,
+          D3D_FEATURE_LEVEL_11_0,
+          D3D_FEATURE_LEVEL_10_1,
+          D3D_FEATURE_LEVEL_10_0,
+          D3D_FEATURE_LEVEL_9_3,
+          D3D_FEATURE_LEVEL_9_2,
+          D3D_FEATURE_LEVEL_9_1
+    };
+
+    D3D_FEATURE_LEVEL GetD3D12FeatureLevel(_In_ ID3D12Device *device)
+    {
+        D3D12_FEATURE_DATA_FEATURE_LEVELS flData = {};
+        flData.NumFeatureLevels = 4; // D3D12 requires FL 11.0 or greater
+        flData.pFeatureLevelsRequested = g_featureLevels;
+
+        if (SUCCEEDED(device->CheckFeatureSupport(D3D12_FEATURE_FEATURE_LEVELS, &flData, sizeof(D3D12_FEATURE_DATA_FEATURE_LEVELS))))
+            return flData.MaxSupportedFeatureLevel;
+
+        return static_cast<D3D_FEATURE_LEVEL>(0);
+    }
+}
 
 //-----------------------------------------------------------------------------
 // Name: DXGI_Init()
@@ -242,48 +278,63 @@ VOID DXGI_Init()
         auto fpCreateDXGIFactory = reinterpret_cast<LPCREATEDXGIFACTORY>( GetProcAddress( g_dxgi, "CreateDXGIFactory1" ) );
         if ( fpCreateDXGIFactory )
         {
-            // DXGI 1.4
-            HRESULT hr = fpCreateDXGIFactory( IID_PPV_ARGS( &g_DXGIFactory4 ) );
-            if ( SUCCEEDED(hr) )
+            // DXGI 1.5
+            HRESULT hr = fpCreateDXGIFactory(IID_PPV_ARGS(&g_DXGIFactory5));
+            if (SUCCEEDED(hr))
             {
-                g_DXGIFactory3 = g_DXGIFactory4;
-                g_DXGIFactory2 = g_DXGIFactory4;
-                g_DXGIFactory1 = g_DXGIFactory4;
-                g_DXGIFactory = g_DXGIFactory4;
+                g_DXGIFactory4 = g_DXGIFactory5;
+                g_DXGIFactory3 = g_DXGIFactory5;
+                g_DXGIFactory2 = g_DXGIFactory5;
+                g_DXGIFactory1 = g_DXGIFactory5;
+                g_DXGIFactory = g_DXGIFactory5;
             }
             else
             {
-                g_DXGIFactory4 = nullptr;
+                g_DXGIFactory5 = nullptr;
 
-                // DXGI 1.3
-                hr = fpCreateDXGIFactory( IID_PPV_ARGS( &g_DXGIFactory3 ) );
-                if ( SUCCEEDED(hr) )
+                // DXGI 1.4
+                hr = fpCreateDXGIFactory(IID_PPV_ARGS(&g_DXGIFactory4));
+                if (SUCCEEDED(hr))
                 {
-                    g_DXGIFactory2 = g_DXGIFactory3;
-                    g_DXGIFactory1 = g_DXGIFactory3;
-                    g_DXGIFactory = g_DXGIFactory3;
+                    g_DXGIFactory3 = g_DXGIFactory4;
+                    g_DXGIFactory2 = g_DXGIFactory4;
+                    g_DXGIFactory1 = g_DXGIFactory4;
+                    g_DXGIFactory = g_DXGIFactory4;
                 }
                 else
                 {
-                    g_DXGIFactory3 = nullptr;
+                    g_DXGIFactory4 = nullptr;
 
-                    // DXGI 1.2
-                    hr = fpCreateDXGIFactory( IID_PPV_ARGS( &g_DXGIFactory2 ) );
-                    if ( SUCCEEDED(hr) )
+                    // DXGI 1.3
+                    hr = fpCreateDXGIFactory(IID_PPV_ARGS(&g_DXGIFactory3));
+                    if (SUCCEEDED(hr))
                     {
-                        g_DXGIFactory1 = g_DXGIFactory2;
-                        g_DXGIFactory = g_DXGIFactory2;
+                        g_DXGIFactory2 = g_DXGIFactory3;
+                        g_DXGIFactory1 = g_DXGIFactory3;
+                        g_DXGIFactory = g_DXGIFactory3;
                     }
                     else
                     {
-                        g_DXGIFactory2 = nullptr;
+                        g_DXGIFactory3 = nullptr;
 
-                        // DXGI 1.1
-                        hr = fpCreateDXGIFactory( IID_PPV_ARGS( &g_DXGIFactory1 ) );
-                        if ( SUCCEEDED(hr) )
-                            g_DXGIFactory = g_DXGIFactory1;
+                        // DXGI 1.2
+                        hr = fpCreateDXGIFactory(IID_PPV_ARGS(&g_DXGIFactory2));
+                        if (SUCCEEDED(hr))
+                        {
+                            g_DXGIFactory1 = g_DXGIFactory2;
+                            g_DXGIFactory = g_DXGIFactory2;
+                        }
                         else
-                            g_DXGIFactory1 = nullptr;
+                        {
+                            g_DXGIFactory2 = nullptr;
+
+                            // DXGI 1.1
+                            hr = fpCreateDXGIFactory(IID_PPV_ARGS(&g_DXGIFactory1));
+                            if (SUCCEEDED(hr))
+                                g_DXGIFactory = g_DXGIFactory1;
+                            else
+                                g_DXGIFactory1 = nullptr;
+                        }
                     }
                 }
             }
@@ -304,14 +355,14 @@ VOID DXGI_Init()
 
     // Direct3D 10.x
     g_d3d10_1 = LoadLibraryEx( "d3d10_1.dll", 0, LOAD_LIBRARY_SEARCH_SYSTEM32 );
-    if ( g_d3d10_1 != NULL )
+    if ( g_d3d10_1 != nullptr )
     {
         g_D3D10CreateDevice1 = reinterpret_cast<PFN_D3D10_CREATE_DEVICE1>( GetProcAddress( g_d3d10_1, "D3D10CreateDevice1" ) );
     }
     else
     {
         g_d3d10 = LoadLibraryEx( "d3d10.dll", 0, LOAD_LIBRARY_SEARCH_SYSTEM32 );
-        if ( g_d3d10 != NULL )
+        if ( g_d3d10 != nullptr )
         {
             g_D3D10CreateDevice = reinterpret_cast<LPD3D10CREATEDEVICE>( GetProcAddress( g_d3d10, "D3D10CreateDevice" ) );
         }
@@ -319,7 +370,7 @@ VOID DXGI_Init()
 
     // Direct3D 11
     g_d3d11 = LoadLibraryEx( "d3d11.dll", 0, LOAD_LIBRARY_SEARCH_SYSTEM32 );
-    if ( g_d3d11 != NULL )
+    if ( g_d3d11 != nullptr )
     {
         g_D3D11CreateDevice = reinterpret_cast<PFN_D3D11_CREATE_DEVICE>( GetProcAddress( g_d3d11, "D3D11CreateDevice" ) );
     }
@@ -335,192 +386,193 @@ VOID DXGI_Init()
 //-----------------------------------------------------------------------------
 #define ENUMNAME(a) case a: return TEXT(#a);
 
-const TCHAR* FormatName( DXGI_FORMAT format )
+namespace
 {
-    switch( format )
+    const TCHAR* FormatName(DXGI_FORMAT format)
     {
-ENUMNAME( DXGI_FORMAT_R32G32B32A32_TYPELESS)
-ENUMNAME( DXGI_FORMAT_R32G32B32A32_FLOAT)
-ENUMNAME( DXGI_FORMAT_R32G32B32A32_UINT)
-ENUMNAME( DXGI_FORMAT_R32G32B32A32_SINT)
-ENUMNAME( DXGI_FORMAT_R32G32B32_TYPELESS)
-ENUMNAME( DXGI_FORMAT_R32G32B32_FLOAT)
-ENUMNAME( DXGI_FORMAT_R32G32B32_UINT)
-ENUMNAME( DXGI_FORMAT_R32G32B32_SINT)
-ENUMNAME( DXGI_FORMAT_R16G16B16A16_TYPELESS)
-ENUMNAME( DXGI_FORMAT_R16G16B16A16_FLOAT)
-ENUMNAME( DXGI_FORMAT_R16G16B16A16_UNORM)
-ENUMNAME( DXGI_FORMAT_R16G16B16A16_UINT)
-ENUMNAME( DXGI_FORMAT_R16G16B16A16_SNORM)
-ENUMNAME( DXGI_FORMAT_R16G16B16A16_SINT)
-ENUMNAME( DXGI_FORMAT_R32G32_TYPELESS)
-ENUMNAME( DXGI_FORMAT_R32G32_FLOAT)
-ENUMNAME( DXGI_FORMAT_R32G32_UINT)
-ENUMNAME( DXGI_FORMAT_R32G32_SINT)
-ENUMNAME( DXGI_FORMAT_R32G8X24_TYPELESS)
-ENUMNAME( DXGI_FORMAT_D32_FLOAT_S8X24_UINT)
-ENUMNAME( DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS)
-ENUMNAME( DXGI_FORMAT_X32_TYPELESS_G8X24_UINT)
-ENUMNAME( DXGI_FORMAT_R10G10B10A2_TYPELESS)
-ENUMNAME( DXGI_FORMAT_R10G10B10A2_UNORM)
-ENUMNAME( DXGI_FORMAT_R10G10B10A2_UINT)
-ENUMNAME( DXGI_FORMAT_R11G11B10_FLOAT)
-ENUMNAME( DXGI_FORMAT_R8G8B8A8_TYPELESS)
-ENUMNAME( DXGI_FORMAT_R8G8B8A8_UNORM)
-ENUMNAME( DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
-ENUMNAME( DXGI_FORMAT_R8G8B8A8_UINT)
-ENUMNAME( DXGI_FORMAT_R8G8B8A8_SNORM)
-ENUMNAME( DXGI_FORMAT_R8G8B8A8_SINT)
-ENUMNAME( DXGI_FORMAT_R16G16_TYPELESS)
-ENUMNAME( DXGI_FORMAT_R16G16_FLOAT)
-ENUMNAME( DXGI_FORMAT_R16G16_UNORM)
-ENUMNAME( DXGI_FORMAT_R16G16_UINT)
-ENUMNAME( DXGI_FORMAT_R16G16_SNORM)
-ENUMNAME( DXGI_FORMAT_R16G16_SINT)
-ENUMNAME( DXGI_FORMAT_R32_TYPELESS)
-ENUMNAME( DXGI_FORMAT_D32_FLOAT)
-ENUMNAME( DXGI_FORMAT_R32_FLOAT)
-ENUMNAME( DXGI_FORMAT_R32_UINT)
-ENUMNAME( DXGI_FORMAT_R32_SINT)
-ENUMNAME( DXGI_FORMAT_R24G8_TYPELESS)
-ENUMNAME( DXGI_FORMAT_D24_UNORM_S8_UINT)
-ENUMNAME( DXGI_FORMAT_R24_UNORM_X8_TYPELESS)
-ENUMNAME( DXGI_FORMAT_X24_TYPELESS_G8_UINT)
-ENUMNAME( DXGI_FORMAT_R8G8_TYPELESS)
-ENUMNAME( DXGI_FORMAT_R8G8_UNORM)
-ENUMNAME( DXGI_FORMAT_R8G8_UINT)
-ENUMNAME( DXGI_FORMAT_R8G8_SNORM)
-ENUMNAME( DXGI_FORMAT_R8G8_SINT)
-ENUMNAME( DXGI_FORMAT_R16_TYPELESS)
-ENUMNAME( DXGI_FORMAT_R16_FLOAT)
-ENUMNAME( DXGI_FORMAT_D16_UNORM)
-ENUMNAME( DXGI_FORMAT_R16_UNORM)
-ENUMNAME( DXGI_FORMAT_R16_UINT)
-ENUMNAME( DXGI_FORMAT_R16_SNORM)
-ENUMNAME( DXGI_FORMAT_R16_SINT)
-ENUMNAME( DXGI_FORMAT_R8_TYPELESS)
-ENUMNAME( DXGI_FORMAT_R8_UNORM)
-ENUMNAME( DXGI_FORMAT_R8_UINT)
-ENUMNAME( DXGI_FORMAT_R8_SNORM)
-ENUMNAME( DXGI_FORMAT_R8_SINT)
-ENUMNAME( DXGI_FORMAT_A8_UNORM)
-ENUMNAME( DXGI_FORMAT_R1_UNORM)
-ENUMNAME( DXGI_FORMAT_R9G9B9E5_SHAREDEXP)
-ENUMNAME( DXGI_FORMAT_R8G8_B8G8_UNORM)
-ENUMNAME( DXGI_FORMAT_G8R8_G8B8_UNORM)
-ENUMNAME( DXGI_FORMAT_BC1_TYPELESS)
-ENUMNAME( DXGI_FORMAT_BC1_UNORM)
-ENUMNAME( DXGI_FORMAT_BC1_UNORM_SRGB)
-ENUMNAME( DXGI_FORMAT_BC2_TYPELESS)
-ENUMNAME( DXGI_FORMAT_BC2_UNORM)
-ENUMNAME( DXGI_FORMAT_BC2_UNORM_SRGB)
-ENUMNAME( DXGI_FORMAT_BC3_TYPELESS)
-ENUMNAME( DXGI_FORMAT_BC3_UNORM)
-ENUMNAME( DXGI_FORMAT_BC3_UNORM_SRGB)
-ENUMNAME( DXGI_FORMAT_BC4_TYPELESS)
-ENUMNAME( DXGI_FORMAT_BC4_UNORM)
-ENUMNAME( DXGI_FORMAT_BC4_SNORM)
-ENUMNAME( DXGI_FORMAT_BC5_TYPELESS)
-ENUMNAME( DXGI_FORMAT_BC5_UNORM)
-ENUMNAME( DXGI_FORMAT_BC5_SNORM)
-ENUMNAME( DXGI_FORMAT_B5G6R5_UNORM)
-ENUMNAME( DXGI_FORMAT_B5G5R5A1_UNORM)
-ENUMNAME( DXGI_FORMAT_B8G8R8A8_UNORM)
-ENUMNAME( DXGI_FORMAT_B8G8R8X8_UNORM)
-ENUMNAME( DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM)
-ENUMNAME( DXGI_FORMAT_B8G8R8A8_TYPELESS)
-ENUMNAME( DXGI_FORMAT_B8G8R8A8_UNORM_SRGB)
-ENUMNAME( DXGI_FORMAT_B8G8R8X8_TYPELESS)
-ENUMNAME( DXGI_FORMAT_B8G8R8X8_UNORM_SRGB)
-ENUMNAME( DXGI_FORMAT_BC6H_TYPELESS)
-ENUMNAME( DXGI_FORMAT_BC6H_UF16)
-ENUMNAME( DXGI_FORMAT_BC6H_SF16)
-ENUMNAME( DXGI_FORMAT_BC7_TYPELESS)
-ENUMNAME( DXGI_FORMAT_BC7_UNORM)
-ENUMNAME( DXGI_FORMAT_BC7_UNORM_SRGB)
-ENUMNAME( DXGI_FORMAT_AYUV )
-ENUMNAME( DXGI_FORMAT_Y410 )
-ENUMNAME( DXGI_FORMAT_Y416 )
-ENUMNAME( DXGI_FORMAT_NV12 )
-ENUMNAME( DXGI_FORMAT_P010 )
-ENUMNAME( DXGI_FORMAT_P016 )
-ENUMNAME( DXGI_FORMAT_420_OPAQUE )
-ENUMNAME( DXGI_FORMAT_YUY2 )
-ENUMNAME( DXGI_FORMAT_Y210 )
-ENUMNAME( DXGI_FORMAT_Y216 )
-ENUMNAME( DXGI_FORMAT_NV11 )
-ENUMNAME( DXGI_FORMAT_AI44 )
-ENUMNAME( DXGI_FORMAT_IA44 )
-ENUMNAME( DXGI_FORMAT_P8 )
-ENUMNAME( DXGI_FORMAT_A8P8 )
-ENUMNAME( DXGI_FORMAT_B4G4R4A4_UNORM )
-ENUMNAME( DXGI_FORMAT_P208 )
-ENUMNAME( DXGI_FORMAT_V208 )
-ENUMNAME( DXGI_FORMAT_V408 )
+        switch (format)
+        {
+        ENUMNAME(DXGI_FORMAT_R32G32B32A32_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_R32G32B32A32_FLOAT)
+        ENUMNAME(DXGI_FORMAT_R32G32B32A32_UINT)
+        ENUMNAME(DXGI_FORMAT_R32G32B32A32_SINT)
+        ENUMNAME(DXGI_FORMAT_R32G32B32_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_R32G32B32_FLOAT)
+        ENUMNAME(DXGI_FORMAT_R32G32B32_UINT)
+        ENUMNAME(DXGI_FORMAT_R32G32B32_SINT)
+        ENUMNAME(DXGI_FORMAT_R16G16B16A16_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_R16G16B16A16_FLOAT)
+        ENUMNAME(DXGI_FORMAT_R16G16B16A16_UNORM)
+        ENUMNAME(DXGI_FORMAT_R16G16B16A16_UINT)
+        ENUMNAME(DXGI_FORMAT_R16G16B16A16_SNORM)
+        ENUMNAME(DXGI_FORMAT_R16G16B16A16_SINT)
+        ENUMNAME(DXGI_FORMAT_R32G32_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_R32G32_FLOAT)
+        ENUMNAME(DXGI_FORMAT_R32G32_UINT)
+        ENUMNAME(DXGI_FORMAT_R32G32_SINT)
+        ENUMNAME(DXGI_FORMAT_R32G8X24_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_D32_FLOAT_S8X24_UINT)
+        ENUMNAME(DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_X32_TYPELESS_G8X24_UINT)
+        ENUMNAME(DXGI_FORMAT_R10G10B10A2_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_R10G10B10A2_UNORM)
+        ENUMNAME(DXGI_FORMAT_R10G10B10A2_UINT)
+        ENUMNAME(DXGI_FORMAT_R11G11B10_FLOAT)
+        ENUMNAME(DXGI_FORMAT_R8G8B8A8_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_R8G8B8A8_UNORM)
+        ENUMNAME(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
+        ENUMNAME(DXGI_FORMAT_R8G8B8A8_UINT)
+        ENUMNAME(DXGI_FORMAT_R8G8B8A8_SNORM)
+        ENUMNAME(DXGI_FORMAT_R8G8B8A8_SINT)
+        ENUMNAME(DXGI_FORMAT_R16G16_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_R16G16_FLOAT)
+        ENUMNAME(DXGI_FORMAT_R16G16_UNORM)
+        ENUMNAME(DXGI_FORMAT_R16G16_UINT)
+        ENUMNAME(DXGI_FORMAT_R16G16_SNORM)
+        ENUMNAME(DXGI_FORMAT_R16G16_SINT)
+        ENUMNAME(DXGI_FORMAT_R32_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_D32_FLOAT)
+        ENUMNAME(DXGI_FORMAT_R32_FLOAT)
+        ENUMNAME(DXGI_FORMAT_R32_UINT)
+        ENUMNAME(DXGI_FORMAT_R32_SINT)
+        ENUMNAME(DXGI_FORMAT_R24G8_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_D24_UNORM_S8_UINT)
+        ENUMNAME(DXGI_FORMAT_R24_UNORM_X8_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_X24_TYPELESS_G8_UINT)
+        ENUMNAME(DXGI_FORMAT_R8G8_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_R8G8_UNORM)
+        ENUMNAME(DXGI_FORMAT_R8G8_UINT)
+        ENUMNAME(DXGI_FORMAT_R8G8_SNORM)
+        ENUMNAME(DXGI_FORMAT_R8G8_SINT)
+        ENUMNAME(DXGI_FORMAT_R16_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_R16_FLOAT)
+        ENUMNAME(DXGI_FORMAT_D16_UNORM)
+        ENUMNAME(DXGI_FORMAT_R16_UNORM)
+        ENUMNAME(DXGI_FORMAT_R16_UINT)
+        ENUMNAME(DXGI_FORMAT_R16_SNORM)
+        ENUMNAME(DXGI_FORMAT_R16_SINT)
+        ENUMNAME(DXGI_FORMAT_R8_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_R8_UNORM)
+        ENUMNAME(DXGI_FORMAT_R8_UINT)
+        ENUMNAME(DXGI_FORMAT_R8_SNORM)
+        ENUMNAME(DXGI_FORMAT_R8_SINT)
+        ENUMNAME(DXGI_FORMAT_A8_UNORM)
+        ENUMNAME(DXGI_FORMAT_R1_UNORM)
+        ENUMNAME(DXGI_FORMAT_R9G9B9E5_SHAREDEXP)
+        ENUMNAME(DXGI_FORMAT_R8G8_B8G8_UNORM)
+        ENUMNAME(DXGI_FORMAT_G8R8_G8B8_UNORM)
+        ENUMNAME(DXGI_FORMAT_BC1_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_BC1_UNORM)
+        ENUMNAME(DXGI_FORMAT_BC1_UNORM_SRGB)
+        ENUMNAME(DXGI_FORMAT_BC2_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_BC2_UNORM)
+        ENUMNAME(DXGI_FORMAT_BC2_UNORM_SRGB)
+        ENUMNAME(DXGI_FORMAT_BC3_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_BC3_UNORM)
+        ENUMNAME(DXGI_FORMAT_BC3_UNORM_SRGB)
+        ENUMNAME(DXGI_FORMAT_BC4_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_BC4_UNORM)
+        ENUMNAME(DXGI_FORMAT_BC4_SNORM)
+        ENUMNAME(DXGI_FORMAT_BC5_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_BC5_UNORM)
+        ENUMNAME(DXGI_FORMAT_BC5_SNORM)
+        ENUMNAME(DXGI_FORMAT_B5G6R5_UNORM)
+        ENUMNAME(DXGI_FORMAT_B5G5R5A1_UNORM)
+        ENUMNAME(DXGI_FORMAT_B8G8R8A8_UNORM)
+        ENUMNAME(DXGI_FORMAT_B8G8R8X8_UNORM)
+        ENUMNAME(DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM)
+        ENUMNAME(DXGI_FORMAT_B8G8R8A8_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_B8G8R8A8_UNORM_SRGB)
+        ENUMNAME(DXGI_FORMAT_B8G8R8X8_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_B8G8R8X8_UNORM_SRGB)
+        ENUMNAME(DXGI_FORMAT_BC6H_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_BC6H_UF16)
+        ENUMNAME(DXGI_FORMAT_BC6H_SF16)
+        ENUMNAME(DXGI_FORMAT_BC7_TYPELESS)
+        ENUMNAME(DXGI_FORMAT_BC7_UNORM)
+        ENUMNAME(DXGI_FORMAT_BC7_UNORM_SRGB)
+        ENUMNAME(DXGI_FORMAT_AYUV)
+        ENUMNAME(DXGI_FORMAT_Y410)
+        ENUMNAME(DXGI_FORMAT_Y416)
+        ENUMNAME(DXGI_FORMAT_NV12)
+        ENUMNAME(DXGI_FORMAT_P010)
+        ENUMNAME(DXGI_FORMAT_P016)
+        ENUMNAME(DXGI_FORMAT_420_OPAQUE)
+        ENUMNAME(DXGI_FORMAT_YUY2)
+        ENUMNAME(DXGI_FORMAT_Y210)
+        ENUMNAME(DXGI_FORMAT_Y216)
+        ENUMNAME(DXGI_FORMAT_NV11)
+        ENUMNAME(DXGI_FORMAT_AI44)
+        ENUMNAME(DXGI_FORMAT_IA44)
+        ENUMNAME(DXGI_FORMAT_P8)
+        ENUMNAME(DXGI_FORMAT_A8P8)
+        ENUMNAME(DXGI_FORMAT_B4G4R4A4_UNORM)
+        ENUMNAME(DXGI_FORMAT_P208)
+        ENUMNAME(DXGI_FORMAT_V208)
+        ENUMNAME(DXGI_FORMAT_V408)
 
-// TODO - ASTC
+        default:
+            return TEXT("DXGI_FORMAT_UNKNOWN");
+        }
+    }
 
-    default:
-        return TEXT("DXGI_FORMAT_UNKNOWN");
+    const TCHAR* FLName(D3D10_FEATURE_LEVEL1 lvl)
+    {
+        switch (lvl)
+        {
+        ENUMNAME(D3D10_FEATURE_LEVEL_10_0)
+        ENUMNAME(D3D10_FEATURE_LEVEL_10_1)
+        ENUMNAME(D3D10_FEATURE_LEVEL_9_1)
+        ENUMNAME(D3D10_FEATURE_LEVEL_9_2)
+        ENUMNAME(D3D10_FEATURE_LEVEL_9_3)
+        default:
+            return TEXT("D3D10_FEATURE_LEVEL_UNKNOWN");
+        }
+    }
+
+    const TCHAR* FLName(D3D_FEATURE_LEVEL lvl)
+    {
+        switch (lvl)
+        {
+        ENUMNAME(D3D_FEATURE_LEVEL_9_1)
+        ENUMNAME(D3D_FEATURE_LEVEL_9_2)
+        ENUMNAME(D3D_FEATURE_LEVEL_9_3)
+        ENUMNAME(D3D_FEATURE_LEVEL_10_0)
+        ENUMNAME(D3D_FEATURE_LEVEL_10_1)
+        ENUMNAME(D3D_FEATURE_LEVEL_11_0)
+        ENUMNAME(D3D_FEATURE_LEVEL_11_1)
+        ENUMNAME(D3D_FEATURE_LEVEL_12_0)
+        ENUMNAME(D3D_FEATURE_LEVEL_12_1)
+        default:
+            return TEXT("D3D_FEATURE_LEVEL_UNKNOWN");
+        }
+    }
+
+    //-----------------------------------------------------------------------------
+    UINT RefreshRate(const DXGI_RATIONAL& Rate)
+    {
+        if (Rate.Numerator == 0)
+            return 0;
+        else if (Rate.Denominator == 0)
+            return 0;
+        else if (Rate.Denominator == 1)
+            return Rate.Numerator;
+        else
+            return (UINT)(float(Rate.Numerator) / float(Rate.Denominator));
     }
 }
 
-const TCHAR* FLName( D3D10_FEATURE_LEVEL1 lvl )
-{
-    switch( lvl )
-    {
-ENUMNAME( D3D10_FEATURE_LEVEL_10_0 )
-ENUMNAME( D3D10_FEATURE_LEVEL_10_1 )
-ENUMNAME( D3D10_FEATURE_LEVEL_9_1 )
-ENUMNAME( D3D10_FEATURE_LEVEL_9_2 ) 
-ENUMNAME( D3D10_FEATURE_LEVEL_9_3 )
-    default:
-        return TEXT("D3D10_FEATURE_LEVEL_UNKNOWN");
-    }
-}
-
-const TCHAR* FLName( D3D_FEATURE_LEVEL lvl )
-{
-    switch( lvl )
-    {
-ENUMNAME( D3D_FEATURE_LEVEL_9_1 )
-ENUMNAME( D3D_FEATURE_LEVEL_9_2 )
-ENUMNAME( D3D_FEATURE_LEVEL_9_3 )
-ENUMNAME( D3D_FEATURE_LEVEL_10_0 )
-ENUMNAME( D3D_FEATURE_LEVEL_10_1 )
-ENUMNAME( D3D_FEATURE_LEVEL_11_0 )
-ENUMNAME( D3D_FEATURE_LEVEL_11_1 )
-ENUMNAME( D3D_FEATURE_LEVEL_12_0 )
-ENUMNAME( D3D_FEATURE_LEVEL_12_1 )
-    default:
-        return TEXT("D3D_FEATURE_LEVEL_UNKNOWN");
-    }
-}
 
 //-----------------------------------------------------------------------------
-UINT RefreshRate( const DXGI_RATIONAL& Rate )
-{
-    if ( Rate.Numerator == 0 )
-        return 0;
-    else if ( Rate.Denominator == 0 )
-        return 0;
-    else if ( Rate.Denominator == 1 )
-        return Rate.Numerator;
-    else
-        return (UINT)( float(Rate.Numerator) / float(Rate.Denominator) );
-}
-
-
-//-----------------------------------------------------------------------------
-HRESULT DXGIAdapterInfo( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
+static HRESULT DXGIAdapterInfo( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
 {
     HRESULT hr;
-    IDXGIAdapter* pAdapter = (IDXGIAdapter*)lParam2;
+    auto pAdapter = reinterpret_cast<IDXGIAdapter*>(lParam2);
 
-    if ( pAdapter == NULL )
+    if ( pAdapter == nullptr )
         return S_OK;
 
-    if( pPrintInfo == NULL )
+    if( pPrintInfo == nullptr )
     {
         LVAddColumn(g_hwndLV, 0, "Name", 30);
         LVAddColumn(g_hwndLV, 1, "Value", 50);
@@ -540,7 +592,7 @@ HRESULT DXGIAdapterInfo( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo
 
     wcstombs( szDesc, desc.Description, 128 );
 
-    if ( pPrintInfo == NULL)
+    if ( pPrintInfo == nullptr)
     {
         LVAddText( g_hwndLV, 0, "Description");
         LVAddText( g_hwndLV, 1, "%s", szDesc);
@@ -581,15 +633,15 @@ HRESULT DXGIAdapterInfo( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo
     return S_OK;
 }
 
-HRESULT DXGIAdapterInfo1( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
+static HRESULT DXGIAdapterInfo1( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
 {
     HRESULT hr;
-    IDXGIAdapter1* pAdapter = (IDXGIAdapter1*)lParam2;
+    auto pAdapter = reinterpret_cast<IDXGIAdapter1*>(lParam2);
 
-    if ( pAdapter == NULL )
+    if ( pAdapter == nullptr )
         return S_OK;
 
-    if( pPrintInfo == NULL )
+    if( pPrintInfo == nullptr )
     {
         LVAddColumn(g_hwndLV, 0, "Name", 30);
         LVAddColumn(g_hwndLV, 1, "Value", 50);
@@ -609,7 +661,7 @@ HRESULT DXGIAdapterInfo1( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInf
 
     wcstombs( szDesc, desc.Description, 128 );
 
-    if ( pPrintInfo == NULL)
+    if ( pPrintInfo == nullptr)
     {
         LVAddText( g_hwndLV, 0, "Description");
         LVAddText( g_hwndLV, 1, "%s", szDesc);
@@ -654,7 +706,7 @@ HRESULT DXGIAdapterInfo1( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInf
     return S_OK;
 }
 
-HRESULT DXGIAdapterInfo2( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
+static HRESULT DXGIAdapterInfo2( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
 {
     HRESULT hr;
     auto pAdapter = reinterpret_cast<IDXGIAdapter2*>(lParam2);
@@ -759,15 +811,15 @@ HRESULT DXGIAdapterInfo2( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInf
 }
 
 //-----------------------------------------------------------------------------
-HRESULT DXGIOutputInfo( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
+static HRESULT DXGIOutputInfo( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
 {
     HRESULT hr;
-    IDXGIOutput* pOutput = (IDXGIOutput*)lParam2;
+    auto pOutput = reinterpret_cast<IDXGIOutput*>(lParam2);
 
-    if ( pOutput == NULL )
+    if ( pOutput == nullptr )
         return S_OK;
 
-    if( pPrintInfo == NULL )
+    if( pPrintInfo == nullptr )
     {
         LVAddColumn(g_hwndLV, 0, "Name", 30);
         LVAddColumn(g_hwndLV, 1, "Value", 30);
@@ -783,7 +835,7 @@ HRESULT DXGIOutputInfo( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo 
 
     wcstombs( szDevName, desc.DeviceName, 32 );
 
-    if ( pPrintInfo == NULL)
+    if ( pPrintInfo == nullptr)
     {
         LVAddText( g_hwndLV, 0, "DeviceName");
         LVAddText( g_hwndLV, 1, "%s", szDevName);
@@ -806,15 +858,15 @@ HRESULT DXGIOutputInfo( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo 
 
 
 //-----------------------------------------------------------------------------
-HRESULT DXGIOutputModes( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
+static HRESULT DXGIOutputModes( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
 {
     HRESULT hr;
-    IDXGIOutput* pOutput = (IDXGIOutput*)lParam2;
+    auto pOutput = reinterpret_cast<IDXGIOutput*>(lParam2);
 
-    if ( pOutput == NULL )
+    if ( pOutput == nullptr )
         return S_OK;
 
-    if( pPrintInfo == NULL )
+    if( pPrintInfo == nullptr )
     {
         LVAddColumn(g_hwndLV, 0, "Resolution", 10);
         LVAddColumn(g_hwndLV, 1, "Pixel Format", 30);
@@ -851,7 +903,7 @@ HRESULT DXGIOutputModes( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo
                 for( UINT iMode = 0; iMode < num; ++iMode )
                 {
                     const DXGI_MODE_DESC* pDesc = &pDescs[ iMode ];
-                    if (pPrintInfo == NULL)
+                    if (pPrintInfo == nullptr)
                     {
                         LVAddText( g_hwndLV, 0, "%d x %d", pDesc->Width, pDesc->Height);
                         LVAddText( g_hwndLV, 1, FormatName(pDesc->Format));
@@ -929,178 +981,210 @@ HRESULT DXGIOutputModes( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo
 
 
 //-----------------------------------------------------------------------------
-BOOL IsMSAAPowerOf2( UINT value )
+static HRESULT DXGIFeatures(LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo)
 {
-    // only supports values 0..32
-    if ( value <= 1 )
-        return TRUE;
-
-    if ( value & 0x1 )
-        return FALSE;
-
-    for(UINT mask = 0x2; mask < 0x100; mask <<= 1 )
+    if (g_DXGIFactory5)
     {
-        if (( value & ~mask ) == 0)
-            return TRUE;
+        if (!pPrintInfo)
+        {
+            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 1, "Value", 60);
+        }
+
+        BOOL allowTearing = FALSE;
+        HRESULT hr = g_DXGIFactory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(BOOL));
+        if (FAILED(hr))
+            allowTearing = FALSE;
+
+        if (pPrintInfo == nullptr)
+        {
+            LVYESNO("Allow tearing", allowTearing)
+        }
+        else
+        {
+            PRINTYESNO("Allow tearing", allowTearing)
+        }
     }
 
-    return FALSE;
+    return S_OK;
 }
 
 
 //-----------------------------------------------------------------------------
-void CheckExtendedFormats( ID3D10Device* pDevice, BOOL& ext, BOOL& x2 )
+namespace
 {
-    ext = x2 = FALSE;
-
-    // DXGI 1.1 required for extended formats
-    if ( !g_DXGIFactory1 )
-        return;
-
-    UINT fmtSupport = 0;
-    HRESULT hr = pDevice->CheckFormatSupport( DXGI_FORMAT_B8G8R8A8_UNORM, &fmtSupport );
-    if ( FAILED(hr) )
-        fmtSupport = 0;
-    
-    if ( fmtSupport & D3D10_FORMAT_SUPPORT_RENDER_TARGET )
-        ext = TRUE;
-    
-    hr = pDevice->CheckFormatSupport( DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM, &fmtSupport );
-    if ( FAILED(hr) )
-        fmtSupport = 0;
-    
-    if ( fmtSupport & D3D10_FORMAT_SUPPORT_DISPLAY )
-        x2 = TRUE;
-}
-
-void CheckExtendedFormats( ID3D11Device* pDevice, BOOL& ext, BOOL& x2, BOOL& bpp565 )
-{
-    ext = x2 = bpp565 = FALSE;
-
-    UINT fmtSupport = 0;
-    HRESULT hr = pDevice->CheckFormatSupport( DXGI_FORMAT_B8G8R8A8_UNORM, &fmtSupport );
-    if ( FAILED(hr) )
-        fmtSupport = 0;
-    
-    if ( fmtSupport & D3D11_FORMAT_SUPPORT_RENDER_TARGET )
-        ext = TRUE;
-    
-    fmtSupport = 0;
-    hr = pDevice->CheckFormatSupport( DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM, &fmtSupport );
-    if ( FAILED(hr) )
-        fmtSupport = 0;
-
-    if ( fmtSupport & D3D11_FORMAT_SUPPORT_DISPLAY )
-        x2 = TRUE;
-
-    // DXGI 1.2 is required for 16bpp support
-    if ( g_DXGIFactory2 )
+    bool IsMSAAPowerOf2(UINT value)
     {
-        fmtSupport = 0;
-        hr = pDevice->CheckFormatSupport( DXGI_FORMAT_B5G6R5_UNORM, &fmtSupport );
-        if ( FAILED(hr) )
+        // only supports values 0..32
+        if (value <= 1)
+            return true;
+
+        if (value & 0x1)
+            return false;
+
+        for (UINT mask = 0x2; mask < 0x100; mask <<= 1)
+        {
+            if ((value & ~mask) == 0)
+                return true;
+        }
+
+        return false;
+    }
+
+    //-----------------------------------------------------------------------------
+    void CheckExtendedFormats(ID3D10Device* pDevice, BOOL& ext, BOOL& x2)
+    {
+        ext = x2 = FALSE;
+
+        // DXGI 1.1 required for extended formats
+        if (!g_DXGIFactory1)
+            return;
+
+        UINT fmtSupport = 0;
+        HRESULT hr = pDevice->CheckFormatSupport(DXGI_FORMAT_B8G8R8A8_UNORM, &fmtSupport);
+        if (FAILED(hr))
             fmtSupport = 0;
 
-        if ( fmtSupport & D3D11_FORMAT_SUPPORT_TEXTURE2D )
-            bpp565 = TRUE;
+        if (fmtSupport & D3D10_FORMAT_SUPPORT_RENDER_TARGET)
+            ext = TRUE;
+
+        hr = pDevice->CheckFormatSupport(DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM, &fmtSupport);
+        if (FAILED(hr))
+            fmtSupport = 0;
+
+        if (fmtSupport & D3D10_FORMAT_SUPPORT_DISPLAY)
+            x2 = TRUE;
     }
-}
 
-
-//-----------------------------------------------------------------------------
-void CheckD3D11Ops( ID3D11Device* pDevice, bool &logicOps, bool &cbPartial, bool& cbOffsetting )
-{
-    D3D11_FEATURE_DATA_D3D11_OPTIONS d3d11opts = {0};
-    HRESULT hr = pDevice->CheckFeatureSupport( D3D11_FEATURE_D3D11_OPTIONS, &d3d11opts, sizeof(d3d11opts) );
-    if ( FAILED(hr) )
-        memset( &d3d11opts, 0, sizeof(d3d11opts) );
-
-    logicOps = ( d3d11opts.OutputMergerLogicOp ) ? true : false;
-    cbPartial = ( d3d11opts.ConstantBufferPartialUpdate ) ? true : false;
-    cbOffsetting = ( d3d11opts.ConstantBufferOffsetting ) ? true : false;
-}
-
-
-//-----------------------------------------------------------------------------
-void CheckD3D11Ops1( ID3D11Device* pDevice, D3D11_TILED_RESOURCES_TIER &tiled, bool &minmaxfilter, bool& mapdefaultbuff )
-{
-    D3D11_FEATURE_DATA_D3D11_OPTIONS1 d3d11opts1 = {};
-    HRESULT hr = pDevice->CheckFeatureSupport( D3D11_FEATURE_D3D11_OPTIONS1, &d3d11opts1, sizeof(d3d11opts1) );
-    if ( FAILED(hr) )
-        memset( &d3d11opts1, 0, sizeof(d3d11opts1) );
-
-    tiled = d3d11opts1.TiledResourcesTier;
-    minmaxfilter = ( d3d11opts1.MinMaxFiltering ) ? true : false;
-    mapdefaultbuff = ( d3d11opts1.MapOnDefaultBuffers ) ? true : false;
-}
-
-
-//-----------------------------------------------------------------------------
-void CheckD3D11Ops2( ID3D11Device* pDevice, D3D11_TILED_RESOURCES_TIER &tiled, D3D11_CONSERVATIVE_RASTERIZATION_TIER& crast, 
-                     bool& rovs, bool& pssref )
-{
-    D3D11_FEATURE_DATA_D3D11_OPTIONS2 d3d11opts2 = {0};
-    HRESULT hr = pDevice->CheckFeatureSupport( D3D11_FEATURE_D3D11_OPTIONS2, &d3d11opts2, sizeof(d3d11opts2) );
-    if ( FAILED(hr) )
-        memset( &d3d11opts2, 0, sizeof(d3d11opts2) );
-
-    crast = d3d11opts2.ConservativeRasterizationTier;
-    tiled = d3d11opts2.TiledResourcesTier;
-    rovs = ( d3d11opts2.ROVsSupported ) ? true : false;
-    pssref = (d3d11opts2.PSSpecifiedStencilRefSupported ) ? true : false;
-}
-
-
-//-----------------------------------------------------------------------------
-void CheckD3D9Ops( ID3D11Device* pDevice, bool& nonpow2, bool &shadows )
-{
-    D3D11_FEATURE_DATA_D3D9_OPTIONS d3d9opts = {0};
-    HRESULT hr = pDevice->CheckFeatureSupport( D3D11_FEATURE_D3D9_OPTIONS, &d3d9opts, sizeof(d3d9opts) );
-    if ( FAILED(hr) )
-        memset( &d3d9opts, 0, sizeof(d3d9opts) );
-
-    nonpow2 = ( d3d9opts.FullNonPow2TextureSupport ) ? true : false;
-
-    D3D11_FEATURE_DATA_D3D9_SHADOW_SUPPORT d3d9shadows = {0};
-    hr = pDevice->CheckFeatureSupport( D3D11_FEATURE_D3D9_SHADOW_SUPPORT, &d3d9shadows, sizeof(d3d9shadows) );
-    if ( FAILED(hr) )
-        memset( &d3d9shadows, 0, sizeof(d3d9shadows) );
-
-    shadows = ( d3d9shadows.SupportsDepthAsTextureWithLessEqualComparisonFilter ) ? true : false;
-}
-
-
-//-----------------------------------------------------------------------------
-void CheckD3D9Ops1( ID3D11Device* pDevice, bool& nonpow2, bool &shadows, bool& instancing, bool& cubemapRT )
-{
-    D3D11_FEATURE_DATA_D3D9_OPTIONS1 d3d9opts = {0};
-    HRESULT hr = pDevice->CheckFeatureSupport( D3D11_FEATURE_D3D9_OPTIONS1, &d3d9opts, sizeof(d3d9opts) );
-    if ( FAILED(hr) )
+    void CheckExtendedFormats(ID3D11Device* pDevice, BOOL& ext, BOOL& x2, BOOL& bpp565)
     {
-        memset( &d3d9opts, 0, sizeof(d3d9opts) );
+        ext = x2 = bpp565 = FALSE;
 
-        // Handle Windows 8.1 Preview by falling back to D3D9_OPTIONS, D3D9_SHADOW_SUPPORT, and D3D9_SIMPLE_INSTANCING_SUPPORT
-        CheckD3D9Ops( pDevice, nonpow2, shadows );
+        UINT fmtSupport = 0;
+        HRESULT hr = pDevice->CheckFormatSupport(DXGI_FORMAT_B8G8R8A8_UNORM, &fmtSupport);
+        if (FAILED(hr))
+            fmtSupport = 0;
 
-        D3D11_FEATURE_DATA_D3D9_SIMPLE_INSTANCING_SUPPORT d3d9si = {0};
-        hr = pDevice->CheckFeatureSupport( D3D11_FEATURE_D3D9_SIMPLE_INSTANCING_SUPPORT, &d3d9si, sizeof(d3d9si) );
-        if ( FAILED(hr) )
-            memset( &d3d9si, 0, sizeof(d3d9si) );
+        if (fmtSupport & D3D11_FORMAT_SUPPORT_RENDER_TARGET)
+            ext = TRUE;
 
-        instancing = ( d3d9si.SimpleInstancingSupported ) ? true : false;
+        fmtSupport = 0;
+        hr = pDevice->CheckFormatSupport(DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM, &fmtSupport);
+        if (FAILED(hr))
+            fmtSupport = 0;
 
-        cubemapRT = false;
+        if (fmtSupport & D3D11_FORMAT_SUPPORT_DISPLAY)
+            x2 = TRUE;
 
-        return;
+        // DXGI 1.2 is required for 16bpp support
+        if (g_DXGIFactory2)
+        {
+            fmtSupport = 0;
+            hr = pDevice->CheckFormatSupport(DXGI_FORMAT_B5G6R5_UNORM, &fmtSupport);
+            if (FAILED(hr))
+                fmtSupport = 0;
+
+            if (fmtSupport & D3D11_FORMAT_SUPPORT_TEXTURE2D)
+                bpp565 = TRUE;
+        }
     }
 
-    nonpow2 = ( d3d9opts.FullNonPow2TextureSupported ) ? true : false;
 
-    shadows = ( d3d9opts.DepthAsTextureWithLessEqualComparisonFilterSupported ) ? true : false;
+    //-----------------------------------------------------------------------------
+    void CheckD3D11Ops(ID3D11Device* pDevice, bool &logicOps, bool &cbPartial, bool& cbOffsetting)
+    {
+        D3D11_FEATURE_DATA_D3D11_OPTIONS d3d11opts = { 0 };
+        HRESULT hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS, &d3d11opts, sizeof(d3d11opts));
+        if (FAILED(hr))
+            memset(&d3d11opts, 0, sizeof(d3d11opts));
 
-    instancing = ( d3d9opts.SimpleInstancingSupported ) ? true : false;
+        logicOps = (d3d11opts.OutputMergerLogicOp) ? true : false;
+        cbPartial = (d3d11opts.ConstantBufferPartialUpdate) ? true : false;
+        cbOffsetting = (d3d11opts.ConstantBufferOffsetting) ? true : false;
+    }
 
-    cubemapRT = ( d3d9opts.TextureCubeFaceRenderTargetWithNonCubeDepthStencilSupported ) ? true : false;
+
+    //-----------------------------------------------------------------------------
+    void CheckD3D11Ops1(ID3D11Device* pDevice, D3D11_TILED_RESOURCES_TIER &tiled, bool &minmaxfilter, bool& mapdefaultbuff)
+    {
+        D3D11_FEATURE_DATA_D3D11_OPTIONS1 d3d11opts1 = {};
+        HRESULT hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS1, &d3d11opts1, sizeof(d3d11opts1));
+        if (FAILED(hr))
+            memset(&d3d11opts1, 0, sizeof(d3d11opts1));
+
+        tiled = d3d11opts1.TiledResourcesTier;
+        minmaxfilter = (d3d11opts1.MinMaxFiltering) ? true : false;
+        mapdefaultbuff = (d3d11opts1.MapOnDefaultBuffers) ? true : false;
+    }
+
+
+    //-----------------------------------------------------------------------------
+    void CheckD3D11Ops2(ID3D11Device* pDevice, D3D11_TILED_RESOURCES_TIER &tiled, D3D11_CONSERVATIVE_RASTERIZATION_TIER& crast,
+        bool& rovs, bool& pssref)
+    {
+        D3D11_FEATURE_DATA_D3D11_OPTIONS2 d3d11opts2 = { 0 };
+        HRESULT hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS2, &d3d11opts2, sizeof(d3d11opts2));
+        if (FAILED(hr))
+            memset(&d3d11opts2, 0, sizeof(d3d11opts2));
+
+        crast = d3d11opts2.ConservativeRasterizationTier;
+        tiled = d3d11opts2.TiledResourcesTier;
+        rovs = (d3d11opts2.ROVsSupported) ? true : false;
+        pssref = (d3d11opts2.PSSpecifiedStencilRefSupported) ? true : false;
+    }
+
+
+    //-----------------------------------------------------------------------------
+    void CheckD3D9Ops(ID3D11Device* pDevice, bool& nonpow2, bool &shadows)
+    {
+        D3D11_FEATURE_DATA_D3D9_OPTIONS d3d9opts = { 0 };
+        HRESULT hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D9_OPTIONS, &d3d9opts, sizeof(d3d9opts));
+        if (FAILED(hr))
+            memset(&d3d9opts, 0, sizeof(d3d9opts));
+
+        nonpow2 = (d3d9opts.FullNonPow2TextureSupport) ? true : false;
+
+        D3D11_FEATURE_DATA_D3D9_SHADOW_SUPPORT d3d9shadows = { 0 };
+        hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D9_SHADOW_SUPPORT, &d3d9shadows, sizeof(d3d9shadows));
+        if (FAILED(hr))
+            memset(&d3d9shadows, 0, sizeof(d3d9shadows));
+
+        shadows = (d3d9shadows.SupportsDepthAsTextureWithLessEqualComparisonFilter) ? true : false;
+    }
+
+
+    //-----------------------------------------------------------------------------
+    void CheckD3D9Ops1(ID3D11Device* pDevice, bool& nonpow2, bool &shadows, bool& instancing, bool& cubemapRT)
+    {
+        D3D11_FEATURE_DATA_D3D9_OPTIONS1 d3d9opts = { 0 };
+        HRESULT hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D9_OPTIONS1, &d3d9opts, sizeof(d3d9opts));
+        if (FAILED(hr))
+        {
+            memset(&d3d9opts, 0, sizeof(d3d9opts));
+
+            // Handle Windows 8.1 Preview by falling back to D3D9_OPTIONS, D3D9_SHADOW_SUPPORT, and D3D9_SIMPLE_INSTANCING_SUPPORT
+            CheckD3D9Ops(pDevice, nonpow2, shadows);
+
+            D3D11_FEATURE_DATA_D3D9_SIMPLE_INSTANCING_SUPPORT d3d9si = { 0 };
+            hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D9_SIMPLE_INSTANCING_SUPPORT, &d3d9si, sizeof(d3d9si));
+            if (FAILED(hr))
+                memset(&d3d9si, 0, sizeof(d3d9si));
+
+            instancing = (d3d9si.SimpleInstancingSupported) ? true : false;
+
+            cubemapRT = false;
+
+            return;
+        }
+
+        nonpow2 = (d3d9opts.FullNonPow2TextureSupported) ? true : false;
+
+        shadows = (d3d9opts.DepthAsTextureWithLessEqualComparisonFilterSupported) ? true : false;
+
+        instancing = (d3d9opts.SimpleInstancingSupported) ? true : false;
+
+        cubemapRT = (d3d9opts.TextureCubeFaceRenderTargetWithNonCubeDepthStencilSupported) ? true : false;
+    }
 }
 
 
@@ -1111,12 +1195,12 @@ void CheckD3D9Ops1( ID3D11Device* pDevice, bool& nonpow2, bool &shadows, bool& i
 #define D3D_FL_LPARAM3_D3D11_1( d3dType ) ( ( (d3dType & 0xff) << 8 ) | 3 )
 #define D3D_FL_LPARAM3_D3D11_2( d3dType ) ( ( (d3dType & 0xff) << 8 ) | 4 )
 #define D3D_FL_LPARAM3_D3D11_3( d3dType ) ( ( (d3dType & 0xff) << 8 ) | 5 )
-#define D3D_FL_LPARAM3_D3D12( d3dType ) ( ( (d3dType & 0xff) << 8 ) | 6 )
-HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
+#define D3D_FL_LPARAM3_D3D12( d3dType ) ( ( (d3dType & 0xff) << 8 ) | 10 )
+static HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
 {
     D3D_FEATURE_LEVEL fl = (D3D_FEATURE_LEVEL)lParam1;
 
-    if ( lParam2 == NULL )
+    if ( lParam2 == 0 )
         return S_OK;
 
     ID3D10Device* pD3D10 = nullptr;
@@ -1130,7 +1214,7 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
     auto d3dVer = static_cast<unsigned int>( lParam3 & 0xff );
     auto d3dType = static_cast<D3D_DRIVER_TYPE>( ( lParam3 & 0xff00 ) >> 8 );
     
-    if ( d3dVer == 6 )
+    if ( d3dVer == 10 )
     {
         pD3D12 = reinterpret_cast<ID3D12Device*>(lParam2);
     }
@@ -1180,31 +1264,31 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
         }
     }
 
-    if( pPrintInfo == NULL )
+    if( pPrintInfo == nullptr )
     {
         LVAddColumn(g_hwndLV, 0, "Name", 30);
         LVAddColumn(g_hwndLV, 1, "Value", 60);
     }
 
-    const char *shaderModel = NULL;
+    const char *shaderModel = nullptr;
     const char *computeShader = c_szNo;
-    const char *maxTexDim = NULL;
-    const char *maxCubeDim = NULL;
-    const char *maxVolDim = NULL;
-    const char *maxTexRepeat = NULL;
-    const char *maxAnisotropy = NULL;
+    const char *maxTexDim = nullptr;
+    const char *maxCubeDim = nullptr;
+    const char *maxVolDim = nullptr;
+    const char *maxTexRepeat = nullptr;
+    const char *maxAnisotropy = nullptr;
     const char *maxPrimCount = "4294967296";
-    const char *maxInputSlots = NULL;
-    const char *mrt = NULL;
-    const char *extFormats = NULL;
-    const char *x2_10BitFormat = NULL;
+    const char *maxInputSlots = nullptr;
+    const char *mrt = nullptr;
+    const char *extFormats = nullptr;
+    const char *x2_10BitFormat = nullptr;
     const char *logic_ops = c_szNo;
     const char *cb_partial = c_szNA;
     const char *cb_offsetting = c_szNA;
     const char *uavSlots = nullptr;
     const char *uavEveryStage = nullptr;
     const char *uavOnlyRender = nullptr;
-    const char *nonpow2 = NULL;
+    const char *nonpow2 = nullptr;
     const char *bpp16 = c_szNo;
     const char *shadows = nullptr;
     const char *cubeRT = nullptr;
@@ -1223,8 +1307,8 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
     {
     case D3D_FEATURE_LEVEL_12_1:
     case D3D_FEATURE_LEVEL_12_0:
-        shaderModel = (pD3D12) ? "5.1" : "5.0";
-        computeShader = (pD3D12) ? "Yes (CS 5.1)" : "Yes (CS 5.0)";
+        shaderModel = "5.0";
+        computeShader = "Yes (CS 5.0)";
         extFormats = c_szYes;
         x2_10BitFormat = c_szYes;
         logic_ops = c_szYes;
@@ -1247,8 +1331,27 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
             mrt = XTOSTRING( D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT );
             uavSlots = XTOSTRING( D3D12_UAV_SLOT_COUNT );
 
+            D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
+            HRESULT hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
+            if (FAILED(hr))
+            {
+                shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_5_1;
+            }
+
+            switch (shaderModelOpt.HighestShaderModel)
+            {
+            case D3D_SHADER_MODEL_6_0:
+                shaderModel = "6.0";
+                computeShader = "Yes (CS 6.0)";
+                break;
+            default:
+                shaderModel = "5.1";
+                computeShader = "Yes (CS 5.1)";
+                break;
+            }
+
             D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {0};
-            HRESULT hr = pD3D12->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS) );
+            hr = pD3D12->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS) );
             if ( FAILED(hr) ) 
                 memset( &d3d12opts, 0, sizeof(d3d12opts) );
 
@@ -1360,8 +1463,8 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
         break;
 
     case D3D_FEATURE_LEVEL_11_1:
-        shaderModel = (pD3D12) ? "5.1" : "5.0";
-        computeShader = (pD3D12) ? "Yes (CS 5.1)" : "Yes (CS 5.0)";
+        shaderModel = "5.0";
+        computeShader = "Yes (CS 5.0)";
         maxTexDim = XTOSTRING( D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION );
         maxCubeDim = XTOSTRING( D3D11_REQ_TEXTURECUBE_DIMENSION );
         maxVolDim = XTOSTRING( D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION );
@@ -1383,8 +1486,27 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
 
         if (pD3D12)
         {
+            D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
+            HRESULT hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
+            if (FAILED(hr))
+            {
+                shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_5_1;
+            }
+
+            switch (shaderModelOpt.HighestShaderModel)
+            {
+            case D3D_SHADER_MODEL_6_0:
+                shaderModel = "6.0";
+                computeShader = "Yes (CS 6.0)";
+                break;
+            default:
+                shaderModel = "5.1";
+                computeShader = "Yes (CS 5.1)";
+                break;
+            }
+
             D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {0};
-            HRESULT hr = pD3D12->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS) );
+            hr = pD3D12->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS) );
             if ( FAILED(hr) ) 
                 memset( &d3d12opts, 0, sizeof(d3d12opts) );
 
@@ -1464,8 +1586,8 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
         break;
 
     case D3D_FEATURE_LEVEL_11_0:
-        shaderModel = (pD3D12) ? "5.1" : "5.0";
-        computeShader = (pD3D12) ? "Yes (CS 5.1)" : "Yes (CS 5.0)";
+        shaderModel = "5.0";
+        computeShader = "Yes (CS 5.0)";
         maxTexDim = XTOSTRING( D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION );
         maxCubeDim = XTOSTRING( D3D11_REQ_TEXTURECUBE_DIMENSION );
         maxVolDim = XTOSTRING( D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION );
@@ -1479,8 +1601,27 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
 
         if (pD3D12)
         {
+            D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
+            HRESULT hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
+            if (FAILED(hr))
+            {
+                shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_5_1;
+            }
+
+            switch (shaderModelOpt.HighestShaderModel)
+            {
+            case D3D_SHADER_MODEL_6_0:
+                shaderModel = "6.0";
+                computeShader = "Yes (CS 6.0)";
+                break;
+            default:
+                shaderModel = "5.1";
+                computeShader = "Yes (CS 5.1)";
+                break;
+            }
+
             D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {0};
-            HRESULT hr = pD3D12->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS) );
+            hr = pD3D12->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS) );
             if ( FAILED(hr) ) 
                 memset( &d3d12opts, 0, sizeof(d3d12opts) );
 
@@ -1616,7 +1757,7 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
             nonpow2 = "Full";
             bpp16 = (bpp565) ? "Optional (Yes)" : "Optional (No)";
         }
-        else if (pD3D11 != NULL)
+        else if (pD3D11 != nullptr)
         {
             D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS d3d10xhw = {0};
             HRESULT hr = pD3D11->CheckFeatureSupport( D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &d3d10xhw, sizeof(d3d10xhw) );
@@ -1631,7 +1772,7 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
             extFormats = (ext) ? "Optional (Yes)" : "Optional (No)";
             x2_10BitFormat = (x2) ? "Optional (Yes)" : "Optional (No)";
         }
-        else if ( pD3D10_1 != NULL )
+        else if ( pD3D10_1 != nullptr )
         {
             BOOL ext, x2;
             CheckExtendedFormats( pD3D10_1, ext, x2 );
@@ -1639,7 +1780,7 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
             extFormats = (ext) ? "Optional (Yes)" : "Optional (No)";
             x2_10BitFormat = (x2) ? "Optional (Yes)" : "Optional (No)";
         }
-        else if ( pD3D10 != NULL )
+        else if ( pD3D10 != nullptr )
         {
             BOOL ext, x2;
             CheckExtendedFormats( pD3D10, ext, x2 );
@@ -1706,7 +1847,7 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
             nonpow2 = "Full";
             bpp16 = (bpp565) ? "Optional (Yes)" : "Optional (No)";
         }
-        else if (pD3D11 != NULL)
+        else if (pD3D11 != nullptr)
         {
             D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS d3d10xhw = {0};
             HRESULT hr = pD3D11->CheckFeatureSupport( D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &d3d10xhw, sizeof(d3d10xhw) );
@@ -1721,7 +1862,7 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
             extFormats = (ext) ? "Optional (Yes)" : "Optional (No)";
             x2_10BitFormat = (x2) ? "Optional (Yes)" : "Optional (No)";
         }
-        else if ( pD3D10_1 != NULL )
+        else if ( pD3D10_1 != nullptr )
         {
             BOOL ext, x2;
             CheckExtendedFormats( pD3D10_1, ext, x2 );
@@ -1729,7 +1870,7 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
             extFormats = (ext) ? "Optional (Yes)" : "Optional (No)";
             x2_10BitFormat = (x2) ? "Optional (Yes)" : "Optional (No)";
         }
-        else if ( pD3D10 != NULL )
+        else if ( pD3D10 != nullptr )
         {
             BOOL ext, x2;
             CheckExtendedFormats( pD3D10, ext, x2 );
@@ -1908,7 +2049,7 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
         maxTexDim = ( pD3D12 || pD3D11_3 || pD3D11_2 || pD3D11_1 ) ? "16777216" : "65536";
     }
 
-    if ( pPrintInfo == NULL )
+    if ( pPrintInfo == nullptr )
     {
         LVLINE( "Shader Model", shaderModel )
         LVYESNO( "Geometry Shader", (fl >= D3D_FEATURE_LEVEL_10_0) )
@@ -2259,14 +2400,14 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
 }
 
 //-----------------------------------------------------------------------------
-HRESULT D3D10Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
+static HRESULT D3D10Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
 {
-    ID3D10Device* pDevice = (ID3D10Device*)lParam1;
+    auto pDevice = reinterpret_cast<ID3D10Device*>(lParam1);
 
-    if ( pDevice == NULL )
+    if ( pDevice == nullptr )
         return S_OK;
 
-    if( pPrintInfo == NULL )
+    if( pPrintInfo == nullptr )
     {
         LVAddColumn(g_hwndLV, 0, "Name", 30);
 
@@ -2288,9 +2429,9 @@ HRESULT D3D10Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* 
         BOOL ext, x2;
         CheckExtendedFormats( pDevice, ext, x2 );
 
-        if ( pPrintInfo == NULL)
+        if ( pPrintInfo == nullptr)
         {
-            if ( g_DXGIFactory1 != NULL )
+            if ( g_DXGIFactory1 != nullptr )
             {
                 LVYESNO( "Extended Formats (BGRA, etc.)", ext )
                 LVYESNO( "10-bit XR High Color Format", x2 )
@@ -2300,7 +2441,7 @@ HRESULT D3D10Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* 
         }
         else
         {
-            if ( g_DXGIFactory1 != NULL )
+            if ( g_DXGIFactory1 != nullptr )
             {
                 PRINTYESNO( "Extended Formats (BGRA, etc.)", ext )
                 PRINTYESNO( "10-bit XR High Color Format", x2 )
@@ -2344,7 +2485,7 @@ HRESULT D3D10Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* 
     };
 
     UINT count = 0;
-    const DXGI_FORMAT *array = NULL;
+    const DXGI_FORMAT *array = nullptr;
     BOOL skips = FALSE;
 
     switch( lParam2 )
@@ -2408,7 +2549,7 @@ HRESULT D3D10Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* 
 
             BOOL msaa = ( SUCCEEDED(hr) && quality > 0 ) != 0;
 
-            if ( pPrintInfo == NULL )
+            if ( pPrintInfo == nullptr )
             {
                 if ( g_dwViewState == IDM_VIEWALL || msaa )
                 {
@@ -2438,7 +2579,7 @@ HRESULT D3D10Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* 
             if ( FAILED(hr) )
                 fmtSupport = 0;
     
-            if ( pPrintInfo == NULL)
+            if ( pPrintInfo == nullptr)
             {
                 LVYESNO( FormatName(fmt), fmtSupport & (UINT)lParam2 );
             }
@@ -2452,14 +2593,14 @@ HRESULT D3D10Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* 
     return S_OK;
 }
 
-HRESULT D3D10Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
+static HRESULT D3D10Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
 {
-    ID3D10Device1* pDevice = (ID3D10Device1*)lParam1;
+    auto pDevice = reinterpret_cast<ID3D10Device1*>(lParam1);
 
-    if ( pDevice == NULL )
+    if ( pDevice == nullptr )
         return S_OK;
 
-    if( pPrintInfo == NULL )
+    if( pPrintInfo == nullptr )
     {
         LVAddColumn(g_hwndLV, 0, "Name", 30);
 
@@ -2479,7 +2620,7 @@ HRESULT D3D10Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
         // General Direct3D 10.1 device information
         D3D10_FEATURE_LEVEL1 fl = pDevice->GetFeatureLevel();
 
-        const char *szNote = NULL;
+        const char *szNote = nullptr;
 
         switch ( fl )
         {
@@ -2501,11 +2642,11 @@ HRESULT D3D10Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
         BOOL ext, x2;
         CheckExtendedFormats( pDevice, ext, x2 );
 
-        if ( pPrintInfo == NULL)
+        if ( pPrintInfo == nullptr)
         {
             LVLINE( "Feature Level", FLName(fl) )
 
-            if ( g_DXGIFactory1 != NULL && (fl >= D3D10_FEATURE_LEVEL_10_0) )
+            if ( g_DXGIFactory1 != nullptr && (fl >= D3D10_FEATURE_LEVEL_10_0) )
             {
                 LVYESNO( "Extended Formats (BGRA, etc.)", ext )
                 LVYESNO( "10-bit XR High Color Format", x2 )
@@ -2517,7 +2658,7 @@ HRESULT D3D10Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
         {
             PRINTLINE( "Feature Level", FLName(fl) )
 
-            if ( g_DXGIFactory1 != NULL && (fl >= D3D10_FEATURE_LEVEL_10_0) )
+            if ( g_DXGIFactory1 != nullptr && (fl >= D3D10_FEATURE_LEVEL_10_0) )
             {
                 PRINTYESNO( "Extended Formats (BGRA, etc.)", ext )
                 PRINTYESNO( "10-bit XR High Color Format", x2 )
@@ -2559,7 +2700,7 @@ HRESULT D3D10Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
     };
 
     UINT count = 0;
-    const DXGI_FORMAT *array = NULL;
+    const DXGI_FORMAT *array = nullptr;
 
     switch( lParam2 )
     {
@@ -2611,7 +2752,7 @@ HRESULT D3D10Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
 
             BOOL msaa = ( SUCCEEDED(hr) && quality > 0 ) != 0;
 
-            if ( pPrintInfo == NULL )
+            if ( pPrintInfo == nullptr )
             {
                 if ( g_dwViewState == IDM_VIEWALL || msaa )
                 {
@@ -2641,7 +2782,7 @@ HRESULT D3D10Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
             if ( FAILED(hr) )
                 fmtSupport = 0;
     
-            if ( pPrintInfo == NULL)
+            if ( pPrintInfo == nullptr)
             {
                 LVYESNO( FormatName(fmt), fmtSupport & (UINT)lParam2 );
             }
@@ -2655,15 +2796,15 @@ HRESULT D3D10Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
     return S_OK;
 }
 
-HRESULT D3D10InfoMSAA( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
+static HRESULT D3D10InfoMSAA( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
 {
-    ID3D10Device* pDevice = (ID3D10Device*)lParam1;
-    BOOL* sampCount = (BOOL*)lParam2;
+    auto pDevice = reinterpret_cast<ID3D10Device*>(lParam1);
+    auto sampCount = reinterpret_cast<BOOL*>(lParam2);
 
-    if ( pDevice == NULL )
+    if ( pDevice == nullptr )
         return S_OK;
 
-    if( pPrintInfo == NULL )
+    if( pPrintInfo == nullptr )
     {
         LVAddColumn(g_hwndLV, 0, "Name", 30);
 
@@ -2702,7 +2843,7 @@ HRESULT D3D10InfoMSAA( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
             }
         }
 
-        if ( pPrintInfo == NULL)
+        if ( pPrintInfo == nullptr)
         {
             if ( g_dwViewState != IDM_VIEWALL && !any )
                 continue;
@@ -2755,14 +2896,14 @@ HRESULT D3D10InfoMSAA( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
 
 
 //-----------------------------------------------------------------------------
-HRESULT D3D11Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
+static HRESULT D3D11Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
 {
-    ID3D11Device* pDevice = (ID3D11Device*)lParam1;
+    auto pDevice = reinterpret_cast<ID3D11Device*>(lParam1);
 
-    if ( pDevice == NULL )
+    if ( pDevice == nullptr )
         return S_OK;
 
-    if( pPrintInfo == NULL )
+    if( pPrintInfo == nullptr )
     {
         LVAddColumn(g_hwndLV, 0, "Name", 30);
 
@@ -2801,7 +2942,7 @@ HRESULT D3D11Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* 
             memset( &d3d10xhw, 0, sizeof(d3d10xhw) );
 
         // Setup note
-        const char *szNote = NULL;
+        const char *szNote = nullptr;
 
         switch ( fl )
         {
@@ -2821,7 +2962,7 @@ HRESULT D3D11Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* 
             break;
         }
 
-        if ( pPrintInfo == NULL)
+        if ( pPrintInfo == nullptr)
         {
             LVLINE( "Feature Level", FLName(fl) )
 
@@ -2879,7 +3020,7 @@ HRESULT D3D11Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* 
     };
 
     UINT count = 0;
-    const DXGI_FORMAT *array = NULL;
+    const DXGI_FORMAT *array = nullptr;
 
     switch( lParam2 )
     {
@@ -2939,7 +3080,7 @@ HRESULT D3D11Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* 
 
             BOOL msaa = ( SUCCEEDED(hr) && quality > 0 ) != 0;
 
-            if ( pPrintInfo == NULL )
+            if ( pPrintInfo == nullptr )
             {
                 if ( g_dwViewState == IDM_VIEWALL || msaa )
                 {
@@ -2969,7 +3110,7 @@ HRESULT D3D11Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* 
             if ( FAILED(hr) )
                 fmtSupport = 0;
             
-            if ( pPrintInfo == NULL)
+            if ( pPrintInfo == nullptr)
             {
                LVYESNO( FormatName(fmt), fmtSupport & (UINT)lParam2 );
             }
@@ -3045,7 +3186,7 @@ static void D3D11FeatureSupportInfo1( ID3D11Device1* pDevice, bool bDev2, PRINTC
         clearview = d3d11opts1.ClearViewAlsoSupportsDepthOnlyFormats ? "RTV, UAV, and Depth (Driver doesn't see)" : "RTV and UAV (Driver doesn't see)";
     }
 
-    const char* double_shaders = NULL;
+    const char* double_shaders = nullptr;
     if ( d3d11opts.ExtendedDoublesShaderInstructions )
     {
         double_shaders = "Extended";
@@ -3059,7 +3200,7 @@ static void D3D11FeatureSupportInfo1( ID3D11Device1* pDevice, bool bDev2, PRINTC
         double_shaders = c_szNo;
     }
 
-    const char* ps_precis = NULL;
+    const char* ps_precis = nullptr;
     switch( minprecis.PixelShaderMinPrecision & (D3D11_SHADER_MIN_PRECISION_16_BIT|D3D11_SHADER_MIN_PRECISION_10_BIT) )
     {
     case 0:                                 ps_precis = "Full";         break;
@@ -3068,7 +3209,7 @@ static void D3D11FeatureSupportInfo1( ID3D11Device1* pDevice, bool bDev2, PRINTC
     default:                                ps_precis = "10/16/32-bit"; break;
     }
 
-    const char* other_precis = NULL;
+    const char* other_precis = nullptr;
     switch( minprecis.AllOtherShaderStagesMinPrecision & (D3D11_SHADER_MIN_PRECISION_16_BIT|D3D11_SHADER_MIN_PRECISION_10_BIT) )
     {
     case 0:                                 other_precis = "Full";      break;
@@ -3153,14 +3294,14 @@ static void D3D11FeatureSupportInfo1( ID3D11Device1* pDevice, bool bDev2, PRINTC
     }
 }
 
-HRESULT D3D11Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
+static HRESULT D3D11Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
 {
-    ID3D11Device1* pDevice = (ID3D11Device1*)lParam1;
+    auto pDevice = reinterpret_cast<ID3D11Device1*>(lParam1);
 
-    if ( pDevice == NULL )
+    if ( pDevice == nullptr )
         return S_OK;
 
-    if( pPrintInfo == NULL )
+    if( pPrintInfo == nullptr )
     {
         LVAddColumn(g_hwndLV, 0, "Name", 30);
 
@@ -3183,7 +3324,7 @@ HRESULT D3D11Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
         D3D11FeatureSupportInfo1( pDevice, false, pPrintInfo );
 
         // Setup note
-        const char *szNote = NULL;
+        const char *szNote = nullptr;
 
         switch ( fl )
         {
@@ -3207,7 +3348,7 @@ HRESULT D3D11Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
             break;
         }
 
-        if ( pPrintInfo == NULL)
+        if ( pPrintInfo == nullptr)
         {
             LVLINE( "Note", szNote )
         }
@@ -3326,7 +3467,7 @@ HRESULT D3D11Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
     };
 
     UINT count = 0;
-    const DXGI_FORMAT *array = NULL;
+    const DXGI_FORMAT *array = nullptr;
     BOOL skips = FALSE;
 
     switch( lParam2 )
@@ -3486,7 +3627,7 @@ HRESULT D3D11Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
 
             BOOL msaa = ( SUCCEEDED(hr) && quality > 0 ) != 0;
 
-            if ( pPrintInfo == NULL )
+            if ( pPrintInfo == nullptr )
             {
                 if ( g_dwViewState == IDM_VIEWALL || msaa )
                 {
@@ -3516,7 +3657,7 @@ HRESULT D3D11Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
             if ( FAILED(hr) )
                 fmtSupport = 0;
             
-            if ( pPrintInfo == NULL )
+            if ( pPrintInfo == nullptr )
             {
                LVYESNO( FormatName(fmt), fmtSupport & (UINT)lParam2 );
             }
@@ -3534,7 +3675,7 @@ HRESULT D3D11Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
             if ( FAILED(hr) )
                 cfs2.OutFormatSupport2 = 0;
 
-            if ( pPrintInfo == NULL )
+            if ( pPrintInfo == nullptr )
             {
                LVYESNO( FormatName(fmt), cfs2.OutFormatSupport2 & (UINT)lParam3 );
             }
@@ -3548,7 +3689,7 @@ HRESULT D3D11Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
     return S_OK;
 }
 
-HRESULT D3D11Info2( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
+static HRESULT D3D11Info2( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
 {
     ID3D11Device2* pDevice = reinterpret_cast<ID3D11Device2*>(lParam1);
 
@@ -3729,7 +3870,7 @@ HRESULT D3D11Info2( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
     return S_OK;
 }
 
-HRESULT D3D11Info3( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
+static HRESULT D3D11Info3( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
 {
     ID3D11Device3* pDevice = reinterpret_cast<ID3D11Device3*>(lParam1);
 
@@ -3742,7 +3883,7 @@ HRESULT D3D11Info3( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
         LVAddColumn(g_hwndLV, 1, "Value", 60);
     }
 
-    // General Direct3D 11.3 device information
+    // General Direct3D 11.3/11.4 device information
     D3D_FEATURE_LEVEL fl = pDevice->GetFeatureLevel();
 
     if ( !lParam2 )
@@ -3763,6 +3904,11 @@ HRESULT D3D11Info3( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
         hr = pDevice->CheckFeatureSupport( D3D11_FEATURE_D3D11_OPTIONS3, &d3d11opts3, sizeof(d3d11opts3) );
         if ( FAILED(hr) )
             memset( &d3d11opts3, 0, sizeof(d3d11opts3) );
+
+        D3D11_FEATURE_DATA_D3D11_OPTIONS4 d3d11opts4 = {0};
+        hr = pDevice->CheckFeatureSupport( D3D11_FEATURE_D3D11_OPTIONS4, &d3d11opts4, sizeof(d3d11opts4) );
+        if ( FAILED(hr) )
+            memset( &d3d11opts4, 0, sizeof(d3d11opts4) );
 
         // Setup note
         const char *szNote = nullptr;
@@ -3789,7 +3935,7 @@ HRESULT D3D11Info3( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
             break;
 
         default:
-            szNote = D3D11_NOTE3;
+            szNote = (lParam3 != 0) ? D3D11_NOTE4 : D3D11_NOTE3;
             break;
         }
 
@@ -3821,6 +3967,11 @@ HRESULT D3D11Info3( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
 
             LVYESNO( "VP/RT f/ Rast-feeding Shader", d3d11opts3.VPAndRTArrayIndexFromAnyShaderFeedingRasterizer );
 
+            if (lParam3 != 0)
+            {
+                LVYESNO( "Extended Shared NV12", d3d11opts4.ExtendedNV12SharedTextureSupported )
+            }
+
             LVLINE( "Note", szNote )
         }
         else
@@ -3839,13 +3990,18 @@ HRESULT D3D11Info3( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
 
             PRINTYESNO( "VP/RT f/ Rast-feeding Shader", d3d11opts3.VPAndRTArrayIndexFromAnyShaderFeedingRasterizer );
 
+            if (lParam3 != 0)
+            {
+                PRINTYESNO( "Extended Shared NV12", d3d11opts4.ExtendedNV12SharedTextureSupported )
+            }
+
             PRINTLINE( "Note", szNote )
         }
         
         return S_OK;
     }
 
-    // Use CheckFormatSupport for format usage defined as optional for Direct3D 11.3 devices
+    // Use CheckFormatSupport for format usage defined as optional for Direct3D 11.3/11.4 devices
 
     static const DXGI_FORMAT cfsUAVTypedLoad[] = 
     {
@@ -3956,15 +4112,15 @@ HRESULT D3D11Info3( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
     return S_OK;
 }
 
-HRESULT D3D11InfoMSAA( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
+static HRESULT D3D11InfoMSAA( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
 {
-    ID3D11Device* pDevice = (ID3D11Device*)lParam1;
-    BOOL* sampCount = (BOOL*)lParam2;
+    auto pDevice = reinterpret_cast<ID3D11Device*>(lParam1);
+    auto sampCount = reinterpret_cast<BOOL*>(lParam2);
 
-    if ( pDevice == NULL )
+    if ( pDevice == nullptr )
         return S_OK;
 
-    if( pPrintInfo == NULL )
+    if( pPrintInfo == nullptr )
     {
         LVAddColumn(g_hwndLV, 0, "Name", 30);
 
@@ -4008,7 +4164,7 @@ HRESULT D3D11InfoMSAA( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBIN
             }
         }
 
-        if ( pPrintInfo == NULL)
+        if ( pPrintInfo == nullptr)
         {
             if ( g_dwViewState != IDM_VIEWALL && !any )
                 continue;
@@ -4061,59 +4217,62 @@ HRESULT D3D11InfoMSAA( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBIN
 
 
 //-----------------------------------------------------------------------------
-static void FillMSAASampleTable( ID3D10Device* pDevice, BOOL sampCount[], BOOL _10level9 )
+namespace
 {
-    memset( sampCount, 0, sizeof(BOOL) * D3D10_MAX_MULTISAMPLE_SAMPLE_COUNT );
-    sampCount[0] = TRUE;    // sample count of 1 is always required
-
-    UINT count = 0;
-    const DXGI_FORMAT *array = NULL;
-
-    if ( _10level9 )
+    void FillMSAASampleTable(ID3D10Device* pDevice, BOOL sampCount[], BOOL _10level9)
     {
-        count = sizeof(g_cfsMSAA_10level9) / sizeof(DXGI_FORMAT);
-        array = g_cfsMSAA_10level9;
-    }
-    else
-    {
-        count = sizeof(g_cfsMSAA_10) / sizeof(DXGI_FORMAT);
-        array = g_cfsMSAA_10;
-    }
+        memset(sampCount, 0, sizeof(BOOL) * D3D10_MAX_MULTISAMPLE_SAMPLE_COUNT);
+        sampCount[0] = TRUE;    // sample count of 1 is always required
 
-    for( UINT samples = 2; samples <= D3D10_MAX_MULTISAMPLE_SAMPLE_COUNT; ++samples )
-    {
-        for(UINT i = 0; i < count; ++i)
+        UINT count = 0;
+        const DXGI_FORMAT *array = nullptr;
+
+        if (_10level9)
         {
-            UINT quality;
-            HRESULT hr = pDevice->CheckMultisampleQualityLevels( array[i], samples, &quality );
+            count = sizeof(g_cfsMSAA_10level9) / sizeof(DXGI_FORMAT);
+            array = g_cfsMSAA_10level9;
+        }
+        else
+        {
+            count = sizeof(g_cfsMSAA_10) / sizeof(DXGI_FORMAT);
+            array = g_cfsMSAA_10;
+        }
 
-            if ( SUCCEEDED(hr) && quality > 0 )
+        for (UINT samples = 2; samples <= D3D10_MAX_MULTISAMPLE_SAMPLE_COUNT; ++samples)
+        {
+            for (UINT i = 0; i < count; ++i)
             {
-                sampCount[ samples - 1 ] = TRUE;
-                break;
+                UINT quality;
+                HRESULT hr = pDevice->CheckMultisampleQualityLevels(array[i], samples, &quality);
+
+                if (SUCCEEDED(hr) && quality > 0)
+                {
+                    sampCount[samples - 1] = TRUE;
+                    break;
+                }
             }
         }
     }
-}
 
-static void FillMSAASampleTable( ID3D11Device* pDevice, BOOL sampCount[] )
-{
-    memset( sampCount, 0, sizeof(BOOL) * D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT );
-    sampCount[0] = TRUE;    // sample count of 1 is always required
-
-    for( UINT samples = 2; samples <= D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT; ++samples)
+    void FillMSAASampleTable(ID3D11Device* pDevice, BOOL sampCount[])
     {
-        const UINT count = sizeof(g_cfsMSAA_11) / sizeof(DXGI_FORMAT);
+        memset(sampCount, 0, sizeof(BOOL) * D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT);
+        sampCount[0] = TRUE;    // sample count of 1 is always required
 
-        for(UINT i = 0; i < count; ++i)
+        for (UINT samples = 2; samples <= D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT; ++samples)
         {
-            UINT quality;
-            HRESULT hr = pDevice->CheckMultisampleQualityLevels( g_cfsMSAA_11[i], samples, &quality );
+            const UINT count = sizeof(g_cfsMSAA_11) / sizeof(DXGI_FORMAT);
 
-            if ( SUCCEEDED(hr) && quality > 0 )
+            for (UINT i = 0; i < count; ++i)
             {
-                sampCount[ samples - 1 ] = TRUE;
-                break;
+                UINT quality;
+                HRESULT hr = pDevice->CheckMultisampleQualityLevels(g_cfsMSAA_11[i], samples, &quality);
+
+                if (SUCCEEDED(hr) && quality > 0)
+                {
+                    sampCount[samples - 1] = TRUE;
+                    break;
+                }
             }
         }
     }
@@ -4121,15 +4280,15 @@ static void FillMSAASampleTable( ID3D11Device* pDevice, BOOL sampCount[] )
 
 
 //-----------------------------------------------------------------------------
-HRESULT D3D11InfoVideo( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
+static HRESULT D3D11InfoVideo( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
 {
-    ID3D11Device* pDevice = (ID3D11Device*)lParam1;
-    BOOL* sampCount = (BOOL*)lParam2;
+    auto pDevice = reinterpret_cast<ID3D11Device*>(lParam1);
+    auto sampCount = reinterpret_cast<BOOL*>(lParam2);
 
-    if ( pDevice == NULL )
+    if ( pDevice == nullptr )
         return S_OK;
 
-    if( pPrintInfo == NULL )
+    if( pPrintInfo == nullptr )
     {
         LVAddColumn(g_hwndLV, 0, "Name", 30);
         LVAddColumn( g_hwndLV, 1, "Texture2D", 15 );
@@ -4171,7 +4330,7 @@ HRESULT D3D11InfoVideo( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBI
                                     | D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT
                                     | D3D11_FORMAT_SUPPORT_VIDEO_ENCODER ) ) ? true : false;
 
-        if ( pPrintInfo == NULL)
+        if ( pPrintInfo == nullptr)
         {
             if ( g_dwViewState != IDM_VIEWALL && !any )
                 continue;
@@ -4202,7 +4361,7 @@ HRESULT D3D11InfoVideo( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBI
 
 
 //-----------------------------------------------------------------------------
-HRESULT D3D12Info( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
+static HRESULT D3D12Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
 {
     auto pDevice = reinterpret_cast<ID3D12Device*>( lParam1 );
     auto fl = (D3D_FEATURE_LEVEL) lParam2;
@@ -4216,10 +4375,29 @@ HRESULT D3D12Info( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
         LVAddColumn(g_hwndLV, 1, "Value", 60);
     }
 
+    D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
+    HRESULT hr = pDevice->CheckFeatureSupport( D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt) );
+    if (FAILED(hr))
+    {
+        shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_5_1;
+    }
+
+    D3D12_FEATURE_DATA_ROOT_SIGNATURE rootSigOpt = {};
+    hr = pDevice->CheckFeatureSupport( D3D12_FEATURE_ROOT_SIGNATURE, &rootSigOpt, sizeof(rootSigOpt) );
+    if (FAILED(hr))
+    {
+        rootSigOpt.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
+    }
+
     D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {0};
-    HRESULT hr = pDevice->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS) );
+    hr = pDevice->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS) );
     if ( FAILED(hr) ) 
         memset( &d3d12opts, 0, sizeof(d3d12opts) );
+
+    D3D12_FEATURE_DATA_D3D12_OPTIONS1 d3d12opts1 = {0};
+    hr = pDevice->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS1, &d3d12opts1, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS1) );
+    if ( FAILED(hr) ) 
+        memset( &d3d12opts1, 0, sizeof(d3d12opts1) );
 
     D3D12_FEATURE_DATA_ARCHITECTURE d3d12arch = {0};
     hr = pDevice->CheckFeatureSupport( D3D12_FEATURE_ARCHITECTURE, &d3d12arch, sizeof(D3D12_FEATURE_DATA_ARCHITECTURE) );
@@ -4230,6 +4408,20 @@ HRESULT D3D12Info( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
     hr = pDevice->CheckFeatureSupport( D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, &d3d12vm, sizeof(D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT) );
     if ( FAILED(hr) ) 
         memset( &d3d12vm, 0, sizeof(d3d12vm) );
+
+    const char* shaderModel = "Unknown";
+    switch (shaderModelOpt.HighestShaderModel)
+    {
+    case D3D_SHADER_MODEL_6_0: shaderModel = "6.0"; break;
+    case D3D_SHADER_MODEL_5_1: shaderModel = "5.1"; break;
+    }
+
+    const char* rootSig = "Unknown";
+    switch (rootSigOpt.HighestVersion)
+    {
+    case D3D_ROOT_SIGNATURE_VERSION_1_0: rootSig = "1.0"; break;
+    case D3D_ROOT_SIGNATURE_VERSION_1_1: rootSig = "1.1"; break;
+    }
 
     char vmRes[ 16 ];
     sprintf_s(vmRes, 16, "%u", d3d12vm.MaxGPUVirtualAddressBitsPerResource );
@@ -4274,9 +4466,17 @@ HRESULT D3D12Info( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
     char binding_rsc[16];
     sprintf_s( binding_rsc, "Tier %d", d3d12opts.ResourceBindingTier );
 
+    char lane_count[16];
+    sprintf_s( lane_count, "%u", d3d12opts1.TotalLaneCount );
+
+    char wave_lane_count[16];
+    sprintf_s( wave_lane_count, "%u/%u", d3d12opts1.WaveLaneCountMin, d3d12opts1.WaveLaneCountMax );
+
     if ( !pPrintInfo )
     {
         LVLINE( "Feature Level", FLName(fl) )
+        LVLINE( "Shader Model", shaderModel )
+        LVLINE( "Root Signature", rootSig )
 
         LVYESNO( "Double-precision Shaders", d3d12opts.DoublePrecisionFloatShaderOps )
         LVYESNO( "Standard Swizzle 64KB", d3d12opts.StandardSwizzle64KBSupported )
@@ -4301,10 +4501,20 @@ HRESULT D3D12Info( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
         LVLINE( "Max GPU VM bits per process", vmProcess );
 
         LVLINE( "Minimum Precision", precis );
+
+        if (lParam3 != 0)
+        {
+            LVYESNO( "Wave operations", d3d12opts1.WaveOps );
+            LVLINE( "Wave lane count", wave_lane_count );
+            LVLINE( "Total lane count", lane_count );
+            LVYESNO( "Expanded compute resource states", d3d12opts1.ExpandedComputeResourceStates );
+        }
     }
     else
     {
         PRINTLINE( "Feature Level", FLName(fl) )
+        PRINTLINE( "Shader Model", shaderModel )
+        PRINTLINE( "Root Signature", rootSig )
 
         PRINTYESNO( "Double-precision Shaders", d3d12opts.DoublePrecisionFloatShaderOps )
         PRINTYESNO( "Standard Swizzle 64KB", d3d12opts.StandardSwizzle64KBSupported )
@@ -4329,6 +4539,14 @@ HRESULT D3D12Info( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo )
         PRINTLINE( "Max GPU VM bits per process", vmProcess );
 
         PRINTLINE( "Minimum Precision", precis );
+
+        if (lParam3 != 0)
+        {
+            PRINTYESNO( "Wave operations", d3d12opts1.WaveOps );
+            PRINTLINE( "Wave lane count", wave_lane_count );
+            PRINTLINE( "Total lane count", lane_count );
+            PRINTYESNO( "Expanded compute resource states", d3d12opts1.ExpandedComputeResourceStates );
+        }
     }
 
     return S_OK;
@@ -4383,10 +4601,10 @@ static void D3D10_FillTree1( HTREEITEM hTree, ID3D10Device1* pDevice, DWORD flMa
 
     TVAddNodeEx( hTreeD3D, FLName( fl ), FALSE, IDI_CAPS, D3D_FeatureLevel, (LPARAM)fl, (LPARAM)pDevice, D3D_FL_LPARAM3_D3D10_1( devType ) );
 
-    if ( (g_DXGIFactory1 != NULL && fl != D3D10_FEATURE_LEVEL_9_1)
-         || (g_DXGIFactory1 == NULL && fl != D3D10_FEATURE_LEVEL_10_0) )
+    if ( (g_DXGIFactory1 != nullptr && fl != D3D10_FEATURE_LEVEL_9_1)
+         || (g_DXGIFactory1 == nullptr && fl != D3D10_FEATURE_LEVEL_10_0) )
     {
-        HTREEITEM hTreeF = TVAddNode( hTreeD3D, "Additional Feature Levels", TRUE, IDI_CAPS, NULL, 0, 0 );
+        HTREEITEM hTreeF = TVAddNode( hTreeD3D, "Additional Feature Levels", TRUE, IDI_CAPS, nullptr, 0, 0 );
     
         switch( fl )
         {
@@ -4486,7 +4704,7 @@ static void D3D11_FillTree( HTREEITEM hTree, ID3D11Device* pDevice, DWORD flMask
 
     if ( fl != D3D_FEATURE_LEVEL_9_1 )
     {
-        HTREEITEM hTreeF = TVAddNode( hTreeD3D, "Additional Feature Levels", TRUE, IDI_CAPS, NULL, 0, 0 );
+        HTREEITEM hTreeF = TVAddNode( hTreeD3D, "Additional Feature Levels", TRUE, IDI_CAPS, nullptr, 0, 0 );
     
         switch( fl )
         {
@@ -4577,7 +4795,7 @@ static void D3D11_FillTree1( HTREEITEM hTree, ID3D11Device1* pDevice, DWORD flMa
 
     if ( fl != D3D_FEATURE_LEVEL_9_1 )
     {
-        HTREEITEM hTreeF = TVAddNode( hTreeD3D, "Additional Feature Levels", TRUE, IDI_CAPS, NULL, 0, 0 );
+        HTREEITEM hTreeF = TVAddNode( hTreeD3D, "Additional Feature Levels", TRUE, IDI_CAPS, nullptr, 0, 0 );
     
         switch( fl )
         {
@@ -4709,7 +4927,7 @@ static void D3D11_FillTree2( HTREEITEM hTree, ID3D11Device2* pDevice, DWORD flMa
 
     if ( fl != D3D_FEATURE_LEVEL_9_1 )
     {
-        HTREEITEM hTreeF = TVAddNode( hTreeD3D, "Additional Feature Levels", TRUE, IDI_CAPS, NULL, 0, 0 );
+        HTREEITEM hTreeF = TVAddNode( hTreeD3D, "Additional Feature Levels", TRUE, IDI_CAPS, nullptr, 0, 0 );
     
         switch( fl )
         {
@@ -4769,19 +4987,19 @@ static void D3D11_FillTree2( HTREEITEM hTree, ID3D11Device2* pDevice, DWORD flMa
                     (LPARAM)pDevice, (LPARAM)0xffffffff, (LPARAM)D3D11_FORMAT_SUPPORT2_SHAREABLE );
 }
 
-static void D3D11_FillTree3( HTREEITEM hTree, ID3D11Device3* pDevice, DWORD flMask, D3D_DRIVER_TYPE devType )
+static void D3D11_FillTree3( HTREEITEM hTree, ID3D11Device3* pDevice, ID3D11Device4* pDevice4, DWORD flMask, D3D_DRIVER_TYPE devType )
 {
     D3D_FEATURE_LEVEL fl = pDevice->GetFeatureLevel();
 
-    HTREEITEM hTreeD3D = TVAddNodeEx( hTree, "Direct3D 11.3", TRUE,
-                                      IDI_CAPS, D3D11Info3, (LPARAM)pDevice, 0, 0 );
+    HTREEITEM hTreeD3D = TVAddNodeEx( hTree, (pDevice4) ? "Direct3D 11.3/11.4" : "Direct3D 11.3", TRUE,
+                                      IDI_CAPS, D3D11Info3, (LPARAM)pDevice, 0, (LPARAM)pDevice4 );
 
     TVAddNodeEx( hTreeD3D, FLName( fl ), FALSE, IDI_CAPS, D3D_FeatureLevel,
                  (LPARAM)fl, (LPARAM)pDevice, D3D_FL_LPARAM3_D3D11_3( devType ) );
 
     if ( fl != D3D_FEATURE_LEVEL_9_1 )
     {
-        HTREEITEM hTreeF = TVAddNode( hTreeD3D, "Additional Feature Levels", TRUE, IDI_CAPS, NULL, 0, 0 );
+        HTREEITEM hTreeF = TVAddNode( hTreeD3D, "Additional Feature Levels", TRUE, IDI_CAPS, nullptr, 0, 0 );
     
         switch( fl )
         {
@@ -4859,26 +5077,18 @@ static void D3D11_FillTree3( HTREEITEM hTree, ID3D11Device3* pDevice, DWORD flMa
     // TODO - Hardware JPEG information
 }
 
-
 //-----------------------------------------------------------------------------
-static void D3D12_FillTree( HTREEITEM hTree, ID3D12Device* pDevice, D3D_DRIVER_TYPE devType )
+static void D3D12_FillTree( HTREEITEM hTree, ID3D12Device* pDevice, ID3D12Device1* pDevice1, D3D_DRIVER_TYPE devType )
 {
-    static const D3D_FEATURE_LEVEL lvl[] = { D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0 };
+    D3D_FEATURE_LEVEL fl = GetD3D12FeatureLevel(pDevice);
 
-    D3D12_FEATURE_DATA_FEATURE_LEVELS flData;
-    flData.NumFeatureLevels = _countof(lvl);
-    flData.pFeatureLevelsRequested = lvl;
-    
-    HRESULT hr = pDevice->CheckFeatureSupport( D3D12_FEATURE_FEATURE_LEVELS, &flData, sizeof(D3D12_FEATURE_DATA_FEATURE_LEVELS) );
-    D3D_FEATURE_LEVEL fl = SUCCEEDED(hr) ? flData.MaxSupportedFeatureLevel : (D3D_FEATURE_LEVEL)0;
-
-    HTREEITEM hTreeD3D = TVAddNode( hTree, "Direct3D 12", TRUE, IDI_CAPS, D3D12Info, (LPARAM)pDevice, (LPARAM)fl );
+    HTREEITEM hTreeD3D = TVAddNodeEx( hTree, "Direct3D 12", TRUE, IDI_CAPS, D3D12Info, (LPARAM)pDevice, (LPARAM)fl, (LPARAM)pDevice1 );
 
     TVAddNodeEx( hTreeD3D, FLName( fl ), FALSE, IDI_CAPS, D3D_FeatureLevel, (LPARAM)fl, (LPARAM)pDevice, D3D_FL_LPARAM3_D3D12( devType ) );
 
     if ( fl != D3D_FEATURE_LEVEL_11_0 )
     {
-        HTREEITEM hTreeF = TVAddNode( hTreeD3D, "Additional Feature Levels", TRUE, IDI_CAPS, NULL, 0, 0 );
+        HTREEITEM hTreeF = TVAddNode( hTreeD3D, "Additional Feature Levels", TRUE, IDI_CAPS, nullptr, 0, 0 );
     
         switch( fl )
         {
@@ -4907,19 +5117,19 @@ VOID DXGI_FillTree( HWND hwndTV )
 {
     HRESULT hr;
 
-    if ( g_DXGIFactory == NULL )
+    if ( g_DXGIFactory == nullptr )
         return;
 
-    HTREEITEM hTree = TVAddNode( TVI_ROOT, "DXGI Devices", TRUE, IDI_DIRECTX, NULL, 0, 0 );
+    HTREEITEM hTree = TVAddNode( TVI_ROOT, "DXGI Devices", TRUE, IDI_DIRECTX, nullptr, 0, 0 );
 
     // Hardware driver types
-    IDXGIAdapter *pAdapter = NULL;
-    IDXGIAdapter1 *pAdapter1 = NULL;
+    IDXGIAdapter *pAdapter = nullptr;
+    IDXGIAdapter1 *pAdapter1 = nullptr;
     IDXGIAdapter2 *pAdapter2 = nullptr;
     IDXGIAdapter3 *pAdapter3 = nullptr;
     for(UINT iAdapter = 0; ; ++iAdapter)
     {
-        if ( g_DXGIFactory1 != NULL )
+        if ( g_DXGIFactory1 != nullptr )
         {
             hr = g_DXGIFactory1->EnumAdapters1( iAdapter, &pAdapter1 );
             pAdapter = pAdapter1;
@@ -4981,9 +5191,9 @@ VOID DXGI_FillTree( HWND hwndTV )
         }
 
         // Outputs
-        HTREEITEM hTreeO = NULL;
+        HTREEITEM hTreeO = nullptr;
         
-        IDXGIOutput* pOutput = NULL;
+        IDXGIOutput* pOutput = nullptr;
         for(UINT iOutput = 0; ; ++iOutput)
         {
             hr = pAdapter->EnumOutputs( iOutput, &pOutput );
@@ -4993,7 +5203,7 @@ VOID DXGI_FillTree( HWND hwndTV )
 
             if ( iOutput == 0 )
             {
-                hTreeO = TVAddNode(hTreeA, "Outputs", TRUE, IDI_CAPS, NULL, 0, 0 );
+                hTreeO = TVAddNode(hTreeA, "Outputs", TRUE, IDI_CAPS, DXGIFeatures, 0, 0 );
             }
 
             DXGI_OUTPUT_DESC oDesc;
@@ -5011,10 +5221,10 @@ VOID DXGI_FillTree( HWND hwndTV )
 #ifdef EXTRA_DEBUG
         OutputDebugStringA( "Direct3D 10.x\n" );
 #endif
-        ID3D10Device* pDevice10 = NULL;
-        ID3D10Device1* pDevice10_1 = NULL;
+        ID3D10Device* pDevice10 = nullptr;
+        ID3D10Device1* pDevice10_1 = nullptr;
         DWORD flMaskDX10 = 0;
-        if ( g_D3D10CreateDevice1 != NULL )
+        if ( g_D3D10CreateDevice1 != nullptr )
         {
             // Since 10 & 10.1 are so close, try to create just one device object for both...
             static const D3D10_FEATURE_LEVEL1 lvl[] = { D3D10_FEATURE_LEVEL_10_1, D3D10_FEATURE_LEVEL_10_0,
@@ -5022,7 +5232,7 @@ VOID DXGI_FillTree( HWND hwndTV )
 
             // Test every feature-level since some devices might be missing some
             D3D10_FEATURE_LEVEL1 flHigh = (D3D10_FEATURE_LEVEL1)0;
-            for(UINT i=0; i < (sizeof(lvl) / sizeof(D3D10_FEATURE_LEVEL1)); ++i)
+            for(UINT i=0; i < _countof(lvl); ++i)
             {
                 if ( g_DXGIFactory1 == 0 )
                 {
@@ -5037,7 +5247,7 @@ VOID DXGI_FillTree( HWND hwndTV )
                 OutputDebugString( FLName( lvl[i] ) );
 #endif
 
-                hr = g_D3D10CreateDevice1( pAdapter, D3D10_DRIVER_TYPE_HARDWARE, NULL, 0, lvl[i], D3D10_1_SDK_VERSION, &pDevice10_1 );
+                hr = g_D3D10CreateDevice1( pAdapter, D3D10_DRIVER_TYPE_HARDWARE, nullptr, 0, lvl[i], D3D10_1_SDK_VERSION, &pDevice10_1 );
                 if ( SUCCEEDED(hr) )
                 {
 #ifdef EXTRA_DEBUG
@@ -5059,50 +5269,51 @@ VOID DXGI_FillTree( HWND hwndTV )
                 else
                 {
 #ifdef EXTRA_DEBUG
-                    OutputDebugString( ": Failed\n");
+                    char buff[64]={};
+                    sprintf_s(buff, ": Failed (%08X)\n", hr);
+                    OutputDebugStringA( buff );
 #endif
-
-                    pDevice10_1 = NULL;
+                    pDevice10_1 = nullptr;
                 }
 
                 if ( pDevice10_1 )
                 {
                     pDevice10_1->Release();
-                    pDevice10_1 = NULL;
+                    pDevice10_1 = nullptr;
                 }
             }
 
             if (flHigh > 0)
             {
-                hr = g_D3D10CreateDevice1( pAdapter, D3D10_DRIVER_TYPE_HARDWARE, NULL, 0, flHigh, D3D10_1_SDK_VERSION, &pDevice10_1 );
+                hr = g_D3D10CreateDevice1( pAdapter, D3D10_DRIVER_TYPE_HARDWARE, nullptr, 0, flHigh, D3D10_1_SDK_VERSION, &pDevice10_1 );
                 if ( SUCCEEDED(hr) )
                 {
                     if ( flHigh >= D3D10_FEATURE_LEVEL_10_0 )
                     {
                         hr = pDevice10_1->QueryInterface( IID_PPV_ARGS( &pDevice10 ) );
                         if ( FAILED(hr) )
-                            pDevice10 = NULL;
+                            pDevice10 = nullptr;
                     }
                 }
                 else
                 {
-                    pDevice10_1 = NULL;
+                    pDevice10_1 = nullptr;
                 }
             }
         }
-        else if ( g_D3D10CreateDevice != NULL )
+        else if ( g_D3D10CreateDevice != nullptr )
         {
-            hr = g_D3D10CreateDevice( pAdapter, D3D10_DRIVER_TYPE_HARDWARE, NULL, 0, D3D10_SDK_VERSION, &pDevice10 );
+            hr = g_D3D10CreateDevice( pAdapter, D3D10_DRIVER_TYPE_HARDWARE, nullptr, 0, D3D10_SDK_VERSION, &pDevice10 );
             if ( FAILED(hr) )
-                pDevice10 = NULL;
+                pDevice10 = nullptr;
         }
 
         // Direct3D 10
-        if ( pDevice10 != NULL )
+        if ( pDevice10 != nullptr )
             D3D10_FillTree( hTreeA, pDevice10, D3D_DRIVER_TYPE_HARDWARE );
 
         // Direct3D 10.1 (includes 10level9 feature levels)
-        if ( pDevice10_1 != NULL )
+        if ( pDevice10_1 != nullptr )
             D3D10_FillTree1( hTreeA, pDevice10_1, flMaskDX10, D3D_DRIVER_TYPE_HARDWARE );
 
         // Direct3D 11.x
@@ -5110,33 +5321,29 @@ VOID DXGI_FillTree( HWND hwndTV )
         OutputDebugStringA( "Direct3D 11.x\n" );
 #endif
 
-        ID3D11Device* pDevice11 = NULL;
-        ID3D11Device1* pDevice11_1 = NULL;
+        ID3D11Device* pDevice11 = nullptr;
+        ID3D11Device1* pDevice11_1 = nullptr;
         ID3D11Device2* pDevice11_2 = nullptr;
         ID3D11Device3* pDevice11_3 = nullptr;
+        ID3D11Device4* pDevice11_4 = nullptr;
         DWORD flMaskDX11 = 0;
-        if (pAdapter1 != NULL && g_D3D11CreateDevice != NULL)
+        if (pAdapter1 != nullptr && g_D3D11CreateDevice != nullptr)
         {
-            static const D3D_FEATURE_LEVEL lvl[] = { D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0,
-                                                     D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0,
-                                                     D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0,
-                                                     D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL_9_2, D3D_FEATURE_LEVEL_9_1 };
-
             D3D_FEATURE_LEVEL flHigh = (D3D_FEATURE_LEVEL)0;
 
-            for(UINT i=0; i < (sizeof(lvl) / sizeof(D3D_FEATURE_LEVEL)); ++i)
+            for(UINT i=0; i < _countof(g_featureLevels); ++i)
             {
 #ifdef EXTRA_DEBUG
-                OutputDebugString( FLName( lvl[i] ) );
+                OutputDebugString( FLName( g_featureLevels[i] ) );
 #endif
-                hr = g_D3D11CreateDevice( pAdapter1, D3D_DRIVER_TYPE_UNKNOWN, NULL, 0, &lvl[ i ], 1,
-                                          D3D11_SDK_VERSION, &pDevice11, NULL, NULL );
+                hr = g_D3D11CreateDevice( pAdapter1, D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, &g_featureLevels[ i ], 1,
+                                          D3D11_SDK_VERSION, &pDevice11, nullptr, nullptr );
                 if ( SUCCEEDED(hr) )
                 {
 #ifdef EXTRA_DEBUG
                     OutputDebugString( ": Success\n");
 #endif
-                    switch( lvl[i] )
+                    switch(g_featureLevels[i])
                     {
                     case D3D_FEATURE_LEVEL_9_1:  flMaskDX11 |= FLMASK_9_1; break;
                     case D3D_FEATURE_LEVEL_9_2:  flMaskDX11 |= FLMASK_9_2; break;
@@ -5149,15 +5356,17 @@ VOID DXGI_FillTree( HWND hwndTV )
                     case D3D_FEATURE_LEVEL_12_1: flMaskDX11 |= FLMASK_12_1; break;
                     }
 
-                    if ( lvl[i] > flHigh )
-                        flHigh = lvl[i];
+                    if ( g_featureLevels[i] > flHigh )
+                        flHigh = g_featureLevels[i];
                 }
                 else
                 {
 #ifdef EXTRA_DEBUG
-                    OutputDebugString( ": Failed\n");
+                    char buff[64]={};
+                    sprintf_s(buff, ": Failed (%08X)\n", hr);
+                    OutputDebugStringA( buff );
 #endif
-                    pDevice11 = NULL;
+                    pDevice11 = nullptr;
                 }
 
                 if ( pDevice11 )
@@ -5167,20 +5376,20 @@ VOID DXGI_FillTree( HWND hwndTV )
                     if ( aDesc.VendorId != 0x8086 )
                         pDevice11->Release();
 
-                    pDevice11 = NULL;
+                    pDevice11 = nullptr;
                 }
             }
 
             if (flHigh > 0)
             {
-                hr = g_D3D11CreateDevice( pAdapter1, D3D_DRIVER_TYPE_UNKNOWN, NULL, 0, &flHigh, 1,
-                                          D3D11_SDK_VERSION, &pDevice11, NULL, NULL );
+                hr = g_D3D11CreateDevice( pAdapter1, D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, &flHigh, 1,
+                                          D3D11_SDK_VERSION, &pDevice11, nullptr, nullptr );
               
                 if ( SUCCEEDED(hr) )
                 {
                     hr = pDevice11->QueryInterface( IID_PPV_ARGS( &pDevice11_1 ) );
                     if ( FAILED(hr) )
-                        pDevice11_1 = NULL;
+                        pDevice11_1 = nullptr;
 
                     hr = pDevice11->QueryInterface( IID_PPV_ARGS( &pDevice11_2 ) );
                     if ( FAILED(hr) )
@@ -5189,29 +5398,34 @@ VOID DXGI_FillTree( HWND hwndTV )
                     hr = pDevice11->QueryInterface( IID_PPV_ARGS( &pDevice11_3 ) );
                     if ( FAILED(hr) )
                         pDevice11_3 = nullptr;
+
+                    hr = pDevice11->QueryInterface( IID_PPV_ARGS( &pDevice11_4 ) );
+                    if ( FAILED(hr) )
+                        pDevice11_4 = nullptr;
                 }
                 else if ( FAILED(hr) )
-                    pDevice11 = NULL;
+                    pDevice11 = nullptr;
             }
         }
            
-        if ( pDevice11 != NULL )
+        if ( pDevice11 != nullptr )
             D3D11_FillTree( hTreeA, pDevice11, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE );
 
-        if ( pDevice11_1 != NULL )
+        if ( pDevice11_1 != nullptr )
             D3D11_FillTree1( hTreeA, pDevice11_1, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE );
 
         if ( pDevice11_2 )
             D3D11_FillTree2( hTreeA, pDevice11_2, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE );
 
         if ( pDevice11_3 )
-            D3D11_FillTree3( hTreeA, pDevice11_3, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE );
+            D3D11_FillTree3( hTreeA, pDevice11_3, pDevice11_4, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE );
 
         // Direct3D 12
 #ifdef EXTRA_DEBUG
         OutputDebugStringA( "Direct3D 12\n" );
 #endif
         ID3D12Device* pDevice12 = nullptr;   
+        ID3D12Device1* pDevice12_1 = nullptr;
 
         if (pAdapter3 != 0 && g_D3D12CreateDevice != 0)
         {
@@ -5219,51 +5433,62 @@ VOID DXGI_FillTree( HWND hwndTV )
             if ( SUCCEEDED(hr) )
             {
 #ifdef EXTRA_DEBUG
+                D3D_FEATURE_LEVEL fl = GetD3D12FeatureLevel(pDevice12);
+                OutputDebugString( FLName( fl ) );
+#endif
+                hr = pDevice12->QueryInterface( IID_PPV_ARGS( &pDevice12_1) );
+                if ( FAILED(hr) )
+                    pDevice12_1 = nullptr;
+
+#ifdef EXTRA_DEBUG
                 OutputDebugString( ": Succeeded\n" );
 #endif
-                D3D12_FillTree( hTreeA, pDevice12, D3D_DRIVER_TYPE_HARDWARE );
+                D3D12_FillTree( hTreeA, pDevice12, pDevice12_1, D3D_DRIVER_TYPE_HARDWARE );
             }
-#ifdef EXTRA_DEBUG
             else
-                OutputDebugString( ": Failed\n" );
+            {
+#ifdef EXTRA_DEBUG
+                char buff[64]={};
+                sprintf_s(buff, ": Failed (%08X)\n", hr);
+                OutputDebugStringA( buff );
 #endif
+                pDevice12 = nullptr;
+            }
         }
     }
 
     // WARP
     DWORD flMaskWARP = FLMASK_9_1 | FLMASK_9_2 | FLMASK_9_3 | FLMASK_10_0 | FLMASK_10_1;
-    ID3D10Device1* pDeviceWARP10 = NULL;
-    if ( g_D3D10CreateDevice1 != NULL )
+    ID3D10Device1* pDeviceWARP10 = nullptr;
+    if ( g_D3D10CreateDevice1 != nullptr )
     {
 #ifdef EXTRA_DEBUG
         OutputDebugString( "WARP10\n" );
 #endif
 
-        hr = g_D3D10CreateDevice1( NULL, D3D10_DRIVER_TYPE_WARP, NULL, 0, D3D10_FEATURE_LEVEL_10_1,
+        hr = g_D3D10CreateDevice1( nullptr, D3D10_DRIVER_TYPE_WARP, nullptr, 0, D3D10_FEATURE_LEVEL_10_1,
                                    D3D10_1_SDK_VERSION, &pDeviceWARP10 );
         if ( FAILED(hr) )
-            pDeviceWARP10 = NULL;
+            pDeviceWARP10 = nullptr;
     }
     
-    ID3D11Device* pDeviceWARP11 = NULL;
-    ID3D11Device1* pDeviceWARP11_1 = NULL;
+    ID3D11Device* pDeviceWARP11 = nullptr;
+    ID3D11Device1* pDeviceWARP11_1 = nullptr;
     ID3D11Device2* pDeviceWARP11_2 = nullptr;
     ID3D11Device3* pDeviceWARP11_3 = nullptr;
-    if ( g_D3D11CreateDevice != NULL )
+    ID3D11Device4* pDeviceWARP11_4 = nullptr;
+    if ( g_D3D11CreateDevice != nullptr )
     {
 #ifdef EXTRA_DEBUG
         OutputDebugString( "WARP11\n" );
 #endif
         D3D_FEATURE_LEVEL fl;
-        static const D3D_FEATURE_LEVEL lvl[] = { D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0,
-                                                 D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0,
-                                                 D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0,
-                                                 D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL_9_2, D3D_FEATURE_LEVEL_9_1 };
-        hr = g_D3D11CreateDevice( nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0, lvl, _countof(lvl),
+        hr = g_D3D11CreateDevice( nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0, g_featureLevels, _countof(g_featureLevels),
                                   D3D11_SDK_VERSION, &pDeviceWARP11, &fl, nullptr );
         if ( FAILED(hr) )
         {
-            hr = g_D3D11CreateDevice( nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0, &lvl[2], _countof(lvl) - 2,
+            // Try without 12.1 or 12.0
+            hr = g_D3D11CreateDevice( nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0, &g_featureLevels[2], _countof(g_featureLevels) - 2,
                                       D3D11_SDK_VERSION, &pDeviceWARP11, &fl, nullptr );
 
             if ( FAILED(hr) )
@@ -5273,7 +5498,7 @@ VOID DXGI_FillTree( HWND hwndTV )
             }
         }
         if ( FAILED(hr) )
-            pDeviceWARP11 = NULL;
+            pDeviceWARP11 = nullptr;
         else
         {
 #ifdef EXTRA_DEBUG
@@ -5293,7 +5518,7 @@ VOID DXGI_FillTree( HWND hwndTV )
 
             hr = pDeviceWARP11->QueryInterface( IID_PPV_ARGS( &pDeviceWARP11_1 ) );
             if ( FAILED(hr) )
-                pDeviceWARP11_1 = NULL;
+                pDeviceWARP11_1 = nullptr;
 
             hr = pDeviceWARP11->QueryInterface( IID_PPV_ARGS( &pDeviceWARP11_2 ) );
             if ( FAILED(hr) )
@@ -5302,10 +5527,16 @@ VOID DXGI_FillTree( HWND hwndTV )
             hr = pDeviceWARP11->QueryInterface( IID_PPV_ARGS( &pDeviceWARP11_3 ) );
             if ( FAILED(hr) )
                 pDeviceWARP11_3 = nullptr;
+
+            hr = pDeviceWARP11->QueryInterface( IID_PPV_ARGS( &pDeviceWARP11_4 ) );
+            if ( FAILED(hr) )
+                pDeviceWARP11_4 = nullptr;
         }
     }
 
     ID3D12Device* pDeviceWARP12 = nullptr;   
+    ID3D12Device1* pDeviceWARP12_1 = nullptr;
+
     if (g_D3D12CreateDevice != 0 && g_DXGIFactory4 != 0)
     {
 #ifdef EXTRA_DEBUG
@@ -5316,79 +5547,103 @@ VOID DXGI_FillTree( HWND hwndTV )
         if ( SUCCEEDED(hr) )
         {
             hr = g_D3D12CreateDevice( warpAdapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS( &pDeviceWARP12 ) );
-            if ( FAILED(hr) )
+            if (SUCCEEDED(hr))
+            {
+#ifdef EXTRA_DEBUG
+                D3D_FEATURE_LEVEL fl = GetD3D12FeatureLevel(pDeviceWARP12);
+                OutputDebugString( FLName( fl ) );
+#endif
+                hr = pDeviceWARP12->QueryInterface(IID_PPV_ARGS(&pDeviceWARP12_1));
+                if (FAILED(hr))
+                    pDeviceWARP12_1 = nullptr;
+            }
+            else
+            {
+#ifdef EXTRA_DEBUG
+                char buff[64]={};
+                sprintf_s(buff, ": Failed (%08X)\n", hr);
+                OutputDebugStringA( buff );
+#endif
                 pDeviceWARP12 = nullptr;
+            }
 
             warpAdapter->Release();
         }
+#ifdef EXTRA_DEBUG
+        else
+        {
+            OutputDebugString( "WARP12 adapter not found!\n" );
+        }
+#endif
     }
 
-    if ( pDeviceWARP10 || pDeviceWARP11 || pDeviceWARP11_1 || pDeviceWARP11_2 || pDeviceWARP11_3 || pDeviceWARP12 )
+    if ( pDeviceWARP10 || pDeviceWARP11 || pDeviceWARP11_1 || pDeviceWARP11_2 || pDeviceWARP11_3 || pDeviceWARP11_4 || pDeviceWARP12 || pDeviceWARP12_1 )
     {
-        HTREEITEM hTreeW = TVAddNode(hTree, "Windows Advanced Rasterization Platform (WARP)", TRUE, IDI_CAPS, NULL, 0, 0 );
+        HTREEITEM hTreeW = TVAddNode(hTree, "Windows Advanced Rasterization Platform (WARP)", TRUE, IDI_CAPS, nullptr, 0, 0 );
 
-        if ( pDeviceWARP10 != NULL )
+        if ( pDeviceWARP10 != nullptr )
             D3D10_FillTree( hTreeW,  pDeviceWARP10, D3D_DRIVER_TYPE_WARP );
 
-        if ( pDeviceWARP10 != NULL )
+        if ( pDeviceWARP10 != nullptr )
             D3D10_FillTree1( hTreeW, pDeviceWARP10, flMaskWARP, D3D_DRIVER_TYPE_WARP );
 
-        if ( pDeviceWARP11 != NULL )
+        if ( pDeviceWARP11 != nullptr )
             D3D11_FillTree( hTreeW, pDeviceWARP11, flMaskWARP, D3D_DRIVER_TYPE_WARP );
 
-        if ( pDeviceWARP11_1 != NULL )
+        if ( pDeviceWARP11_1 != nullptr )
             D3D11_FillTree1( hTreeW, pDeviceWARP11_1, flMaskWARP, D3D_DRIVER_TYPE_WARP );
 
         if ( pDeviceWARP11_2 )
             D3D11_FillTree2( hTreeW, pDeviceWARP11_2, flMaskWARP, D3D_DRIVER_TYPE_WARP );
 
         if ( pDeviceWARP11_3 )
-            D3D11_FillTree3( hTreeW, pDeviceWARP11_3, flMaskWARP, D3D_DRIVER_TYPE_WARP );
+            D3D11_FillTree3( hTreeW, pDeviceWARP11_3, pDeviceWARP11_4, flMaskWARP, D3D_DRIVER_TYPE_WARP );
 
         if ( pDeviceWARP12 )
-            D3D12_FillTree( hTreeW, pDeviceWARP12, D3D_DRIVER_TYPE_WARP );
+            D3D12_FillTree( hTreeW, pDeviceWARP12, pDeviceWARP12_1, D3D_DRIVER_TYPE_WARP );
     }
 
     // REFERENCE
-    ID3D10Device1* pDeviceREF10_1 = NULL;
-    ID3D10Device* pDeviceREF10 = NULL;
-    if ( g_D3D10CreateDevice1 != NULL )
+    ID3D10Device1* pDeviceREF10_1 = nullptr;
+    ID3D10Device* pDeviceREF10 = nullptr;
+    if ( g_D3D10CreateDevice1 != nullptr )
     {
-        hr = g_D3D10CreateDevice1( NULL, D3D10_DRIVER_TYPE_REFERENCE, NULL, 0, D3D10_FEATURE_LEVEL_10_1,
+        hr = g_D3D10CreateDevice1( nullptr, D3D10_DRIVER_TYPE_REFERENCE, nullptr, 0, D3D10_FEATURE_LEVEL_10_1,
                                    D3D10_1_SDK_VERSION, &pDeviceREF10_1 );
         if ( SUCCEEDED(hr) )
         {
             hr = pDeviceREF10_1->QueryInterface( IID_PPV_ARGS( &pDeviceREF10 ) );
             if ( FAILED(hr) )
-                pDeviceREF10 = NULL;
+                pDeviceREF10 = nullptr;
         }
         else
-            pDeviceREF10_1 = NULL;
+            pDeviceREF10_1 = nullptr;
     }
-    else if ( g_D3D10CreateDevice != NULL )
+    else if ( g_D3D10CreateDevice != nullptr )
     {
-        hr = g_D3D10CreateDevice( NULL, D3D10_DRIVER_TYPE_REFERENCE, NULL, 0, D3D10_SDK_VERSION, &pDeviceREF10 );
+        hr = g_D3D10CreateDevice( nullptr, D3D10_DRIVER_TYPE_REFERENCE, nullptr, 0, D3D10_SDK_VERSION, &pDeviceREF10 );
         if ( FAILED(hr) )
-            pDeviceREF10 = NULL;
+            pDeviceREF10 = nullptr;
     }
 
-    ID3D11Device* pDeviceREF11 = NULL;
-    ID3D11Device1* pDeviceREF11_1 = NULL;
+    ID3D11Device* pDeviceREF11 = nullptr;
+    ID3D11Device1* pDeviceREF11_1 = nullptr;
     ID3D11Device2* pDeviceREF11_2 = nullptr;
     ID3D11Device3* pDeviceREF11_3 = nullptr;
+    ID3D11Device4* pDeviceREF11_4 = nullptr;
     DWORD flMaskREF = FLMASK_9_1 | FLMASK_9_2 | FLMASK_9_3 | FLMASK_10_0 | FLMASK_10_1 | FLMASK_11_0;
-    if ( g_D3D11CreateDevice != NULL )
+    if ( g_D3D11CreateDevice != nullptr )
     {
         D3D_FEATURE_LEVEL lvl = D3D_FEATURE_LEVEL_11_1;
-        hr = g_D3D11CreateDevice( NULL, D3D_DRIVER_TYPE_REFERENCE, NULL, 0, &lvl, 1,
-                                  D3D11_SDK_VERSION, &pDeviceREF11, NULL, NULL );
+        hr = g_D3D11CreateDevice( nullptr, D3D_DRIVER_TYPE_REFERENCE, nullptr, 0, &lvl, 1,
+                                  D3D11_SDK_VERSION, &pDeviceREF11, nullptr, nullptr );
 
         if ( SUCCEEDED(hr) )
         {
             flMaskREF |= FLMASK_11_1;
             hr = pDeviceREF11->QueryInterface( IID_PPV_ARGS( &pDeviceREF11_1 ) );
             if ( FAILED(hr) )
-                pDeviceREF11_1 = NULL;
+                pDeviceREF11_1 = nullptr;
 
             hr = pDeviceREF11->QueryInterface( IID_PPV_ARGS( &pDeviceREF11_2 ) );
             if ( FAILED(hr) )
@@ -5397,41 +5652,45 @@ VOID DXGI_FillTree( HWND hwndTV )
             hr = pDeviceREF11->QueryInterface( IID_PPV_ARGS( &pDeviceREF11_3 ) );
             if ( FAILED(hr) )
                 pDeviceREF11_3 = nullptr;
+
+            hr = pDeviceREF11->QueryInterface( IID_PPV_ARGS( &pDeviceREF11_4 ) );
+            if ( FAILED(hr) )
+                pDeviceREF11_4 = nullptr;
         }
         else
         {
-            hr = g_D3D11CreateDevice( NULL, D3D_DRIVER_TYPE_REFERENCE, NULL, 0, NULL, 0,
-                                      D3D11_SDK_VERSION, &pDeviceREF11, NULL, NULL );
+            hr = g_D3D11CreateDevice( nullptr, D3D_DRIVER_TYPE_REFERENCE, nullptr, 0, nullptr, 0,
+                                      D3D11_SDK_VERSION, &pDeviceREF11, nullptr, nullptr );
             if ( SUCCEEDED(hr) )
             {
                 hr = pDeviceREF11->QueryInterface( IID_PPV_ARGS( &pDeviceREF11_1 ) );
                 if ( FAILED(hr) )
-                    pDeviceREF11_1 = NULL;
+                    pDeviceREF11_1 = nullptr;
             }
         }
     }
 
     if ( pDeviceREF10 || pDeviceREF10_1 || pDeviceREF11 || pDeviceREF11_1 || pDeviceREF11_2 || pDeviceREF11_3 )
     {
-        HTREEITEM hTreeR = TVAddNode(hTree, "Reference", TRUE, IDI_CAPS, NULL, 0, 0 );
+        HTREEITEM hTreeR = TVAddNode(hTree, "Reference", TRUE, IDI_CAPS, nullptr, 0, 0 );
 
-        if ( pDeviceREF10 != NULL )
+        if ( pDeviceREF10 != nullptr )
             D3D10_FillTree( hTreeR, pDeviceREF10, D3D_DRIVER_TYPE_REFERENCE );
 
-        if ( pDeviceREF10_1 != NULL )
+        if ( pDeviceREF10_1 != nullptr )
             D3D10_FillTree1( hTreeR, pDeviceREF10_1, FLMASK_10_0 | FLMASK_10_1, D3D_DRIVER_TYPE_REFERENCE );
 
-        if ( pDeviceREF11 != NULL )
+        if ( pDeviceREF11 != nullptr )
             D3D11_FillTree( hTreeR, pDeviceREF11, flMaskREF, D3D_DRIVER_TYPE_REFERENCE );
 
-        if ( pDeviceREF11_1 != NULL )
+        if ( pDeviceREF11_1 != nullptr )
             D3D11_FillTree1( hTreeR, pDeviceREF11_1, flMaskREF, D3D_DRIVER_TYPE_REFERENCE );
 
         if ( pDeviceREF11_2 )
             D3D11_FillTree2( hTreeR, pDeviceREF11_2, flMaskREF, D3D_DRIVER_TYPE_REFERENCE );
 
         if ( pDeviceREF11_3 )
-            D3D11_FillTree3( hTreeR, pDeviceREF11_3, flMaskREF, D3D_DRIVER_TYPE_REFERENCE );
+            D3D11_FillTree3( hTreeR, pDeviceREF11_3, pDeviceREF11_4, flMaskREF, D3D_DRIVER_TYPE_REFERENCE );
     }
 
     TreeView_Expand( hwndTV, hTree, TVE_EXPAND );
@@ -5446,35 +5705,36 @@ VOID DXGI_CleanUp()
     if (g_DXGIFactory)
     {
         g_DXGIFactory->Release();
-        g_DXGIFactory = NULL;
-        g_DXGIFactory1 = NULL;
-        g_DXGIFactory2 = NULL;
+        g_DXGIFactory = nullptr;
+        g_DXGIFactory1 = nullptr;
+        g_DXGIFactory2 = nullptr;
         g_DXGIFactory3 = nullptr;
         g_DXGIFactory4 = nullptr;
+        g_DXGIFactory5 = nullptr;
     }
 
     if (g_dxgi)
     {
         FreeLibrary( g_dxgi );
-        g_dxgi = NULL;
+        g_dxgi = nullptr;
     }
 
     if ( g_d3d10 )
     {
         FreeLibrary( g_d3d10 );
-        g_d3d10 = NULL;
+        g_d3d10 = nullptr;
     }
 
     if ( g_d3d10_1 )
     {
         FreeLibrary( g_d3d10_1 );
-        g_d3d10_1 = NULL;
+        g_d3d10_1 = nullptr;
     }
 
     if ( g_d3d11 )
     {
         FreeLibrary( g_d3d11 );
-        g_d3d11 = NULL;
+        g_d3d11 = nullptr;
     }
 
     if ( g_d3d12 )
