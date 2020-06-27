@@ -1332,7 +1332,13 @@ static HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3,
             uavSlots = XTOSTRING( D3D12_UAV_SLOT_COUNT );
 
             D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
+            shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_6_5;
             HRESULT hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
+            while(hr == E_INVALIDARG && shaderModelOpt.HighestShaderModel > D3D_SHADER_MODEL_6_0)
+            {
+                shaderModelOpt.HighestShaderModel = static_cast<D3D_SHADER_MODEL>(static_cast<int>(shaderModelOpt.HighestShaderModel) - 1);
+                hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));   
+            }
             if (FAILED(hr))
             {
                 shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_5_1;
@@ -1340,6 +1346,26 @@ static HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3,
 
             switch (shaderModelOpt.HighestShaderModel)
             {
+            case D3D_SHADER_MODEL_6_5:
+                shaderModel = "6.5";
+                computeShader = "Yes (CS 6.5)";
+                break;
+            case D3D_SHADER_MODEL_6_4:
+                shaderModel = "6.4";
+                computeShader = "Yes (CS 6.4)";
+                break;
+            case D3D_SHADER_MODEL_6_3:
+                shaderModel = "6.3";
+                computeShader = "Yes (CS 6.3)";
+                break;
+            case D3D_SHADER_MODEL_6_2:
+                shaderModel = "6.2";
+                computeShader = "Yes (CS 6.2)";
+                break;
+            case D3D_SHADER_MODEL_6_1:
+                shaderModel = "6.1";
+                computeShader = "Yes (CS 6.1)";
+                break;
             case D3D_SHADER_MODEL_6_0:
                 shaderModel = "6.0";
                 computeShader = "Yes (CS 6.0)";
@@ -1360,6 +1386,7 @@ static HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3,
             // 12.0 & 12.1 should be T2 or greater
             case D3D12_TILED_RESOURCES_TIER_2:  tiled_rsc = "Yes - Tier 2"; break;
             case D3D12_TILED_RESOURCES_TIER_3:  tiled_rsc = "Yes - Tier 3"; break;
+            case D3D12_TILED_RESOURCES_TIER_4:  tiled_rsc = "Yes - Tier 4"; break;
             default:                            tiled_rsc = "Yes";          break;
             }
 
@@ -1486,27 +1513,11 @@ static HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3,
 
         if (pD3D12)
         {
-            D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
-            HRESULT hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
-            if (FAILED(hr))
-            {
-                shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_5_1;
-            }
-
-            switch (shaderModelOpt.HighestShaderModel)
-            {
-            case D3D_SHADER_MODEL_6_0:
-                shaderModel = "6.0";
-                computeShader = "Yes (CS 6.0)";
-                break;
-            default:
-                shaderModel = "5.1";
-                computeShader = "Yes (CS 5.1)";
-                break;
-            }
+            shaderModel = "5.1";
+            computeShader = "Yes (CS 5.1)";
 
             D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {0};
-            hr = pD3D12->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS) );
+            HRESULT hr = pD3D12->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS) );
             if ( FAILED(hr) ) 
                 memset( &d3d12opts, 0, sizeof(d3d12opts) );
 
@@ -1516,6 +1527,7 @@ static HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3,
             case D3D12_TILED_RESOURCES_TIER_1:              tiled_rsc = "Optional (Yes - Tier 1)";  break;
             case D3D12_TILED_RESOURCES_TIER_2:              tiled_rsc = "Optional (Yes - Tier 2)";  break;
             case D3D12_TILED_RESOURCES_TIER_3:              tiled_rsc = "Optional (Yes - Tier 3)";  break;
+            case D3D12_TILED_RESOURCES_TIER_4:              tiled_rsc = "Optional (Yes - Tier 4)";  break;
             default:                                        tiled_rsc = "Optional (Yes)";           break;
             }
 
@@ -1601,27 +1613,11 @@ static HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3,
 
         if (pD3D12)
         {
-            D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
-            HRESULT hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
-            if (FAILED(hr))
-            {
-                shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_5_1;
-            }
-
-            switch (shaderModelOpt.HighestShaderModel)
-            {
-            case D3D_SHADER_MODEL_6_0:
-                shaderModel = "6.0";
-                computeShader = "Yes (CS 6.0)";
-                break;
-            default:
-                shaderModel = "5.1";
-                computeShader = "Yes (CS 5.1)";
-                break;
-            }
+            shaderModel = "5.1";
+            computeShader = "Yes (CS 5.1)";
 
             D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {0};
-            hr = pD3D12->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS) );
+            HRESULT hr = pD3D12->CheckFeatureSupport( D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS) );
             if ( FAILED(hr) ) 
                 memset( &d3d12opts, 0, sizeof(d3d12opts) );
 
@@ -1631,6 +1627,7 @@ static HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3,
             case D3D12_TILED_RESOURCES_TIER_1:              tiled_rsc = "Optional (Yes - Tier 1)";  break;
             case D3D12_TILED_RESOURCES_TIER_2:              tiled_rsc = "Optional (Yes - Tier 2)";  break;
             case D3D12_TILED_RESOURCES_TIER_3:              tiled_rsc = "Optional (Yes - Tier 3)";  break;
+            case D3D12_TILED_RESOURCES_TIER_4:              tiled_rsc = "Optional (Yes - Tier 4)";  break;
             default:                                        tiled_rsc = "Optional (Yes)";           break;
             }
 
@@ -4376,13 +4373,20 @@ static HRESULT D3D12Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
     }
 
     D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
+    shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_6_5;
     HRESULT hr = pDevice->CheckFeatureSupport( D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt) );
+    while(hr == E_INVALIDARG && shaderModelOpt.HighestShaderModel > D3D_SHADER_MODEL_6_0)
+    {
+        shaderModelOpt.HighestShaderModel = static_cast<D3D_SHADER_MODEL>(static_cast<int>(shaderModelOpt.HighestShaderModel) - 1);
+        hr = pDevice->CheckFeatureSupport( D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt) );
+    }
     if (FAILED(hr))
     {
         shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_5_1;
     }
 
     D3D12_FEATURE_DATA_ROOT_SIGNATURE rootSigOpt = {};
+    rootSigOpt.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
     hr = pDevice->CheckFeatureSupport( D3D12_FEATURE_ROOT_SIGNATURE, &rootSigOpt, sizeof(rootSigOpt) );
     if (FAILED(hr))
     {
@@ -4412,6 +4416,11 @@ static HRESULT D3D12Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
     const char* shaderModel = "Unknown";
     switch (shaderModelOpt.HighestShaderModel)
     {
+    case D3D_SHADER_MODEL_6_5: shaderModel = "6.5"; break;
+    case D3D_SHADER_MODEL_6_4: shaderModel = "6.4"; break;
+    case D3D_SHADER_MODEL_6_3: shaderModel = "6.3"; break;
+    case D3D_SHADER_MODEL_6_2: shaderModel = "6.2"; break;
+    case D3D_SHADER_MODEL_6_1: shaderModel = "6.1"; break;
     case D3D_SHADER_MODEL_6_0: shaderModel = "6.0"; break;
     case D3D_SHADER_MODEL_5_1: shaderModel = "5.1"; break;
     }
