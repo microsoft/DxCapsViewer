@@ -7,9 +7,9 @@
 //-----------------------------------------------------------------------------
 #include "dxview.h"
 #include <D3Dcommon.h>
-#include <dxgi1_3.h>
+#include <dxgi1_4.h>
 #include <d3d10_1.h>
-#include <d3d11_2.h>
+#include <d3d11_3.h>
 
 // Define for some debug output
 //#define EXTRA_DEBUG
@@ -34,6 +34,7 @@ const char* D3D10_NOTE1 = "Most Direct3D 10.1 features are required. Tool only s
 const char* D3D11_NOTE = "Most Direct3D 11 features are required. Tool only shows optional features.";
 const char* D3D11_NOTE1 = "Most Direct3D 11.1 features are required. Tool only shows optional features.";
 const char* D3D11_NOTE2 = "Most Direct3D 11.2 features are required. Tool only shows optional features.";
+const char* D3D11_NOTE3 = "Most Direct3D 11.3 features are required. Tool only shows optional features.";
 const char* _10L9_NOTE = "Most 10level9 features are required. Tool only shows optional features.";
 const char* SEE_D3D10 = "See Direct3D 10 node for device details.";
 const char* SEE_D3D10_1 = "See Direct3D 10.1 node for device details.";
@@ -419,7 +420,25 @@ ENUMNAME( DXGI_FORMAT_BC6H_SF16)
 ENUMNAME( DXGI_FORMAT_BC7_TYPELESS)
 ENUMNAME( DXGI_FORMAT_BC7_UNORM)
 ENUMNAME( DXGI_FORMAT_BC7_UNORM_SRGB)
-ENUMNAME( DXGI_FORMAT_B4G4R4A4_UNORM)
+ENUMNAME( DXGI_FORMAT_AYUV )
+ENUMNAME( DXGI_FORMAT_Y410 )
+ENUMNAME( DXGI_FORMAT_Y416 )
+ENUMNAME( DXGI_FORMAT_NV12 )
+ENUMNAME( DXGI_FORMAT_P010 )
+ENUMNAME( DXGI_FORMAT_P016 )
+ENUMNAME( DXGI_FORMAT_420_OPAQUE )
+ENUMNAME( DXGI_FORMAT_YUY2 )
+ENUMNAME( DXGI_FORMAT_Y210 )
+ENUMNAME( DXGI_FORMAT_Y216 )
+ENUMNAME( DXGI_FORMAT_NV11 )
+ENUMNAME( DXGI_FORMAT_AI44 )
+ENUMNAME( DXGI_FORMAT_IA44 )
+ENUMNAME( DXGI_FORMAT_P8 )
+ENUMNAME( DXGI_FORMAT_A8P8 )
+ENUMNAME( DXGI_FORMAT_B4G4R4A4_UNORM )
+ENUMNAME( DXGI_FORMAT_P208 )
+ENUMNAME( DXGI_FORMAT_V208 )
+ENUMNAME( DXGI_FORMAT_V408 )
     default:
         return TEXT("DXGI_FORMAT_UNKNOWN");
     }
@@ -883,6 +902,8 @@ HRESULT DXGIOutputModes( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo
 #define XTOSTRING(a) #a TOSTRING(a)
 #define TOSTRING(a) #a
 
+#define XTOSTRING2(a) #a TOSTRING2(a)
+#define TOSTRING2(a) "( " #a " )"
 
 
 //-----------------------------------------------------------------------------
@@ -979,7 +1000,7 @@ void CheckD3D11Ops( ID3D11Device* pDevice, bool &logicOps, bool &cbPartial, bool
 
 
 //-----------------------------------------------------------------------------
-void CheckD3D11Ops1( ID3D11Device* pDevice, D3D11_TILED_RESOURCES_TIER &tiled, bool &minmaxfilter, bool& mapdefault )
+void CheckD3D11Ops1( ID3D11Device* pDevice, D3D11_TILED_RESOURCES_TIER &tiled, bool &minmaxfilter, bool& mapdefaultbuff )
 {
     D3D11_FEATURE_DATA_D3D11_OPTIONS1 d3d11opts1;
     HRESULT hr = pDevice->CheckFeatureSupport( D3D11_FEATURE_D3D11_OPTIONS1, &d3d11opts1, sizeof(d3d11opts1) );
@@ -988,7 +1009,23 @@ void CheckD3D11Ops1( ID3D11Device* pDevice, D3D11_TILED_RESOURCES_TIER &tiled, b
 
     tiled = d3d11opts1.TiledResourcesTier;
     minmaxfilter = ( d3d11opts1.MinMaxFiltering ) ? true : false;
-    mapdefault = ( d3d11opts1.MapOnDefaultBuffers ) ? true : false;
+    mapdefaultbuff = ( d3d11opts1.MapOnDefaultBuffers ) ? true : false;
+}
+
+
+//-----------------------------------------------------------------------------
+void CheckD3D11Ops2( ID3D11Device* pDevice, D3D11_TILED_RESOURCES_TIER &tiled, D3D11_CONSERVATIVE_RASTERIZATION_TIER& crast, 
+                     bool& rovs, bool& pssref )
+{
+    D3D11_FEATURE_DATA_D3D11_OPTIONS2 d3d11opts2;
+    HRESULT hr = pDevice->CheckFeatureSupport( D3D11_FEATURE_D3D11_OPTIONS2, &d3d11opts2, sizeof(d3d11opts2) );
+    if ( FAILED(hr) )
+        memset( &d3d11opts2, 0, sizeof(d3d11opts2) );
+
+    crast = d3d11opts2.ConservativeRasterizationTier;
+    tiled = d3d11opts2.TiledResourcesTier;
+    rovs = ( d3d11opts2.ROVsSupported ) ? true : false;
+    pssref = (d3d11opts2.PSSpecifiedStencilRefSupported ) ? true : false;
 }
 
 
@@ -1051,6 +1088,7 @@ void CheckD3D9Ops1( ID3D11Device* pDevice, bool& nonpow2, bool &shadows, bool& i
 #define D3D_FL_LPARAM3_D3D11( d3dType ) ( ( (d3dType & 0xff) << 8 ) | 2 )
 #define D3D_FL_LPARAM3_D3D11_1( d3dType ) ( ( (d3dType & 0xff) << 8 ) | 3 )
 #define D3D_FL_LPARAM3_D3D11_2( d3dType ) ( ( (d3dType & 0xff) << 8 ) | 4 )
+#define D3D_FL_LPARAM3_D3D11_3( d3dType ) ( ( (d3dType & 0xff) << 8 ) | 5 )
 HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
 {
     D3D_FEATURE_LEVEL fl = (D3D_FEATURE_LEVEL)lParam1;
@@ -1063,10 +1101,15 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
     ID3D11Device* pD3D11 = NULL;
     ID3D11Device1* pD3D11_1 = NULL;
     ID3D11Device2* pD3D11_2 = nullptr;
+    ID3D11Device3* pD3D11_3 = nullptr;
 
     auto d3dVer = static_cast<unsigned int>( lParam3 & 0xff );
     auto d3dType = static_cast<D3D_DRIVER_TYPE>( ( lParam3 & 0xff00 ) >> 8 );
     
+    if ( d3dVer == 5 )
+    {
+        pD3D11_3 = reinterpret_cast<ID3D11Device3*>(lParam2);
+    }
     if ( d3dVer == 4 )
     {
         pD3D11_2 = reinterpret_cast<ID3D11Device2*>(lParam2);
@@ -1102,19 +1145,22 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
     const char *mrt = NULL;
     const char *extFormats = NULL;
     const char *x2_10BitFormat = NULL;
-    const char *logic_ops = c_szNA;
+    const char *logic_ops = c_szNo;
     const char *cb_partial = c_szNA;
     const char *cb_offsetting = c_szNA;
-    const char *uavSlots = c_szNA;
-    const char *uavEveryStage = c_szNA;
-    const char *uavOnlyRender = c_szNA;
+    const char *uavSlots = nullptr;
+    const char *uavEveryStage = nullptr;
+    const char *uavOnlyRender = nullptr;
     const char *nonpow2 = NULL;
     const char *bpp16 = c_szNo;
     const char *shadows = nullptr;
     const char *cubeRT = nullptr;
-    const char *tiled_rsc = c_szNA;
-    const char *minmaxfilter = c_szNA;
-    const char *mapdefault = c_szNA;
+    const char *tiled_rsc = nullptr;
+    const char *minmaxfilter = nullptr;
+    const char *mapdefaultbuff = nullptr;
+    const char *consrv_rast = nullptr;
+    const char *rast_ordered_views = nullptr;
+    const char *ps_stencil_ref = nullptr;
     const char *instancing = nullptr;
 
     BOOL _10level9 = FALSE;
@@ -1143,11 +1189,44 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
         bpp16 = c_szYes;
         instancing = c_szYes;
 
-        if (pD3D11_2)
+        if (pD3D11_3)
         {
             D3D11_TILED_RESOURCES_TIER tiled = D3D11_TILED_RESOURCES_NOT_SUPPORTED;
-            bool bMinMaxFilter, bMapDefault; 
-            CheckD3D11Ops1( pD3D11_2, tiled, bMinMaxFilter, bMapDefault );
+            bool bMinMaxFilter, bMapDefaultBuff; 
+            CheckD3D11Ops1( pD3D11_3, tiled, bMinMaxFilter, bMapDefaultBuff );
+
+            D3D11_CONSERVATIVE_RASTERIZATION_TIER crast = D3D11_CONSERVATIVE_RASTERIZATION_NOT_SUPPORTED;
+            bool rovs, pssref;
+            CheckD3D11Ops2( pD3D11_3, tiled, crast, rovs, pssref );
+
+            switch (tiled)
+            {
+            case D3D11_TILED_RESOURCES_NOT_SUPPORTED:   tiled_rsc = "Optional (No)";            break;
+            case D3D11_TILED_RESOURCES_TIER_1:          tiled_rsc = "Optional (Yes - Tier 1)";  break;
+            case D3D11_TILED_RESOURCES_TIER_2:          tiled_rsc = "Optional (Yes - Tier 2)";  break;
+            case D3D11_TILED_RESOURCES_TIER_3:          tiled_rsc = "Optional (Yes - Tier 3)";  break;
+            default:                                    tiled_rsc = "Optional (Yes)";           break;
+            }
+
+            switch(crast)
+            {
+            case D3D11_CONSERVATIVE_RASTERIZATION_NOT_SUPPORTED:    consrv_rast = "Optional (No)";            break;
+            case D3D11_CONSERVATIVE_RASTERIZATION_TIER_1:           consrv_rast = "Optional (Yes - Tier 1)";  break;
+            case D3D11_CONSERVATIVE_RASTERIZATION_TIER_2:           consrv_rast = "Optional (Yes - Tier 2)";  break;
+            case D3D11_CONSERVATIVE_RASTERIZATION_TIER_3:           consrv_rast = "Optional (Yes - Tier 3)";  break;
+            default:                                                consrv_rast = "Optional (Yes)";           break;
+            }
+
+            rast_ordered_views = (rovs) ? "Optional (Yes)" : "Optional (No)";
+            ps_stencil_ref = (pssref) ? "Optional (Yes)" : "Optional (No)";
+            minmaxfilter = bMinMaxFilter ? "Optional (Yes)" : "Optional (No)";
+            mapdefaultbuff = bMapDefaultBuff ? "Optional (Yes)" : "Optional (No)";
+        }
+        else if (pD3D11_2)
+        {
+            D3D11_TILED_RESOURCES_TIER tiled = D3D11_TILED_RESOURCES_NOT_SUPPORTED;
+            bool bMinMaxFilter, bMapDefaultBuff; 
+            CheckD3D11Ops1( pD3D11_2, tiled, bMinMaxFilter, bMapDefaultBuff );
 
             switch (tiled)
             {
@@ -1158,7 +1237,7 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
             }
 
             minmaxfilter = bMinMaxFilter ? "Optional (Yes)" : "Optional (No)";
-            mapdefault = bMapDefault ? "Optional (Yes)" : "Optional (No)";
+            mapdefaultbuff = bMapDefaultBuff ? "Optional (Yes)" : "Optional (No)";
         }
         break;
 
@@ -1176,11 +1255,37 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
         x2_10BitFormat = c_szYes;
         instancing = c_szYes;
 
-        if (pD3D11_2)
+        if (pD3D11_3)
         {
             D3D11_TILED_RESOURCES_TIER tiled = D3D11_TILED_RESOURCES_NOT_SUPPORTED;
-            bool bMinMaxFilter, bMapDefault; 
-            CheckD3D11Ops1( pD3D11_2, tiled, bMinMaxFilter, bMapDefault );
+            bool bMinMaxFilter, bMapDefaultBuff; 
+            CheckD3D11Ops1( pD3D11_3, tiled, bMinMaxFilter, bMapDefaultBuff );
+
+            D3D11_FEATURE_DATA_D3D11_OPTIONS2 d3d11opts2;
+            HRESULT hr = pD3D11_3->CheckFeatureSupport( D3D11_FEATURE_D3D11_OPTIONS2, &d3d11opts2, sizeof(d3d11opts2) );
+            if ( SUCCEEDED(hr) )
+            {
+                // D3D11_FEATURE_DATA_D3D11_OPTIONS1 caps this at Tier 2
+                tiled = d3d11opts2.TiledResourcesTier;
+            }
+
+            switch (tiled)
+            {
+            case D3D11_TILED_RESOURCES_NOT_SUPPORTED:   tiled_rsc = "Optional (No)";            break;
+            case D3D11_TILED_RESOURCES_TIER_1:          tiled_rsc = "Optional (Yes - Tier 1)";  break;
+            case D3D11_TILED_RESOURCES_TIER_2:          tiled_rsc = "Optional (Yes - Tier 2)";  break;
+            case D3D11_TILED_RESOURCES_TIER_3:          tiled_rsc = "Optional (Yes - Tier 3)";  break;
+            default:                                    tiled_rsc = "Optional (Yes)";           break;
+            }
+
+            consrv_rast = rast_ordered_views = ps_stencil_ref = minmaxfilter = c_szNo;
+            mapdefaultbuff = bMapDefaultBuff ? "Optional (Yes)" : "Optional (No)";
+        }
+        else if (pD3D11_2)
+        {
+            D3D11_TILED_RESOURCES_TIER tiled = D3D11_TILED_RESOURCES_NOT_SUPPORTED;
+            bool bMinMaxFilter, bMapDefaultBuff; 
+            CheckD3D11Ops1( pD3D11_2, tiled, bMinMaxFilter, bMapDefaultBuff );
 
             switch (tiled)
             {
@@ -1190,12 +1295,13 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
             default:                                    tiled_rsc = "Optional (Yes)";           break;
             }
 
-            mapdefault = bMapDefault ? "Optional (Yes)" : "Optional (No)";
+            minmaxfilter = c_szNo;
+            mapdefaultbuff = bMapDefaultBuff ? "Optional (Yes)" : "Optional (No)";
         }
         
-        if (pD3D11_1 || pD3D11_2)
+        if (pD3D11_1 || pD3D11_2 || pD3D11_3)
         {
-            ID3D11Device* pD3D = (pD3D11_2) ? pD3D11_2 : pD3D11_1;
+            ID3D11Device* pD3D = (pD3D11_3) ? pD3D11_3 : ( (pD3D11_2) ? pD3D11_2 : pD3D11_1 );
 
             bool bLogicOps, bCBpartial, bCBoffsetting;
             CheckD3D11Ops( pD3D, bLogicOps, bCBpartial, bCBoffsetting );
@@ -1218,9 +1324,19 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
         shaderModel = "4.x";
         instancing = c_szYes;
 
-        if (pD3D11_1 || pD3D11_2)
+        if (pD3D11_3)
         {
-            ID3D11Device* pD3D = (pD3D11_2) ? pD3D11_2 : pD3D11_1;
+            consrv_rast = rast_ordered_views = ps_stencil_ref = c_szNo;
+        }
+
+        if (pD3D11_2 || pD3D11_3)
+        {
+            tiled_rsc = minmaxfilter = mapdefaultbuff = c_szNo;
+        }
+
+        if (pD3D11_1 || pD3D11_2 || pD3D11_3)
+        {
+            ID3D11Device* pD3D = (pD3D11_3) ? pD3D11_3 : ( (pD3D11_2) ? pD3D11_2 : pD3D11_1 );
 
             D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS d3d10xhw;
             HRESULT hr = pD3D->CheckFeatureSupport( D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &d3d10xhw, sizeof(d3d10xhw) );
@@ -1298,9 +1414,19 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
         shaderModel = "4.0";
         instancing = c_szYes;
 
-        if (pD3D11_1 || pD3D11_2)
+        if (pD3D11_3)
         {
-            ID3D11Device* pD3D = (pD3D11_2) ? pD3D11_2 : pD3D11_1;
+            consrv_rast = rast_ordered_views = ps_stencil_ref = c_szNo;
+        }
+
+        if (pD3D11_2 || pD3D11_3)
+        {
+            tiled_rsc = minmaxfilter = mapdefaultbuff = c_szNo;
+        }
+
+        if (pD3D11_1 || pD3D11_2 || pD3D11_3)
+        {
+            ID3D11Device* pD3D = (pD3D11_3) ? pD3D11_3 : ( (pD3D11_2) ? pD3D11_2 : pD3D11_1 );
 
             D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS d3d10xhw;
             HRESULT hr = pD3D->CheckFeatureSupport( D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &d3d10xhw, sizeof(d3d10xhw) );
@@ -1378,29 +1504,31 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
         _10level9 = TRUE;
         shaderModel = "2.0 (4_0_level_9_3) [vs_2_a/ps_2_b]";
         computeShader = c_szNA;
-        maxTexDim = maxCubeDim = "4096";
-        maxVolDim = "256";
-        maxTexRepeat = "8192";
-        maxAnisotropy = "16";
-        maxPrimCount = "1048575";
-        maxInputSlots = "16";
-        mrt = "4";
+        maxTexDim = XTOSTRING2( D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION );
+        maxCubeDim = XTOSTRING2( D3D_FL9_3_REQ_TEXTURECUBE_DIMENSION );
+        maxVolDim = XTOSTRING2( D3D_FL9_1_REQ_TEXTURE3D_U_V_OR_W_DIMENSION );
+        maxTexRepeat = XTOSTRING2( D3D_FL9_3_MAX_TEXTURE_REPEAT );
+        maxAnisotropy = XTOSTRING( D3D11_REQ_MAXANISOTROPY );
+        maxPrimCount = XTOSTRING2( D3D_FL9_2_IA_PRIMITIVE_MAX_COUNT );
+        maxInputSlots = XTOSTRING( D3D10_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT );
+        mrt = XTOSTRING2( D3D_FL9_3_SIMULTANEOUS_RENDER_TARGET_COUNT );
         extFormats = c_szYes;
-        x2_10BitFormat = c_szNA;
         instancing = c_szYes;
 
-        if (pD3D11_2)
+        if (pD3D11_2 || pD3D11_3)
         {
+            ID3D11Device* pD3D = (pD3D11_3) ? pD3D11_3 : pD3D11_2;
+
             cb_partial = c_szYes;
             cb_offsetting = c_szYes;
 
             BOOL ext, x2, bpp565;
-            CheckExtendedFormats( pD3D11_2, ext, x2, bpp565 );
+            CheckExtendedFormats( pD3D, ext, x2, bpp565 );
 
             bpp16 = (bpp565) ? "Optional (Yes)" : "Optional (No)";
 
             bool bNonPow2, bShadows, bInstancing, bCubeRT;
-            CheckD3D9Ops1( pD3D11_2, bNonPow2, bShadows, bInstancing, bCubeRT );
+            CheckD3D9Ops1( pD3D, bNonPow2, bShadows, bInstancing, bCubeRT );
             nonpow2 = bNonPow2 ? "Optional (Full)" : "Conditional";
             shadows = bShadows ? "Optional (Yes)" : "Optional (No)";
             cubeRT = bCubeRT ? "Optional (Yes)" : "Optional (No)";
@@ -1426,30 +1554,31 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
         _10level9 = TRUE;
         shaderModel = "2.0 (4_0_level_9_1)";
         computeShader = c_szNA;
-        maxTexDim = "2048";
-        maxCubeDim = "512";
-        maxVolDim = "256";
-        maxTexRepeat = "2048";
-        maxAnisotropy = "16";
-        maxPrimCount = "1048575";
-        maxInputSlots = "16";
-        mrt = "1";
+        maxTexDim = XTOSTRING2( D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION );
+        maxCubeDim = XTOSTRING2( D3D_FL9_1_REQ_TEXTURECUBE_DIMENSION );
+        maxVolDim = XTOSTRING2( D3D_FL9_1_REQ_TEXTURE3D_U_V_OR_W_DIMENSION );
+        maxTexRepeat = XTOSTRING2( D3D_FL9_2_MAX_TEXTURE_REPEAT );
+        maxAnisotropy = XTOSTRING( D3D11_REQ_MAXANISOTROPY );
+        maxPrimCount = XTOSTRING2( D3D_FL9_2_IA_PRIMITIVE_MAX_COUNT );
+        maxInputSlots = XTOSTRING( D3D10_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT );
+        mrt = XTOSTRING2( D3D_FL9_1_SIMULTANEOUS_RENDER_TARGET_COUNT );
         extFormats = c_szYes;
-        x2_10BitFormat = c_szNA;
         instancing = c_szNo;
 
-        if (pD3D11_2)
+        if (pD3D11_2 || pD3D11_3)
         {
+            ID3D11Device* pD3D = (pD3D11_3) ? pD3D11_3 : pD3D11_2;
+
             cb_partial = c_szYes;
             cb_offsetting = c_szYes;
 
             BOOL ext, x2, bpp565;
-            CheckExtendedFormats( pD3D11_2, ext, x2, bpp565 );
+            CheckExtendedFormats( pD3D, ext, x2, bpp565 );
 
             bpp16 = (bpp565) ? "Optional (Yes)" : "Optional (No)";
 
             bool bNonPow2, bShadows, bInstancing, bCubeRT;
-            CheckD3D9Ops1( pD3D11_2, bNonPow2, bShadows, bInstancing, bCubeRT );
+            CheckD3D9Ops1( pD3D, bNonPow2, bShadows, bInstancing, bCubeRT );
             nonpow2 = bNonPow2 ? "Optional (Full)" : "Conditional";
             shadows = bShadows ? "Optional (Yes)" : "Optional (No)";
             instancing = bInstancing ? "Optional (Simple)" : "Optional (No)";
@@ -1476,30 +1605,31 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
         _10level9 = TRUE;
         shaderModel = "2.0 (4_0_level_9_1)";
         computeShader = c_szNA;
-        maxTexDim = "2048";
-        maxCubeDim = "512";
-        maxVolDim = "256";
-        maxTexRepeat = "128";
-        maxAnisotropy = "2";
-        maxPrimCount = "65535";
-        maxInputSlots = "16";
-        mrt = "1";
+        maxTexDim = XTOSTRING2( D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION );
+        maxCubeDim = XTOSTRING2( D3D_FL9_1_REQ_TEXTURECUBE_DIMENSION );
+        maxVolDim = XTOSTRING2( D3D_FL9_1_REQ_TEXTURE3D_U_V_OR_W_DIMENSION );
+        maxTexRepeat = XTOSTRING2( D3D_FL9_1_MAX_TEXTURE_REPEAT );
+        maxAnisotropy = XTOSTRING2( D3D_FL9_1_DEFAULT_MAX_ANISOTROPY );
+        maxPrimCount = XTOSTRING2( D3D_FL9_1_IA_PRIMITIVE_MAX_COUNT );
+        maxInputSlots = XTOSTRING( D3D10_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT );
+        mrt = XTOSTRING2( D3D_FL9_1_SIMULTANEOUS_RENDER_TARGET_COUNT );
         extFormats = c_szYes;
-        x2_10BitFormat = c_szNA;
         instancing = c_szNo;
 
-        if (pD3D11_2)
+        if (pD3D11_2 || pD3D11_3)
         {
+            ID3D11Device* pD3D = (pD3D11_3) ? pD3D11_3 : pD3D11_2;
+
             cb_partial = c_szYes;
             cb_offsetting = c_szYes;
 
             BOOL ext, x2, bpp565;
-            CheckExtendedFormats( pD3D11_2, ext, x2, bpp565 );
+            CheckExtendedFormats( pD3D, ext, x2, bpp565 );
 
             bpp16 = (bpp565) ? "Optional (Yes)" : "Optional (No)";
 
             bool bNonPow2, bShadows, bInstancing, bCubeRT;
-            CheckD3D9Ops1( pD3D11_2, bNonPow2, bShadows, bInstancing, bCubeRT );
+            CheckD3D9Ops1( pD3D, bNonPow2, bShadows, bInstancing, bCubeRT );
             nonpow2 = bNonPow2 ? "Optional (Full)" : "Conditional";
             shadows = bShadows ? "Optional (Yes)" : "Optional (No)";
             instancing = bInstancing ? "Optional (Simple)" : "Optional (No)";
@@ -1528,7 +1658,7 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
 
     if ( d3dType == D3D_DRIVER_TYPE_WARP )
     {
-        maxTexDim = ( pD3D11_2 || pD3D11_1 ) ? "16777216" : "65536";
+        maxTexDim = ( pD3D11_3 || pD3D11_2 || pD3D11_1 ) ? "16777216" : "65536";
     }
 
     if ( pPrintInfo == NULL )
@@ -1537,7 +1667,7 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
         LVYESNO( "Geometry Shader", (fl >= D3D_FEATURE_LEVEL_10_0) )
         LVYESNO( "Stream Out", (fl >= D3D_FEATURE_LEVEL_10_0) )
 
-        if ( pD3D11_2 || pD3D11_1 || pD3D11 )
+        if ( pD3D11_3 || pD3D11_2 || pD3D11_1 || pD3D11 )
         {
             if ( g_dwViewState == IDM_VIEWALL || computeShader != c_szNo )
             {
@@ -1556,69 +1686,120 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
 
         LVYESNO( "BC4/BC5 Compression", (fl >= D3D_FEATURE_LEVEL_10_0) )
 
-        if ( pD3D11_2 || pD3D11_1 || pD3D11 )
+        if ( pD3D11_3 || pD3D11_2 || pD3D11_1 || pD3D11 )
         {
             LVYESNO( "BC6H/BC7 Compression", (fl >= D3D_FEATURE_LEVEL_11_0) )
         }
 
         LVYESNO( "Alpha-to-coverage", (fl >= D3D_FEATURE_LEVEL_10_0) )
 
+        if ( pD3D11_1 || pD3D11_2 || pD3D11_3 )
+        {
+            LVLINE( "Logic Ops (Output Merger)", logic_ops );
+            LVLINE( "Constant Buffer Partial Updates", cb_partial );
+            LVLINE( "Constant Buffer Offsetting", cb_offsetting );
+
+            if (uavEveryStage)
+            {
+                LVLINE( "UAVs at Every Stage", uavEveryStage )
+            }
+
+            if (uavOnlyRender)
+            {
+                LVLINE( "UAV-only rendering", uavOnlyRender );
+            }
+        }
+
+        if ( pD3D11_2 || pD3D11_3 )
+        {
+            if (tiled_rsc)
+            {
+                LVLINE( "Tiled Resources", tiled_rsc );
+            }
+
+            if (minmaxfilter)
+            {
+                LVLINE( "Min/Max Filtering", minmaxfilter );
+            }
+
+            if (mapdefaultbuff)
+            {
+                LVLINE( "Map DEFAULT Buffers", mapdefaultbuff );
+            }
+        }
+
+        if ( pD3D11_3 )
+        {
+            if (consrv_rast)
+            {
+                LVLINE( "Conservative Rasterization", consrv_rast );
+            }
+
+            if (ps_stencil_ref)
+            {
+                LVLINE( "PS-Specified Stencil Ref ", ps_stencil_ref );
+            }
+
+            if (rast_ordered_views)
+            {
+                LVLINE( "Rasterizer Ordered Views", rast_ordered_views );
+            }
+        }
+
         if ( g_DXGIFactory1 )
         {
             LVLINE( "Extended Formats (BGRA, etc.)", extFormats )
 
-            if ( g_dwViewState == IDM_VIEWALL || x2_10BitFormat != c_szNo )
+            if ( x2_10BitFormat && (g_dwViewState == IDM_VIEWALL || x2_10BitFormat != c_szNo))
             {
                 LVLINE( "10-bit XR High Color Format", x2_10BitFormat )
             }
         }
 
-        if ( pD3D11_2 )
+        if ( pD3D11_1 || pD3D11_2 || pD3D11_3 )
         {
-            LVLINE( "Tiled Resources", tiled_rsc );
-            LVLINE( "Min/Max Filtering", minmaxfilter );
-            LVLINE( "Map DEFAULT Resources", mapdefault );
+            LVLINE( "16-bit Formats (565/5551/4444)", bpp16 );
         }
 
-        if ( pD3D11_1 || pD3D11_2 )
+        if ( nonpow2 )
         {
-            LVLINE( "Logic Ops (Output Merger)", logic_ops );
-            LVLINE( "Constant Buffer Partial Updates", cb_partial );
-            LVLINE( "Constant Buffer Offsetting", cb_offsetting );
-            LVLINE( "UAV Slots", uavSlots )
-            LVLINE( "UAVs at Every Stage", uavEveryStage )
-            LVLINE( "UAV-only rendering", uavOnlyRender );
-            LVLINE( "16-bit Formats (565/5551/4444)", bpp16 );
             LVLINE( "Non-Power-of-2 Textures", nonpow2 );
         }
 
-        if ( _10level9 || pD3D11 || pD3D11_1 || pD3D11_2 )
-        {
-            LVLINE( "Max Texture Dimension", maxTexDim )
-            LVLINE( "Max Cubemap Dimension", maxCubeDim )
-        }
+        LVLINE( "Max Texture Dimension", maxTexDim )
+        LVLINE( "Max Cubemap Dimension", maxCubeDim )
 
-        if ( _10level9 )
+        if ( maxVolDim )
         {
             LVLINE( "Max Volume Extent", maxVolDim )
         }
 
-        if ( _10level9 || pD3D11 || pD3D11_1 || pD3D11_2 )
+        if ( maxTexRepeat )
         {
             LVLINE( "Max Texture Repeat", maxTexRepeat )
         }
 
-        if ( _10level9 || pD3D10_1 || pD3D11 || pD3D11_1 || pD3D11_2 )
+        LVLINE( "Max Input Slots", maxInputSlots )
+
+        if ( uavSlots )
         {
-            LVLINE( "Max Input Slots", maxInputSlots )
+            LVLINE( "UAV Slots", uavSlots )
+        }
+
+        if (maxAnisotropy)
+        {
+            LVLINE( "Max Anisotropy", maxAnisotropy )
+        }
+
+        LVLINE( "Max Primitive Count", maxPrimCount )
+
+        if (mrt)
+        {
+            LVLINE( "Simultaneous Render Targets", mrt )
         }
 
         if ( _10level9 )
         {
-            LVLINE( "Max Anisotropy", maxAnisotropy )
-            LVLINE( "Max Primitive Count", maxPrimCount )
-            LVLINE( "Simultaneous Render Targets", mrt )
-
             LVYESNO( "Occlusion Queries", (fl >= D3D_FEATURE_LEVEL_9_2) )
             LVYESNO( "Separate Alpha Blend", (fl >= D3D_FEATURE_LEVEL_9_2) )
             LVYESNO( "Mirror Once", (fl >= D3D_FEATURE_LEVEL_9_2) )
@@ -1627,12 +1808,12 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
 
             LVLINE( "Instancing", instancing )
 
-            if ( pD3D11_1 || pD3D11_2 )
+            if ( pD3D11_1 || pD3D11_2 || pD3D11_3 )
             {
                 LVLINE( "Shadow Support", shadows )
             }
 
-            if ( pD3D11_2 )
+            if ( pD3D11_2 || pD3D11_3 )
             {
                 LVLINE( "Cubemap Render w/ non-Cube Depth", cubeRT );
             }
@@ -1646,7 +1827,7 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
         PRINTYESNO( "Geometry Shader", (fl >= D3D_FEATURE_LEVEL_10_0) )
         PRINTYESNO( "Stream Out", (fl >= D3D_FEATURE_LEVEL_10_0) )
 
-        if ( pD3D11 || pD3D11_1 || pD3D11_2 )
+        if ( pD3D11 || pD3D11_1 || pD3D11_2 || pD3D11_3 )
         {
             PRINTLINE( "DirectCompute", computeShader )
             PRINTYESNO( "Hull & Domain Shaders", (fl >= D3D_FEATURE_LEVEL_11_0) )
@@ -1661,66 +1842,120 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
 
         PRINTYESNO( "BC4/BC5 Compression", (fl >= D3D_FEATURE_LEVEL_10_0) )
 
-        if ( pD3D11 || pD3D11_1 || pD3D11_2 )
+        if ( pD3D11_3 || pD3D11_2 || pD3D11_1 || pD3D11 )
         {
             PRINTYESNO( "BC6H/BC7 Compression", (fl >= D3D_FEATURE_LEVEL_11_0) )
         }
 
         PRINTYESNO( "Alpha-to-coverage", (fl >= D3D_FEATURE_LEVEL_10_0) )
 
-        if ( g_DXGIFactory1 )
-        {
-            PRINTLINE( "Extended Formats (BGRA, etc.)", extFormats )
-            PRINTLINE( "10-bit XR High Color Format", x2_10BitFormat )
-        }
-
-        if ( pD3D11_2 )
-        {
-            PRINTLINE( "Tiled Resources", tiled_rsc );
-            PRINTLINE( "Min/Max Filtering", minmaxfilter );
-            PRINTLINE( "Map DEFAULT Resources", mapdefault );
-        }
-
-        if ( pD3D11_1 || pD3D11_2 )
+        if ( pD3D11_1 || pD3D11_2 || pD3D11_3 )
         {
             PRINTLINE( "Logic Ops (Output Merger)", logic_ops );
             PRINTLINE( "Constant Buffer Partial Updates", cb_partial );
             PRINTLINE( "Constant Buffer Offsetting", cb_offsetting );
-            PRINTLINE( "UAV Slots", uavSlots )
-            PRINTLINE( "UAVs at Every Stage", uavEveryStage )
-            PRINTLINE( "UAV-only rendering", uavOnlyRender );
+
+            if (uavEveryStage)
+            {
+                PRINTLINE( "UAVs at Every Stage", uavEveryStage )
+            }
+
+            if (uavOnlyRender)
+            {
+                PRINTLINE( "UAV-only rendering", uavOnlyRender );
+            }
+        }
+
+        if ( pD3D11_2 || pD3D11_3 )
+        {
+            if (tiled_rsc)
+            {
+                PRINTLINE( "Tiled Resources", tiled_rsc );
+            }
+
+            if (minmaxfilter)
+            {
+                PRINTLINE( "Min/Max Filtering", minmaxfilter );
+            }
+
+            if (mapdefaultbuff)
+            {
+                PRINTLINE( "Map DEFAULT Buffers", mapdefaultbuff );
+            }
+        }
+
+        if ( pD3D11_3 )
+        {
+            if (consrv_rast)
+            {
+                PRINTLINE( "Conservative Rasterization", consrv_rast );
+            }
+
+            if (ps_stencil_ref)
+            {
+                PRINTLINE( "PS-Specified Stencil Ref ", ps_stencil_ref );
+            }
+
+            if (rast_ordered_views)
+            {
+                PRINTLINE( "Rasterizer Ordered Views", rast_ordered_views );
+            }
+        }
+
+        if ( g_DXGIFactory1 )
+        {
+            PRINTLINE( "Extended Formats (BGRA, etc.)", extFormats )
+
+            if (x2_10BitFormat)
+            {
+                PRINTLINE( "10-bit XR High Color Format", x2_10BitFormat )
+            }
+        }
+
+        if ( pD3D11_1 || pD3D11_2 || pD3D11_3 )
+        {
             PRINTLINE( "16-bit Formats (565/5551/4444)", bpp16 );
+        }
+
+        if ( nonpow2 )
+        {
             PRINTLINE( "Non-Power-of-2 Textures", nonpow2 );
         }
 
-        if ( _10level9 || pD3D11 || pD3D11_1 || pD3D11_2 )
-        {
-            PRINTLINE( "Max Texture Dimension", maxTexDim )
-            PRINTLINE( "Max Cubemap Dimension", maxCubeDim )
-        }
+        PRINTLINE( "Max Texture Dimension", maxTexDim )
+        PRINTLINE( "Max Cubemap Dimension", maxCubeDim )
 
-        if ( _10level9 )
+        if ( maxVolDim )
         {
             PRINTLINE( "Max Volume Extent", maxVolDim )
         }
 
-        if ( _10level9 || pD3D11 || pD3D11_1 || pD3D11_2 )
+        if ( maxTexRepeat )
         {
-
             PRINTLINE( "Max Texture Repeat", maxTexRepeat )
         }
 
-        if ( _10level9 || pD3D10_1 || pD3D11 || pD3D11_1 || pD3D11_2 )
+        PRINTLINE( "Max Input Slots", maxInputSlots )
+
+        if ( uavSlots )
         {
-            PRINTLINE( "Max Input Slots", maxInputSlots )
+            PRINTLINE( "UAV Slots", uavSlots )
+        }
+
+        if (maxAnisotropy)
+        {
+            PRINTLINE( "Max Anisotropy", maxAnisotropy )
+        }
+
+        PRINTLINE( "Max Primitive Count", maxPrimCount )
+
+        if (mrt)
+        {
+            PRINTLINE( "Simultaneous Render Targets", mrt )
         }
 
         if ( _10level9 )
         {
-            PRINTLINE( "Max Anisotropy", maxAnisotropy )
-            PRINTLINE( "Max Primitive Count", maxPrimCount )
-            PRINTLINE( "Simultaneous Render Targets", mrt )
-
             PRINTYESNO( "Occlusion Queries", (fl >= D3D_FEATURE_LEVEL_9_2) )
             PRINTYESNO( "Separate Alpha Blend", (fl >= D3D_FEATURE_LEVEL_9_2) )
             PRINTYESNO( "Mirror Once", (fl >= D3D_FEATURE_LEVEL_9_2) )
@@ -1729,12 +1964,12 @@ HRESULT D3D_FeatureLevel( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTC
 
             PRINTLINE( "Instancing", instancing )
 
-            if ( pD3D11_1 || pD3D11_2 )
+            if ( pD3D11_1 || pD3D11_2 || pD3D11_3 )
             {
                 PRINTLINE( "Shadow Support", shadows )
             }
 
-            if ( pD3D11_2 )
+            if ( pD3D11_2 || pD3D11_3 )
             {
                 PRINTLINE( "Cubemap Render w/ non-Cube Depth", cubeRT );
             }
@@ -2403,7 +2638,7 @@ HRESULT D3D11Info( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* 
         }
         else
         {
-            count = sizeof(g_cfsMSAA_11) / sizeof(DXGI_FORMAT);
+            count = _countof(g_cfsMSAA_11);
             array = g_cfsMSAA_11;
         }
         break;
@@ -2593,7 +2828,7 @@ static void D3D11FeatureSupportInfo1( ID3D11Device1* pDevice, bool bDev2, PRINTC
 
         if ( fl >= D3D_FEATURE_LEVEL_11_0 )
         {
-            LVYESNO( "Saturating Add Instruction (SAD4)", d3d11opts.SAD4ShaderInstructions )
+            LVYESNO( "Saturating Add Instruction", d3d11opts.SAD4ShaderInstructions )
         }
 
         LVYESNO( "Tile-based Deferred Renderer", d3d11arch.TileBasedDeferredRenderer )
@@ -2629,7 +2864,7 @@ static void D3D11FeatureSupportInfo1( ID3D11Device1* pDevice, bool bDev2, PRINTC
 
         if ( fl >= D3D_FEATURE_LEVEL_11_0 )
         {
-            PRINTYESNO( "Saturating Add Instruction (SAD4)", d3d11opts.SAD4ShaderInstructions )
+            PRINTYESNO( "Saturating Add Instruction", d3d11opts.SAD4ShaderInstructions )
         }
 
         PRINTYESNO( "Tile-based Deferred Renderer", d3d11arch.TileBasedDeferredRenderer )
@@ -2869,15 +3104,10 @@ HRESULT D3D11Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
         break;
 
     case D3D11_FORMAT_SUPPORT_BLENDABLE:
-        if ( fl >= D3D_FEATURE_LEVEL_11_1 )
+        if ( fl >= D3D_FEATURE_LEVEL_10_0 )
         {
             count = sizeof(cfs16bpp2) / sizeof(DXGI_FORMAT);
             array = cfs16bpp2;
-        }
-        else if ( fl >= D3D_FEATURE_LEVEL_10_1 )
-        {
-            count = sizeof(cfs16bpp) / sizeof(DXGI_FORMAT);
-            array = cfs16bpp;
         }
         else
         {
@@ -2905,12 +3135,12 @@ HRESULT D3D11Info1( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
         break;
 
     case D3D11_FORMAT_SUPPORT_MULTISAMPLE_LOAD:
-        if ( fl >= D3D_FEATURE_LEVEL_11_1 )
+        if ( fl >= D3D_FEATURE_LEVEL_10_1 )
         {
             count = sizeof(cfs16bpp2) / sizeof(DXGI_FORMAT);
             array = cfs16bpp2;
         }
-        else if ( fl >= D3D_FEATURE_LEVEL_10_1 )
+        else if ( fl >= D3D_FEATURE_LEVEL_10_0 )
         {
             count = sizeof(cfs16bpp) / sizeof(DXGI_FORMAT);
             array = cfs16bpp;
@@ -3051,16 +3281,7 @@ HRESULT D3D11Info2( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
     if( !pPrintInfo )
     {
         LVAddColumn(g_hwndLV, 0, "Name", 30);
-
-        if ( lParam2 == D3D11_FORMAT_SUPPORT_MULTISAMPLE_RENDERTARGET )
-        {
-            LVAddColumn(g_hwndLV, 1, "Value", 25);
-            LVAddColumn(g_hwndLV, 2, "Quality Level", 25);
-        }
-        else
-        {
-            LVAddColumn(g_hwndLV, 1, "Value", 60);
-        }
+        LVAddColumn(g_hwndLV, 1, "Value", 60);
     }
 
     // General Direct3D 11.2 device information
@@ -3112,7 +3333,7 @@ HRESULT D3D11Info2( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
         }
         else
         {
-            PRINTYESNO(  "Profile Marker Support", marker.Profile )
+            PRINTYESNO( "Profile Marker Support", marker.Profile )
 
             PRINTLINE( "Note", szNote )
         }
@@ -3177,6 +3398,200 @@ HRESULT D3D11Info2( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO*
         case D3D11_FORMAT_SUPPORT2_SHAREABLE:
             count = _countof(cfsShareable);
             array = cfsShareable;
+            break;
+
+        default:
+            return E_FAIL;
+        }
+        break;
+
+    default:
+        return E_FAIL;
+    }
+
+    for(UINT i = 0; i < count; ++i)
+    {
+        DXGI_FORMAT fmt = array[i];
+
+        if ( lParam2 != 0xffffffff )
+        {
+            UINT fmtSupport = 0;
+            HRESULT hr = pDevice->CheckFormatSupport( fmt, &fmtSupport );
+            if ( FAILED(hr) )
+                fmtSupport = 0;
+            
+            if ( !pPrintInfo )
+            {
+               LVYESNO( FormatName(fmt), fmtSupport & (UINT)lParam2 );
+            }
+            else
+            {
+                PRINTYESNO( FormatName(fmt), fmtSupport & (UINT)lParam2 );
+            }
+        }
+        else
+        {
+            D3D11_FEATURE_DATA_FORMAT_SUPPORT2 cfs2;
+            cfs2.InFormat = fmt;
+            cfs2.OutFormatSupport2 = 0;
+            HRESULT hr = pDevice->CheckFeatureSupport( D3D11_FEATURE_FORMAT_SUPPORT2, &cfs2, sizeof(cfs2) );
+            if ( FAILED(hr) )
+                cfs2.OutFormatSupport2 = 0;
+
+            if ( !pPrintInfo )
+            {
+               LVYESNO( FormatName(fmt), cfs2.OutFormatSupport2 & (UINT)lParam3 );
+            }
+            else
+            {
+                PRINTYESNO( FormatName(fmt), cfs2.OutFormatSupport2 & (UINT)lParam3 );
+            }
+        }
+    }
+
+    return S_OK;
+}
+
+HRESULT D3D11Info3( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
+{
+    ID3D11Device3* pDevice = reinterpret_cast<ID3D11Device3*>(lParam1);
+
+    if ( !pDevice )
+        return S_OK;
+
+    if( !pPrintInfo )
+    {
+        LVAddColumn(g_hwndLV, 0, "Name", 30);
+        LVAddColumn(g_hwndLV, 1, "Value", 60);
+    }
+
+    // General Direct3D 11.3 device information
+    D3D_FEATURE_LEVEL fl = pDevice->GetFeatureLevel();
+
+    if ( !lParam2 )
+    {
+        D3D11FeatureSupportInfo1( pDevice, true, pPrintInfo );
+
+        D3D11_FEATURE_DATA_MARKER_SUPPORT marker;
+        HRESULT hr = pDevice->CheckFeatureSupport( D3D11_FEATURE_MARKER_SUPPORT, &marker, sizeof(marker) );
+        if ( FAILED(hr) )
+            memset( &marker, 0, sizeof(marker) );
+
+        D3D11_FEATURE_DATA_D3D11_OPTIONS2 d3d11opts2;
+        hr = pDevice->CheckFeatureSupport( D3D11_FEATURE_D3D11_OPTIONS2, &d3d11opts2, sizeof(d3d11opts2) );
+        if ( FAILED(hr) )
+            memset( &d3d11opts2, 0, sizeof(d3d11opts2) );
+
+        // Setup note
+        const char *szNote = nullptr;
+
+        switch ( fl )
+        {
+        case D3D_FEATURE_LEVEL_10_0:
+            szNote = SEE_D3D10;
+            break;
+
+        case D3D_FEATURE_LEVEL_10_1:
+        case D3D_FEATURE_LEVEL_9_3:
+        case D3D_FEATURE_LEVEL_9_2:
+        case D3D_FEATURE_LEVEL_9_1:
+            szNote = SEE_D3D10_1;
+            break;
+
+        case D3D_FEATURE_LEVEL_11_0:
+            szNote = SEE_D3D11;
+            break;
+
+        case D3D_FEATURE_LEVEL_11_1:
+            szNote = SEE_D3D11_1;
+            break;
+
+        default:
+            szNote = D3D11_NOTE3;
+            break;
+        }
+
+        if ( !pPrintInfo )
+        {
+            LVYESNO( "Profile Marker Support", marker.Profile )
+
+            LVYESNO( "Map DEFAULT Textures", d3d11opts2.MapOnDefaultTextures )
+            LVYESNO( "Standard Swizzle", d3d11opts2.StandardSwizzle )
+            LVYESNO( "UMA", d3d11opts2.UnifiedMemoryArchitecture )
+
+            LVLINE( "Note", szNote )
+        }
+        else
+        {
+            PRINTYESNO( "Profile Marker Support", marker.Profile )
+
+            PRINTYESNO( "Map DEFAULT Textures", d3d11opts2.MapOnDefaultTextures )
+            PRINTYESNO( "Standard Swizzle", d3d11opts2.StandardSwizzle )
+            PRINTYESNO( "UMA", d3d11opts2.UnifiedMemoryArchitecture )
+
+            PRINTLINE( "Note", szNote )
+        }
+        
+        return S_OK;
+    }
+
+    // Use CheckFormatSupport for format usage defined as optional for Direct3D 11.3 devices
+
+    static const DXGI_FORMAT cfsUAVTypedLoad[] = 
+    {
+        DXGI_FORMAT_R32G32B32A32_FLOAT,
+        DXGI_FORMAT_R32G32B32A32_UINT,
+        DXGI_FORMAT_R32G32B32A32_SINT,
+        DXGI_FORMAT_R16G16B16A16_FLOAT,
+        DXGI_FORMAT_R16G16B16A16_UNORM,
+        DXGI_FORMAT_R16G16B16A16_UINT,
+        DXGI_FORMAT_R16G16B16A16_SNORM,
+        DXGI_FORMAT_R16G16B16A16_SINT,
+        DXGI_FORMAT_R32G32_FLOAT,
+        DXGI_FORMAT_R32G32_UINT,
+        DXGI_FORMAT_R32G32_SINT,
+        DXGI_FORMAT_R10G10B10A2_UNORM,
+        DXGI_FORMAT_R10G10B10A2_UINT,
+        DXGI_FORMAT_R11G11B10_FLOAT,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        DXGI_FORMAT_R8G8B8A8_UINT,
+        DXGI_FORMAT_R8G8B8A8_SNORM,
+        DXGI_FORMAT_R8G8B8A8_SINT,
+        DXGI_FORMAT_R16G16_FLOAT,
+        DXGI_FORMAT_R16G16_UNORM,
+        DXGI_FORMAT_R16G16_UINT,
+        DXGI_FORMAT_R16G16_SNORM,
+        DXGI_FORMAT_R16G16_SINT,
+        DXGI_FORMAT_R32_FLOAT, // req
+        DXGI_FORMAT_R32_UINT, // req
+        DXGI_FORMAT_R32_SINT, // req
+        DXGI_FORMAT_R8G8_UNORM,
+        DXGI_FORMAT_R8G8_UINT,
+        DXGI_FORMAT_R8G8_SNORM,
+        DXGI_FORMAT_R8G8_SINT,
+        DXGI_FORMAT_R16_FLOAT,
+        DXGI_FORMAT_R16_UNORM,
+        DXGI_FORMAT_R16_UINT,
+        DXGI_FORMAT_R16_SNORM,
+        DXGI_FORMAT_R16_SINT,
+        DXGI_FORMAT_R8_UNORM,
+        DXGI_FORMAT_R8_UINT,
+        DXGI_FORMAT_R8_SNORM,
+        DXGI_FORMAT_R8_SINT,
+        DXGI_FORMAT_A8_UNORM,
+    };
+
+    UINT count = 0;
+    const DXGI_FORMAT *array = nullptr;
+
+    switch( lParam2 )
+    {
+    case 0xffffffff: // D3D11_FORMAT_SUPPORT2
+        switch( lParam3 )
+        {
+        case D3D11_FORMAT_SUPPORT2_UAV_TYPED_LOAD:
+            count = _countof(cfsUAVTypedLoad);
+            array = cfsUAVTypedLoad;
             break;
 
         default:
@@ -3396,6 +3811,87 @@ static void FillMSAASampleTable( ID3D11Device* pDevice, BOOL sampCount[] )
 
 
 //-----------------------------------------------------------------------------
+HRESULT D3D11InfoVideo( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo )
+{
+    ID3D11Device* pDevice = (ID3D11Device*)lParam1;
+    BOOL* sampCount = (BOOL*)lParam2;
+
+    if ( pDevice == NULL )
+        return S_OK;
+
+    if( pPrintInfo == NULL )
+    {
+        LVAddColumn(g_hwndLV, 0, "Name", 30);
+        LVAddColumn( g_hwndLV, 1, "Texture2D", 15 );
+        LVAddColumn( g_hwndLV, 2, "Input", 15 );
+        LVAddColumn( g_hwndLV, 3, "Output", 15 );
+        LVAddColumn( g_hwndLV, 4, "Encoder", 15 );
+    }
+
+    static const DXGI_FORMAT cfsVideo[] = 
+    {
+        DXGI_FORMAT_NV12,
+        DXGI_FORMAT_420_OPAQUE,
+        DXGI_FORMAT_YUY2,
+        DXGI_FORMAT_AYUV,
+        DXGI_FORMAT_Y410,
+        DXGI_FORMAT_Y416,
+        DXGI_FORMAT_P010,
+        DXGI_FORMAT_P016,
+        DXGI_FORMAT_Y210,
+        DXGI_FORMAT_Y216,
+        DXGI_FORMAT_NV11,
+        DXGI_FORMAT_AI44,
+        DXGI_FORMAT_IA44,
+        DXGI_FORMAT_P8,
+        DXGI_FORMAT_A8P8,
+    };
+
+    for(UINT i = 0; i < _countof(cfsVideo); ++i)
+    {
+        DXGI_FORMAT fmt = cfsVideo[i];
+
+        UINT fmtSupport = 0;
+        HRESULT hr = pDevice->CheckFormatSupport( fmt, &fmtSupport );
+        if ( FAILED(hr) )
+            fmtSupport = 0;
+
+        bool any = ( fmtSupport & ( D3D11_FORMAT_SUPPORT_TEXTURE2D
+                                    | D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_INPUT 
+                                    | D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT
+                                    | D3D11_FORMAT_SUPPORT_VIDEO_ENCODER ) ) ? true : false;
+
+        if ( pPrintInfo == NULL)
+        {
+            if ( g_dwViewState != IDM_VIEWALL && !any )
+                continue;
+
+            LVAddText( g_hwndLV, 0, FormatName(fmt) );
+
+            LVAddText( g_hwndLV, 1, (fmtSupport & D3D11_FORMAT_SUPPORT_TEXTURE2D) ? c_szYes : c_szNo );
+            LVAddText( g_hwndLV, 2, (fmtSupport & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_INPUT) ? c_szYes : c_szNo );
+            LVAddText( g_hwndLV, 3, (fmtSupport & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT) ? c_szYes : c_szNo );
+            LVAddText( g_hwndLV, 4, (fmtSupport & D3D11_FORMAT_SUPPORT_VIDEO_ENCODER) ? c_szYes : c_szNo );
+        }
+        else
+        {
+            TCHAR buff[ 1024 ];
+
+            sprintf_s( buff, "Texture2D: %-3s   Input: %-3s   Output: %-3s   Encoder: %-3s",
+                             (fmtSupport & D3D11_FORMAT_SUPPORT_TEXTURE2D) ? c_szYes : c_szNo,
+                             (fmtSupport & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_INPUT) ? c_szYes : c_szNo,
+                             (fmtSupport & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT) ? c_szYes : c_szNo,
+                             (fmtSupport & D3D11_FORMAT_SUPPORT_VIDEO_ENCODER) ? c_szYes : c_szNo );
+
+            PrintStringValueLine( FormatName(fmt), buff, pPrintInfo );
+        }
+    }
+
+    return S_OK;
+}
+
+
+//-----------------------------------------------------------------------------
 static void D3D10_FillTree( HTREEITEM hTree, ID3D10Device* pDevice, D3D_DRIVER_TYPE devType )
 {
     HTREEITEM hTreeD3D = TVAddNodeEx( hTree, "Direct3D 10", TRUE, IDI_CAPS, D3D10Info,
@@ -3592,7 +4088,7 @@ static void D3D11_FillTree( HTREEITEM hTree, ID3D11Device* pDevice, DWORD flMask
         }
     }
 
-    if ( fl == D3D_FEATURE_LEVEL_11_0 )
+    if ( fl >= D3D_FEATURE_LEVEL_11_0 )
     {
         TVAddNodeEx( hTreeD3D, "Shader sample (any filter)", FALSE, IDI_CAPS, D3D11Info,
                      (LPARAM)pDevice, (LPARAM)D3D11_FORMAT_SUPPORT_SHADER_SAMPLE, 0 );
@@ -3746,6 +4242,11 @@ static void D3D11_FillTree1( HTREEITEM hTree, ID3D11Device1* pDevice, DWORD flMa
         TVAddNodeEx( hTreeD3D, "MSAA Load", FALSE, IDI_CAPS, D3D11Info1,
                      (LPARAM)pDevice, (LPARAM)D3D11_FORMAT_SUPPORT_MULTISAMPLE_LOAD, 0 );
     }
+
+    if ( devType != D3D_DRIVER_TYPE_REFERENCE )
+    {
+        TVAddNodeEx( hTreeD3D, "Video", FALSE, IDI_CAPS, D3D11InfoVideo, (LPARAM)pDevice, 0, 1 );
+    }
 }
 
 static void D3D11_FillTree2( HTREEITEM hTree, ID3D11Device2* pDevice, DWORD flMask, D3D_DRIVER_TYPE devType )
@@ -3818,6 +4319,80 @@ static void D3D11_FillTree2( HTREEITEM hTree, ID3D11Device2* pDevice, DWORD flMa
 
     TVAddNodeEx( hTreeD3D, "Shareable", FALSE, IDI_CAPS, D3D11Info2,
                     (LPARAM)pDevice, (LPARAM)0xffffffff, (LPARAM)D3D11_FORMAT_SUPPORT2_SHAREABLE );
+}
+
+static void D3D11_FillTree3( HTREEITEM hTree, ID3D11Device3* pDevice, DWORD flMask, D3D_DRIVER_TYPE devType )
+{
+    D3D_FEATURE_LEVEL fl = pDevice->GetFeatureLevel();
+
+    HTREEITEM hTreeD3D = TVAddNodeEx( hTree, "Direct3D 11.3", fl != D3D_FEATURE_LEVEL_9_1,
+                                      IDI_CAPS, D3D11Info3, (LPARAM)pDevice, 0, 0 );
+
+    TVAddNodeEx( hTreeD3D, FLName( fl ), FALSE, IDI_CAPS, D3D_FeatureLevel,
+                 (LPARAM)fl, (LPARAM)pDevice, D3D_FL_LPARAM3_D3D11_3( devType ) );
+
+    if ( fl != D3D_FEATURE_LEVEL_9_1 )
+    {
+        HTREEITEM hTreeF = TVAddNode( hTreeD3D, "Additional Feature Levels", TRUE, IDI_CAPS, NULL, 0, 0 );
+    
+        switch( fl )
+        {
+        case D3D_FEATURE_LEVEL_11_1:
+            if( flMask & FLMASK_11_0 )
+            {
+                TVAddNodeEx( hTreeF, "D3D_FEATURE_LEVEL_11_0", FALSE, IDI_CAPS, D3D_FeatureLevel,
+                             (LPARAM)D3D_FEATURE_LEVEL_11_0, (LPARAM)pDevice, D3D_FL_LPARAM3_D3D11_3( devType ) );
+            }
+            // Fall thru
+
+        case D3D_FEATURE_LEVEL_11_0:
+            if ( flMask & FLMASK_10_1 )
+            {
+                TVAddNodeEx( hTreeF, "D3D_FEATURE_LEVEL_10_1", FALSE, IDI_CAPS, D3D_FeatureLevel,
+                             (LPARAM)D3D_FEATURE_LEVEL_10_1, (LPARAM)pDevice, D3D_FL_LPARAM3_D3D11_3( devType ) );
+            }
+            // Fall thru
+
+        case D3D_FEATURE_LEVEL_10_1:
+            if ( flMask & FLMASK_10_0 )
+            {
+                TVAddNodeEx( hTreeF, "D3D_FEATURE_LEVEL_10_0", FALSE, IDI_CAPS, D3D_FeatureLevel,
+                             (LPARAM)D3D_FEATURE_LEVEL_10_0, (LPARAM)pDevice, D3D_FL_LPARAM3_D3D11_3( devType ) );
+            }
+            // Fall thru
+    
+        case D3D_FEATURE_LEVEL_10_0:
+            if ( flMask & FLMASK_9_3 )
+            {
+                TVAddNodeEx( hTreeF, "D3D_FEATURE_LEVEL_9_3", FALSE, IDI_CAPS, D3D_FeatureLevel,
+                             (LPARAM)D3D_FEATURE_LEVEL_9_3, (LPARAM)pDevice, D3D_FL_LPARAM3_D3D11_3( devType ) );
+            }
+            // Fall thru
+    
+        case D3D_FEATURE_LEVEL_9_3:
+            if ( flMask & FLMASK_9_2 )
+            {
+                TVAddNodeEx( hTreeF, "D3D_FEATURE_LEVEL_9_2", FALSE, IDI_CAPS, D3D_FeatureLevel,
+                             (LPARAM)D3D_FEATURE_LEVEL_9_2, (LPARAM)pDevice, D3D_FL_LPARAM3_D3D11_3( devType ) );
+            }
+            // Fall thru
+    
+        case D3D_FEATURE_LEVEL_9_2:
+            if ( flMask & FLMASK_9_1 )
+            {
+                TVAddNodeEx( hTreeF, "D3D_FEATURE_LEVEL_9_1", FALSE, IDI_CAPS, D3D_FeatureLevel,
+                             (LPARAM)D3D_FEATURE_LEVEL_9_1, (LPARAM)pDevice, D3D_FL_LPARAM3_D3D11_3( devType ) );
+            }
+            break;
+        }
+    }
+
+    // The majority of this data is already shown under the DirectX 11.1 or 11.2 node, so we only show the 'new' info
+
+    TVAddNodeEx( hTreeD3D, "UAV Typed Load", FALSE, IDI_CAPS, D3D11Info3,
+                    (LPARAM)pDevice, (LPARAM)0xffffffff, (LPARAM)D3D11_FORMAT_SUPPORT2_UAV_TYPED_LOAD );
+
+    // TODO - Hardware JPEG information
 }
 
 
@@ -4026,6 +4601,7 @@ VOID DXGI_FillTree( HWND hwndTV )
         ID3D11Device* pDevice11 = NULL;
         ID3D11Device1* pDevice11_1 = NULL;
         ID3D11Device2* pDevice11_2 = nullptr;
+        ID3D11Device3* pDevice11_3 = nullptr;
         DWORD flMaskDX11 = 0;
         if (pAdapter1 != NULL && g_D3D11CreateDevice != NULL)
         {
@@ -4094,6 +4670,10 @@ VOID DXGI_FillTree( HWND hwndTV )
                     hr = pDevice11->QueryInterface( __uuidof(ID3D11Device2), ( LPVOID* )&pDevice11_2 );
                     if ( FAILED(hr) )
                         pDevice11_2 = nullptr;
+
+                    hr = pDevice11->QueryInterface( __uuidof(ID3D11Device3), ( LPVOID* )&pDevice11_3 );
+                    if ( FAILED(hr) )
+                        pDevice11_3 = nullptr;
                 }
                 else if ( FAILED(hr) )
                     pDevice11 = NULL;
@@ -4108,6 +4688,9 @@ VOID DXGI_FillTree( HWND hwndTV )
 
         if ( pDevice11_2 )
             D3D11_FillTree2( hTreeA, pDevice11_2, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE );
+
+        if ( pDevice11_3 )
+            D3D11_FillTree3( hTreeA, pDevice11_3, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE );
     }
 
     // WARP
@@ -4124,6 +4707,7 @@ VOID DXGI_FillTree( HWND hwndTV )
     ID3D11Device* pDeviceWARP11 = NULL;
     ID3D11Device1* pDeviceWARP11_1 = NULL;
     ID3D11Device2* pDeviceWARP11_2 = nullptr;
+    ID3D11Device3* pDeviceWARP11_3 = nullptr;
     if ( g_D3D11CreateDevice != NULL )
     {
         D3D_FEATURE_LEVEL fl;
@@ -4155,10 +4739,13 @@ VOID DXGI_FillTree( HWND hwndTV )
             if ( FAILED(hr) )
                 pDeviceWARP11_2 = nullptr;
 
+            hr = pDeviceWARP11->QueryInterface( __uuidof(ID3D11Device3), ( LPVOID* )&pDeviceWARP11_3 );
+            if ( FAILED(hr) )
+                pDeviceWARP11_3 = nullptr;
         }
     }
 
-    if ( pDeviceWARP10 || pDeviceWARP11 || pDeviceWARP11_1 )
+    if ( pDeviceWARP10 || pDeviceWARP11 || pDeviceWARP11_1 || pDeviceWARP11_2 || pDeviceWARP11_3 )
     {
         HTREEITEM hTreeW = TVAddNode(hTree, "Windows Advanced Rasterization Platform (WARP)", TRUE, IDI_CAPS, NULL, 0, 0 );
 
@@ -4176,6 +4763,9 @@ VOID DXGI_FillTree( HWND hwndTV )
 
         if ( pDeviceWARP11_2 )
             D3D11_FillTree2( hTreeW, pDeviceWARP11_2, flMaskWARP, D3D_DRIVER_TYPE_WARP );
+
+        if ( pDeviceWARP11_3 )
+            D3D11_FillTree3( hTreeW, pDeviceWARP11_3, flMaskWARP, D3D_DRIVER_TYPE_WARP );
     }
 
     // REFERENCE
@@ -4204,6 +4794,7 @@ VOID DXGI_FillTree( HWND hwndTV )
     ID3D11Device* pDeviceREF11 = NULL;
     ID3D11Device1* pDeviceREF11_1 = NULL;
     ID3D11Device2* pDeviceREF11_2 = nullptr;
+    ID3D11Device3* pDeviceREF11_3 = nullptr;
     DWORD flMaskREF = FLMASK_9_1 | FLMASK_9_2 | FLMASK_9_3 | FLMASK_10_0 | FLMASK_10_1 | FLMASK_11_0;
     if ( g_D3D11CreateDevice != NULL )
     {
@@ -4221,6 +4812,10 @@ VOID DXGI_FillTree( HWND hwndTV )
             hr = pDeviceREF11->QueryInterface( __uuidof( ID3D11Device2), ( LPVOID* )&pDeviceREF11_2 );
             if ( FAILED(hr) )
                 pDeviceREF11_2 = nullptr;
+
+            hr = pDeviceREF11->QueryInterface( __uuidof( ID3D11Device3), ( LPVOID* )&pDeviceREF11_3 );
+            if ( FAILED(hr) )
+                pDeviceREF11_3 = nullptr;
         }
         else
         {
@@ -4235,7 +4830,7 @@ VOID DXGI_FillTree( HWND hwndTV )
         }
     }
 
-    if ( pDeviceREF10 || pDeviceREF10_1 || pDeviceREF11 || pDeviceREF11_1 || pDeviceREF11_2 )
+    if ( pDeviceREF10 || pDeviceREF10_1 || pDeviceREF11 || pDeviceREF11_1 || pDeviceREF11_2 || pDeviceREF11_3 )
     {
         HTREEITEM hTreeR = TVAddNode(hTree, "Reference", TRUE, IDI_CAPS, NULL, 0, 0 );
 
@@ -4253,6 +4848,9 @@ VOID DXGI_FillTree( HWND hwndTV )
 
         if ( pDeviceREF11_2 )
             D3D11_FillTree2( hTreeR, pDeviceREF11_2, flMaskREF, D3D_DRIVER_TYPE_REFERENCE );
+
+        if ( pDeviceREF11_3 )
+            D3D11_FillTree3( hTreeR, pDeviceREF11_3, flMaskREF, D3D_DRIVER_TYPE_REFERENCE );
     }
 
     TreeView_Expand( hwndTV, hTree, TVE_EXPAND );
