@@ -93,7 +93,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDI_DIRECTX,IDC_STATIC,11,23,21,20
     LTEXT           "Version %s",IDC_VERSION,40,24,284,8,SS_NOPREFIX
-    LTEXT           "� Microsoft Corporation.  All rights reserved.",IDC_STATIC,40,36,284,8
+    LTEXT           "© Microsoft Corporation.  All rights reserved.",IDC_STATIC,40,36,284,8
     DEFPUSHBUTTON   "OK",IDOK,140,102,50,16,WS_GROUP
     LTEXT           "",IDC_WARNING,7,68,317,28
 END

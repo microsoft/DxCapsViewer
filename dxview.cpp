@@ -1472,12 +1472,6 @@ VOID InvokeHelp()
 #endif
 }
 
-#ifdef _X86_
-#pragma optimize("", on)
-#endif
-
-
-
 
 //-----------------------------------------------------------------------------
 // Name: DisplayErrorMessage()

@@ -1628,7 +1628,7 @@ VOID DXG_Init()
 
     Direct3DCreate9ExFunc Direct3DCreate9Ex = NULL;
 
-    HMODULE d3d9 = LoadLibrary("d3d9.dll");
+    HMODULE d3d9 = LoadLibraryEx("d3d9.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
     if (d3d9 != NULL)
     {
         Direct3DCreate9Ex = (Direct3DCreate9ExFunc)GetProcAddress(d3d9, "Direct3DCreate9Ex");
