@@ -23,7 +23,6 @@
 #define IDM_PRINTSUBTREETOFILE          40008
 #define IDM_COPY                        40009
 #define IDM_VIEW9EX	                40010
-#define IDM_HELP                        40011
 
 // Next default values for new objects
 // 

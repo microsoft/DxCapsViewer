@@ -1,23 +1,18 @@
 //-----------------------------------------------------------------------------
 // Name: DXView.h
 //
-// Desc: DirectX Device Viewer - Common header file
+// Desc: DirectX Capabilities Viewer Common Header
 //
-//@@BEGIN_MSINTERNAL
-//
-// Hist: 05.24.99 - mwetzel - I didn't write this, I'm just cleaning it up, so
-//                            don't complain to me how horrid this app is.
-//
-//@@END_MSINTERNAL
 // Copyright (c) Microsoft Corporation. All Rights Reserved.
 //-----------------------------------------------------------------------------
-#include <windows.h>
+#include <Windows.h>
 #include <mmsystem.h>
 #include <commctrl.h>
 #include <tchar.h>
 #include <time.h>
-#include "resource.h"
 #include <stdio.h>
+
+#include "resource.h"
 
 //-----------------------------------------------------------------------------
 // Defines
@@ -34,7 +29,7 @@
 
 #define TIMER_PERIOD	500
 
-
+#define SAFE_RELEASE(p)      { if (p) { (p)->Release(); (p)=nullptr; } }
 
 
 //-----------------------------------------------------------------------------
@@ -54,8 +49,8 @@ struct PRINTCBINFO
     BOOL        fStartPage;     // In/Out:  need to a start new page ?!?
 };
 
-typedef HRESULT (*DISPLAYCALLBACK)( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pPrintInfo );
-typedef HRESULT (*DISPLAYCALLBACKEX)( LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo );
+using DISPLAYCALLBACK = HRESULT(*)(LPARAM lParam1, LPARAM lParam2, _In_opt_ PRINTCBINFO* pPrintInfo);
+using DISPLAYCALLBACKEX = HRESULT(*)(LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, _In_opt_ PRINTCBINFO* pPrintInfo);
 
 struct NODEINFO
 {
@@ -70,17 +65,17 @@ struct NODEINFO
 
 struct CAPDEF
 {
-    CHAR*  strName;        // Name of cap
-    DWORD  dwOffset;       // Offset to cap
-    DWORD  dwFlag;         // Bit flag for cal
-    DWORD  dwCapsFlags;	   // used for optional caps and such (see DXV_ values above)
+    const CHAR*  strName;        // Name of cap
+    LONG         dwOffset;       // Offset to cap
+    DWORD        dwFlag;         // Bit flag for cal
+    DWORD        dwCapsFlags;	   // used for optional caps and such (see DXV_ values above)
 };
 
 struct CAPDEFS
 {
-    CHAR*           strName;        // Name of cap
-    DISPLAYCALLBACK fnDisplayCallback;
-    LPARAM          lParam2;
+    const CHAR*           strName;        // Name of cap
+    DISPLAYCALLBACK       fnDisplayCallback;
+    LPARAM                lParam2;
 };
 
 
@@ -116,15 +111,15 @@ VOID    AddCapsToTV( HTREEITEM hParent, CAPDEFS *pcds, LPARAM lParam1 );
 VOID    AddColsToLV();
 VOID    AddCapsToLV( CAPDEF* pcd, VOID* pv );
 VOID    AddMoreCapsToLV( CAPDEF* pcd, VOID* pv );
-HRESULT PrintCapsToDC( CAPDEF* pcd, VOID* pv, PRINTCBINFO* pInfo );
+HRESULT PrintCapsToDC( CAPDEF* pcd, VOID* pv, _In_ PRINTCBINFO* pInfo );
 
 // Printer Helper functions
-HRESULT PrintStartPage( PRINTCBINFO* pci );
-HRESULT PrintEndPage( PRINTCBINFO* pci );
-HRESULT PrintLine( int x, int y, LPCTSTR lpszBuff, DWORD cchBuff, PRINTCBINFO* pci );
-HRESULT PrintNextLine( PRINTCBINFO* pci );
-
-
+HRESULT PrintLine(int x, int y, _In_count_(cchBuff) LPCTSTR lpszBuff, size_t cchBuff, _In_ PRINTCBINFO* pci);
+HRESULT PrintNextLine(_In_ PRINTCBINFO* pci );
+HRESULT PrintValueLine(_In_z_ const char* szText, DWORD dwValue, _In_ PRINTCBINFO* lpInfo);
+HRESULT PrintHexValueLine(_In_z_ const CHAR* szText, DWORD dwValue, _In_ PRINTCBINFO* lpInfo);
+HRESULT PrintStringValueLine(_In_z_ const CHAR* szText, const CHAR* szText2, _In_ PRINTCBINFO* lpInfo);
+HRESULT PrintStringLine(_In_z_ const CHAR* szText, _In_ PRINTCBINFO* lpInfo);
 
 
 //-----------------------------------------------------------------------------
