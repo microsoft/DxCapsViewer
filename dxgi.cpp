@@ -750,9 +750,9 @@ static HRESULT DXGIAdapterInfo2( LPARAM lParam1, LPARAM lParam2, PRINTCBINFO* pP
     switch ( desc.ComputePreemptionGranularity )
     {
     case DXGI_COMPUTE_PREEMPTION_DMA_BUFFER_BOUNDARY:    cpg = "DMA Buffer"; break;
-    case DXGI_COMPUTE_PREEMPTION_DISPATCH_BOUNDARY:      cpg = "Primitive"; break;
-    case DXGI_COMPUTE_PREEMPTION_THREAD_GROUP_BOUNDARY:  cpg = "Triangle"; break;
-    case DXGI_COMPUTE_PREEMPTION_THREAD_BOUNDARY:        cpg = "Pixel"; break;
+    case DXGI_COMPUTE_PREEMPTION_DISPATCH_BOUNDARY:      cpg = "Dispatch"; break;
+    case DXGI_COMPUTE_PREEMPTION_THREAD_GROUP_BOUNDARY:  cpg = "Thread Group"; break;
+    case DXGI_COMPUTE_PREEMPTION_THREAD_BOUNDARY:        cpg = "Thread"; break;
     case DXGI_COMPUTE_PREEMPTION_INSTRUCTION_BOUNDARY:   cpg = "Instruction"; break;
     default:                                             cpg = "Unknown"; break;
     }
