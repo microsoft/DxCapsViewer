@@ -267,6 +267,46 @@ namespace
         return static_cast<D3D_FEATURE_LEVEL>(0);
     }
 
+    D3D_SHADER_MODEL GetD3D12ShaderModel(_In_ ID3D12Device* device)
+    {
+        D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
+        shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_6_5;
+        HRESULT hr = device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
+        while (hr == E_INVALIDARG && shaderModelOpt.HighestShaderModel > D3D_SHADER_MODEL_6_0)
+        {
+            shaderModelOpt.HighestShaderModel = static_cast<D3D_SHADER_MODEL>(static_cast<int>(shaderModelOpt.HighestShaderModel) - 1);
+            hr = device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
+        }
+        if (FAILED(hr))
+        {
+            shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_5_1;
+        }
+
+        return shaderModelOpt.HighestShaderModel;
+    }
+
+    bool IsD3D12DXRSupported(_In_ ID3D12Device* device)
+    {
+        D3D12_FEATURE_DATA_D3D12_OPTIONS5 d3d12opts = {};
+        if (SUCCEEDED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS5))))
+        {
+            return d3d12opts.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
+        }
+
+        return false;
+    }
+
+    bool IsD3D12MeshShaderSupported(_In_ ID3D12Device* device)
+    {
+        D3D12_FEATURE_DATA_D3D12_OPTIONS7 d3d12opts = {};
+        if (SUCCEEDED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS7))))
+        {
+            return d3d12opts.MeshShaderTier != D3D12_MESH_SHADER_TIER_NOT_SUPPORTED;
+        }
+
+        return false;
+    }
+
     //-----------------------------------------------------------------------------
 #define ENUMNAME(a) case a: return TEXT(#a)
 
@@ -1192,21 +1232,12 @@ namespace
                 mrt = XTOSTRING(D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT);
                 uavSlots = XTOSTRING(D3D12_UAV_SLOT_COUNT);
 
-                D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
-                shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_6_5;
-                HRESULT hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
-                while (hr == E_INVALIDARG && shaderModelOpt.HighestShaderModel > D3D_SHADER_MODEL_6_0)
+                switch (GetD3D12ShaderModel(pD3D12))
                 {
-                    shaderModelOpt.HighestShaderModel = static_cast<D3D_SHADER_MODEL>(static_cast<int>(shaderModelOpt.HighestShaderModel) - 1);
-                    hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
-                }
-                if (FAILED(hr))
-                {
-                    shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_5_1;
-                }
-
-                switch (shaderModelOpt.HighestShaderModel)
-                {
+                case D3D_SHADER_MODEL_6_6:
+                    shaderModel = "6.6";
+                    computeShader = "Yes (CS 6.6)";
+                    break;
                 case D3D_SHADER_MODEL_6_5:
                     shaderModel = "6.5";
                     computeShader = "Yes (CS 6.5)";
@@ -1238,7 +1269,7 @@ namespace
                 }
 
                 D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {};
-                hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
+                HRESULT hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
                 if (FAILED(hr))
                     memset(&d3d12opts, 0, sizeof(d3d12opts));
 
@@ -1248,7 +1279,7 @@ namespace
                 case D3D12_TILED_RESOURCES_TIER_2:  tiled_rsc = "Yes - Tier 2"; break;
                 case D3D12_TILED_RESOURCES_TIER_3:  tiled_rsc = "Yes - Tier 3"; break;
                 case D3D12_TILED_RESOURCES_TIER_4:  tiled_rsc = "Yes - Tier 4"; break;
-                default:                            tiled_rsc = "Yes";          break;
+                default:                            tiled_rsc = c_szYes;        break;
                 }
 
                 switch (d3d12opts.ResourceBindingTier)
@@ -1256,7 +1287,7 @@ namespace
                     // 12.0 & 12.1 should be T2 or greater
                 case D3D12_RESOURCE_BINDING_TIER_2: binding_rsc = "Yes - Tier 2"; break;
                 case D3D12_RESOURCE_BINDING_TIER_3: binding_rsc = "Yes - Tier 3"; break;
-                default:                            binding_rsc = "Yes";          break;
+                default:                            binding_rsc = c_szYes;        break;
                 }
 
                 if (fl >= D3D_FEATURE_LEVEL_12_1)
@@ -1267,7 +1298,7 @@ namespace
                     case D3D12_CONSERVATIVE_RASTERIZATION_TIER_1:   consrv_rast = "Yes - Tier 1";  break;
                     case D3D12_CONSERVATIVE_RASTERIZATION_TIER_2:   consrv_rast = "Yes - Tier 2";  break;
                     case D3D12_CONSERVATIVE_RASTERIZATION_TIER_3:   consrv_rast = "Yes - Tier 3";  break;
-                    default:                                        consrv_rast = "Yes";           break;
+                    default:                                        consrv_rast = c_szYes;         break;
                     }
 
                     rast_ordered_views = c_szYes;
@@ -1314,7 +1345,7 @@ namespace
                     // 12.0 & 12.1 should be T2 or greater
                 case D3D11_TILED_RESOURCES_TIER_2:          tiled_rsc = "Yes - Tier 2";  break;
                 case D3D11_TILED_RESOURCES_TIER_3:          tiled_rsc = "Yes - Tier 3";  break;
-                default:                                    tiled_rsc = "Yes";           break;
+                default:                                    tiled_rsc = c_szYes;         break;
                 }
 
                 if (fl >= D3D_FEATURE_LEVEL_12_1)
@@ -1325,7 +1356,7 @@ namespace
                     case D3D11_CONSERVATIVE_RASTERIZATION_TIER_1:           consrv_rast = "Yes - Tier 1";  break;
                     case D3D11_CONSERVATIVE_RASTERIZATION_TIER_2:           consrv_rast = "Yes - Tier 2";  break;
                     case D3D11_CONSERVATIVE_RASTERIZATION_TIER_3:           consrv_rast = "Yes - Tier 3";  break;
-                    default:                                                consrv_rast = "Yes";           break;
+                    default:                                                consrv_rast = c_szYes;         break;
                     }
 
                     rast_ordered_views = c_szYes;
@@ -1907,6 +1938,14 @@ namespace
             maxTexDim = (pD3D12 || pD3D11_3 || pD3D11_2 || pD3D11_1) ? "16777216" : "65536";
         }
 
+        const char* meshShaders = nullptr;
+        const char* dxr = nullptr;
+        if (pD3D12)
+        {
+            meshShaders = IsD3D12MeshShaderSupported(pD3D12) ? "Optional (Yes)" : "Optional (No)";
+            dxr = IsD3D12DXRSupported(pD3D12) ? "Optional (Yes)" : "Optional (No)";
+        }
+
         if (!pPrintInfo)
         {
             LVLINE("Shader Model", shaderModel);
@@ -1921,6 +1960,12 @@ namespace
                 }
 
                 LVYESNO("Hull & Domain Shaders", (fl >= D3D_FEATURE_LEVEL_11_0));
+            }
+
+            if (pD3D12)
+            {
+                LVLINE("Mesh & Amplification Shaders", meshShaders);
+                LVLINE("DirectX Raytracing", dxr);
             }
 
             LVYESNO("Texture Resource Arrays", (fl >= D3D_FEATURE_LEVEL_10_0));
@@ -2092,6 +2137,12 @@ namespace
             {
                 PRINTLINE("DirectCompute", computeShader);
                 PRINTYESNO("Hull & Domain Shaders", (fl >= D3D_FEATURE_LEVEL_11_0));
+            }
+
+            if (pD3D12)
+            {
+                PRINTLINE("Mesh & Amplification Shaders", meshShaders);
+                PRINTLINE("DirectX Raytracing", dxr);
             }
 
             PRINTYESNO("Texture Resource Arrays", (fl >= D3D_FEATURE_LEVEL_10_0));
@@ -4207,13 +4258,13 @@ namespace
     }
 
     //-----------------------------------------------------------------------------
-    HRESULT D3D12Info(LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo)
+    HRESULT D3D12Info(LPARAM lParam1, LPARAM lParam2, LPARAM /*lParam3*/, PRINTCBINFO* pPrintInfo)
     {
         auto pDevice = reinterpret_cast<ID3D12Device*>(lParam1);
-        auto fl = (D3D_FEATURE_LEVEL)lParam2;
-
         if (!pDevice)
             return S_OK;
+
+        auto fl = static_cast<D3D_FEATURE_LEVEL>(lParam2);
 
         if (!pPrintInfo)
         {
@@ -4221,22 +4272,9 @@ namespace
             LVAddColumn(g_hwndLV, 1, "Value", 60);
         }
 
-        D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
-        shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_6_5;
-        HRESULT hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
-        while (hr == E_INVALIDARG && shaderModelOpt.HighestShaderModel > D3D_SHADER_MODEL_6_0)
-        {
-            shaderModelOpt.HighestShaderModel = static_cast<D3D_SHADER_MODEL>(static_cast<int>(shaderModelOpt.HighestShaderModel) - 1);
-            hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
-        }
-        if (FAILED(hr))
-        {
-            shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_5_1;
-        }
-
         D3D12_FEATURE_DATA_ROOT_SIGNATURE rootSigOpt = {};
         rootSigOpt.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &rootSigOpt, sizeof(rootSigOpt));
+        HRESULT hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &rootSigOpt, sizeof(rootSigOpt));
         if (FAILED(hr))
         {
             rootSigOpt.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
@@ -4247,24 +4285,40 @@ namespace
         if (FAILED(hr))
             memset(&d3d12opts, 0, sizeof(d3d12opts));
 
-        D3D12_FEATURE_DATA_D3D12_OPTIONS1 d3d12opts1 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS1, &d3d12opts1, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS1));
+        D3D12_FEATURE_DATA_D3D12_OPTIONS2 d3d12opts2 = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS2, &d3d12opts2, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS2));
         if (FAILED(hr))
-            memset(&d3d12opts1, 0, sizeof(d3d12opts1));
+            memset(&d3d12opts2, 0, sizeof(d3d12opts2));
 
-        D3D12_FEATURE_DATA_ARCHITECTURE d3d12arch = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE, &d3d12arch, sizeof(D3D12_FEATURE_DATA_ARCHITECTURE));
+        D3D12_FEATURE_DATA_D3D12_OPTIONS3 d3d12opts3 = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &d3d12opts3, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS3));
         if (FAILED(hr))
-            memset(&d3d12arch, 0, sizeof(d3d12arch));
+            memset(&d3d12opts3, 0, sizeof(d3d12opts3));
 
-        D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT d3d12vm = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, &d3d12vm, sizeof(D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT));
+        D3D12_FEATURE_DATA_D3D12_OPTIONS4 d3d12opts4 = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS4, &d3d12opts4, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS4));
         if (FAILED(hr))
-            memset(&d3d12vm, 0, sizeof(d3d12vm));
+            memset(&d3d12opts4, 0, sizeof(d3d12opts4));
+
+        D3D12_FEATURE_DATA_D3D12_OPTIONS5 d3d12opts5 = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &d3d12opts5, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS5));
+        if (FAILED(hr))
+            memset(&d3d12opts5, 0, sizeof(d3d12opts5));
+
+        D3D12_FEATURE_DATA_D3D12_OPTIONS6 d3d12opts6 = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &d3d12opts6, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS6));
+        if (FAILED(hr))
+            memset(&d3d12opts6, 0, sizeof(d3d12opts6));
+
+        D3D12_FEATURE_DATA_SERIALIZATION d3d12serial = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_SERIALIZATION, &d3d12serial, sizeof(D3D12_FEATURE_DATA_SERIALIZATION));
+        if (FAILED(hr))
+            memset(&d3d12serial, 0, sizeof(d3d12serial));
 
         const char* shaderModel = "Unknown";
-        switch (shaderModelOpt.HighestShaderModel)
+        switch (GetD3D12ShaderModel(pDevice))
         {
+        case D3D_SHADER_MODEL_6_6: shaderModel = "6.6"; break;
         case D3D_SHADER_MODEL_6_5: shaderModel = "6.5"; break;
         case D3D_SHADER_MODEL_6_4: shaderModel = "6.4"; break;
         case D3D_SHADER_MODEL_6_3: shaderModel = "6.3"; break;
@@ -4279,31 +4333,6 @@ namespace
         {
         case D3D_ROOT_SIGNATURE_VERSION_1_0: rootSig = "1.0"; break;
         case D3D_ROOT_SIGNATURE_VERSION_1_1: rootSig = "1.1"; break;
-        }
-
-        char vmRes[16];
-        sprintf_s(vmRes, 16, "%u", d3d12vm.MaxGPUVirtualAddressBitsPerResource);
-
-        char vmProcess[16];
-        sprintf_s(vmProcess, 16, "%u", d3d12vm.MaxGPUVirtualAddressBitsPerProcess);
-
-        const char* precis = nullptr;
-        switch (d3d12opts.MinPrecisionSupport & (D3D12_SHADER_MIN_PRECISION_SUPPORT_16_BIT | D3D12_SHADER_MIN_PRECISION_SUPPORT_10_BIT))
-        {
-        case 0:                                         precis = "Full";         break;
-        case D3D12_SHADER_MIN_PRECISION_SUPPORT_16_BIT: precis = "16/32-bit";    break;
-        case D3D12_SHADER_MIN_PRECISION_SUPPORT_10_BIT: precis = "10/32-bit";    break;
-        default:                                        precis = "10/16/32-bit"; break;
-        }
-
-        const char* sharing = nullptr;
-        switch (d3d12opts.CrossNodeSharingTier)
-        {
-        case D3D12_CROSS_NODE_SHARING_TIER_NOT_SUPPORTED:   sharing = c_szNo; break;
-        case D3D12_CROSS_NODE_SHARING_TIER_1_EMULATED:      sharing = "Yes - Tier 1 (Emulated)"; break;
-        case D3D12_CROSS_NODE_SHARING_TIER_1:               sharing = "Yes - Tier 1"; break;
-        case D3D12_CROSS_NODE_SHARING_TIER_2:               sharing = "Yes - Tier 2"; break;
-        default:                                            sharing = "Yes"; break;
         }
 
         char heap[16];
@@ -4324,11 +4353,50 @@ namespace
         char binding_rsc[16];
         sprintf_s(binding_rsc, "Tier %d", d3d12opts.ResourceBindingTier);
 
-        char lane_count[16];
-        sprintf_s(lane_count, "%u", d3d12opts1.TotalLaneCount);
+        const char* prgSamplePos = nullptr;
+        switch (d3d12opts2.ProgrammableSamplePositionsTier)
+        {
+        case D3D12_PROGRAMMABLE_SAMPLE_POSITIONS_TIER_NOT_SUPPORTED: prgSamplePos = c_szNo; break;
+        case D3D12_PROGRAMMABLE_SAMPLE_POSITIONS_TIER_1: prgSamplePos = "Yes - Tier 1"; break;
+        case D3D12_PROGRAMMABLE_SAMPLE_POSITIONS_TIER_2: prgSamplePos = "Yes - Tier 2"; break;
+        default: prgSamplePos = c_szYes; break;
+        }
 
-        char wave_lane_count[16];
-        sprintf_s(wave_lane_count, "%u/%u", d3d12opts1.WaveLaneCountMin, d3d12opts1.WaveLaneCountMax);
+        const char* viewInstTier = nullptr;
+        switch (d3d12opts3.ViewInstancingTier)
+        {
+        case D3D12_VIEW_INSTANCING_TIER_NOT_SUPPORTED: viewInstTier = c_szNo; break;
+        case D3D12_VIEW_INSTANCING_TIER_1: viewInstTier = "Yes - Tier 1"; break;
+        case D3D12_VIEW_INSTANCING_TIER_2: viewInstTier = "Yes - Tier 2"; break;
+        case D3D12_VIEW_INSTANCING_TIER_3: viewInstTier = "Yes - Tier 3"; break;
+        default: viewInstTier = c_szYes; break;
+        }
+
+        const char* renderPasses = nullptr;
+        switch (d3d12opts5.RenderPassesTier)
+        {
+        case D3D12_RENDER_PASS_TIER_0: renderPasses = c_szNo; break;
+        case D3D12_RENDER_PASS_TIER_1: renderPasses = "Yes - Tier 1"; break;
+        case D3D12_RENDER_PASS_TIER_2: renderPasses = "Yes - Tier 2"; break;
+        default: renderPasses = c_szYes; break;
+        }
+
+        const char* dxr = nullptr;
+        switch (d3d12opts5.RaytracingTier)
+        {
+        case D3D12_RAYTRACING_TIER_NOT_SUPPORTED: dxr = c_szNo; break;
+        case D3D12_RAYTRACING_TIER_1_0: dxr = "Yes - 1.0"; break;
+        case D3D12_RAYTRACING_TIER_1_1: dxr = "Yes - 1.1"; break;
+        default: dxr = c_szYes; break;
+        }
+
+        const char* heapSerial = nullptr;
+        switch (d3d12serial.HeapSerializationTier)
+        {
+        case D3D12_HEAP_SERIALIZATION_TIER_0: heapSerial = c_szNo; break;
+        case D3D12_HEAP_SERIALIZATION_TIER_10: heapSerial = "Yes - Tier 10"; break;
+        default: heapSerial = c_szYes; break;
+        }
 
         if (!pPrintInfo)
         {
@@ -4336,7 +4404,6 @@ namespace
             LVLINE("Shader Model", shaderModel);
             LVLINE("Root Signature", rootSig);
 
-            LVYESNO("Double-precision Shaders", d3d12opts.DoublePrecisionFloatShaderOps);
             LVYESNO("Standard Swizzle 64KB", d3d12opts.StandardSwizzle64KBSupported);
             LVYESNO("Extended formats TypedUAVLoad", d3d12opts.TypedUAVLoadAdditionalFormats);
 
@@ -4344,29 +4411,27 @@ namespace
             LVLINE("Resource Binding", binding_rsc);
             LVLINE("Tiled Resources", tiled_rsc);
             LVLINE("Resource Heap", heap);
-            LVYESNO("PS-Specified Stencil Ref", d3d12opts.PSSpecifiedStencilRefSupported);
             LVYESNO("Rasterizer Ordered Views", d3d12opts.ROVsSupported);
 
             LVYESNO("VP/RT without GS Emulation", d3d12opts.VPAndRTArrayIndexFromAnyShaderFeedingRasterizerSupportedWithoutGSEmulation);
-            LVYESNO("Cross-adapter RM Texture", d3d12opts.CrossAdapterRowMajorTextureSupported);
-            LVLINE("Cross-node Sharing", sharing);
 
-            LVYESNO("Tile-based Renderer", d3d12arch.TileBasedRenderer);
-            LVYESNO("UMA", d3d12arch.UMA);
-            LVYESNO("Cache Coherent UMA", d3d12arch.CacheCoherentUMA);
+            LVYESNO("Depth bound test supported", d3d12opts2.DepthBoundsTestSupported);
+            LVLINE("Programmable Sample Positions", prgSamplePos);
 
-            LVLINE("Max GPU VM bits per resource", vmRes);
-            LVLINE("Max GPU VM bits per process", vmProcess);
+            LVLINE("View Instancing", viewInstTier);
 
-            LVLINE("Minimum Precision", precis);
+            LVYESNO("Casting fully typed formats", d3d12opts3.CastingFullyTypedFormatSupported);
+            LVYESNO("Copy queue timestamp queries", d3d12opts3.CopyQueueTimestampQueriesSupported);
 
-            if (lParam3 != 0)
-            {
-                LVYESNO("Wave operations", d3d12opts1.WaveOps);
-                LVLINE("Wave lane count", wave_lane_count);
-                LVLINE("Total lane count", lane_count);
-                LVYESNO("Expanded compute resource states", d3d12opts1.ExpandedComputeResourceStates);
-            }
+            LVYESNO("64KB aligned MSAA textures", d3d12opts4.MSAA64KBAlignedTextureSupported);
+
+            LVLINE("Heap serialization", heapSerial);
+
+            LVLINE("Render Passes", renderPasses);
+
+            LVLINE("DirectX Raytracing", dxr);
+
+            LVYESNO("Background processing supported", d3d12opts6.BackgroundProcessingSupported);
         }
         else
         {
@@ -4374,7 +4439,6 @@ namespace
             PRINTLINE("Shader Model", shaderModel);
             PRINTLINE("Root Signature", rootSig);
 
-            PRINTYESNO("Double-precision Shaders", d3d12opts.DoublePrecisionFloatShaderOps);
             PRINTYESNO("Standard Swizzle 64KB", d3d12opts.StandardSwizzle64KBSupported);
             PRINTYESNO("Extended formats TypedUAVLoad", d3d12opts.TypedUAVLoadAdditionalFormats);
 
@@ -4382,29 +4446,344 @@ namespace
             PRINTLINE("Resource Binding", binding_rsc);
             PRINTLINE("Tiled Resources", tiled_rsc);
             PRINTLINE("Resource Heap", heap);
-            PRINTYESNO("PS-Specified Stencil Ref", d3d12opts.PSSpecifiedStencilRefSupported);
             PRINTYESNO("Rasterizer Ordered Views", d3d12opts.ROVsSupported);
 
             PRINTYESNO("VP/RT without GS Emulation", d3d12opts.VPAndRTArrayIndexFromAnyShaderFeedingRasterizerSupportedWithoutGSEmulation);
-            PRINTYESNO("Cross-adapter RM Texture", d3d12opts.CrossAdapterRowMajorTextureSupported);
-            PRINTLINE("Cross-node Sharing", sharing);
 
+            PRINTYESNO("Depth bound test supported", d3d12opts2.DepthBoundsTestSupported);
+            PRINTLINE("Programmable Sample Positions", prgSamplePos);
+
+            PRINTLINE("View Instancing", viewInstTier);
+
+            PRINTYESNO("Casting fully typed formats", d3d12opts3.CastingFullyTypedFormatSupported);
+            PRINTYESNO("Copy queue timestamp queries", d3d12opts3.CopyQueueTimestampQueriesSupported);
+
+            PRINTYESNO("64KB aligned MSAA textures", d3d12opts4.MSAA64KBAlignedTextureSupported);
+
+            PRINTLINE("Heap serialization", heapSerial);
+
+            PRINTLINE("Render Passes", renderPasses);
+
+            PRINTLINE("DirectX Raytracing", dxr);
+
+            PRINTYESNO("Background processing supported", d3d12opts6.BackgroundProcessingSupported);
+        }
+
+        return S_OK;
+    }
+
+    HRESULT D3D12Architecture(LPARAM lParam1, LPARAM /*lParam2*/, LPARAM /*lParam3*/, PRINTCBINFO* pPrintInfo)
+    {
+        auto pDevice = reinterpret_cast<ID3D12Device*>(lParam1);
+        if (!pDevice)
+            return S_OK;
+
+        if (!pPrintInfo)
+        {
+            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 1, "Value", 60);
+        }
+
+        D3D12_FEATURE_DATA_ARCHITECTURE d3d12arch = {};
+        HRESULT hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE, &d3d12arch, sizeof(D3D12_FEATURE_DATA_ARCHITECTURE));
+        if (FAILED(hr))
+            memset(&d3d12arch, 0, sizeof(d3d12arch));
+
+        bool usearch1 = false;
+        D3D12_FEATURE_DATA_ARCHITECTURE1 d3d12arch1 = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE1, &d3d12arch1, sizeof(D3D12_FEATURE_DATA_ARCHITECTURE1));
+        if (SUCCEEDED(hr))
+            usearch1 = true;
+        else
+            memset(&d3d12arch1, 0, sizeof(d3d12arch1));
+
+        D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT d3d12vm = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, &d3d12vm, sizeof(D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT));
+        if (FAILED(hr))
+            memset(&d3d12vm, 0, sizeof(d3d12vm));
+
+        char vmRes[16];
+        sprintf_s(vmRes, 16, "%u", d3d12vm.MaxGPUVirtualAddressBitsPerResource);
+
+        char vmProcess[16];
+        sprintf_s(vmProcess, 16, "%u", d3d12vm.MaxGPUVirtualAddressBitsPerProcess);
+
+        if (!pPrintInfo)
+        {
+            LVYESNO("Tile-based Renderer", d3d12arch.TileBasedRenderer);
+            LVYESNO("UMA", d3d12arch.UMA);
+            LVYESNO("Cache Coherent UMA", d3d12arch.CacheCoherentUMA);
+            if (usearch1)
+            {
+                LVYESNO("Isolated MMU", d3d12arch1.IsolatedMMU);
+            }
+
+            LVLINE("Max GPU VM bits per resource", vmRes);
+            LVLINE("Max GPU VM bits per process", vmProcess);
+        }
+        else
+        {
             PRINTYESNO("Tile-based Renderer", d3d12arch.TileBasedRenderer);
             PRINTYESNO("UMA", d3d12arch.UMA);
             PRINTYESNO("Cache Coherent UMA", d3d12arch.CacheCoherentUMA);
+            if (usearch1)
+            {
+                PRINTYESNO("Isolated MMU", d3d12arch1.IsolatedMMU);
+            }
 
-                PRINTLINE("Max GPU VM bits per resource", vmRes);
+            PRINTLINE("Max GPU VM bits per resource", vmRes);
             PRINTLINE("Max GPU VM bits per process", vmProcess);
+        }
+
+        return S_OK;
+    }
+
+    HRESULT D3D12ExShaderInfo(LPARAM lParam1, LPARAM /*lParam2*/, LPARAM /*lParam3*/, PRINTCBINFO* pPrintInfo)
+    {
+        auto pDevice = reinterpret_cast<ID3D12Device*>(lParam1);
+        if (!pDevice)
+            return S_OK;
+
+        if (!pPrintInfo)
+        {
+            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 1, "Value", 60);
+        }
+
+        D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {};
+        HRESULT hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
+        if (FAILED(hr))
+            memset(&d3d12opts, 0, sizeof(d3d12opts));
+
+        D3D12_FEATURE_DATA_D3D12_OPTIONS1 d3d12opts1 = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS1, &d3d12opts1, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS1));
+        if (FAILED(hr))
+            memset(&d3d12opts1, 0, sizeof(d3d12opts1));
+
+        D3D12_FEATURE_DATA_D3D12_OPTIONS3 d3d12opts3 = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &d3d12opts3, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS3));
+        if (FAILED(hr))
+            memset(&d3d12opts3, 0, sizeof(d3d12opts3));
+
+        D3D12_FEATURE_DATA_D3D12_OPTIONS4 d3d12opts4 = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS4, &d3d12opts4, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS4));
+        if (FAILED(hr))
+            memset(&d3d12opts4, 0, sizeof(d3d12opts4));
+
+        D3D12_FEATURE_DATA_D3D12_OPTIONS6 d3d12opts6 = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &d3d12opts6, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS6));
+        if (FAILED(hr))
+            memset(&d3d12opts6, 0, sizeof(d3d12opts6));
+
+        D3D12_FEATURE_DATA_D3D12_OPTIONS7 d3d12opts7 = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &d3d12opts7, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS7));
+        if (FAILED(hr))
+            memset(&d3d12opts7, 0, sizeof(d3d12opts7));
+
+        D3D12_FEATURE_DATA_SHADER_CACHE d3d12sc = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_SHADER_CACHE, &d3d12sc, sizeof(D3D12_FEATURE_DATA_SHADER_CACHE));
+        if (FAILED(hr))
+            memset(&d3d12sc, 0, sizeof(d3d12sc));
+
+        const char* precis = nullptr;
+        switch (d3d12opts.MinPrecisionSupport & (D3D12_SHADER_MIN_PRECISION_SUPPORT_16_BIT | D3D12_SHADER_MIN_PRECISION_SUPPORT_10_BIT))
+        {
+        case 0:                                         precis = "Full";         break;
+        case D3D12_SHADER_MIN_PRECISION_SUPPORT_16_BIT: precis = "16/32-bit";    break;
+        case D3D12_SHADER_MIN_PRECISION_SUPPORT_10_BIT: precis = "10/32-bit";    break;
+        default:                                        precis = "10/16/32-bit"; break;
+        }
+
+        char lane_count[16];
+        sprintf_s(lane_count, "%u", d3d12opts1.TotalLaneCount);
+
+        char wave_lane_count[16];
+        sprintf_s(wave_lane_count, "%u/%u", d3d12opts1.WaveLaneCountMin, d3d12opts1.WaveLaneCountMax);
+
+        const char* vrs = nullptr;
+        switch (d3d12opts6.VariableShadingRateTier)
+        {
+        case D3D12_VARIABLE_SHADING_RATE_TIER_NOT_SUPPORTED: vrs = c_szNo; break;
+        case D3D12_VARIABLE_SHADING_RATE_TIER_1: vrs = "Yes - 1"; break;
+        case D3D12_VARIABLE_SHADING_RATE_TIER_2: vrs = "Yes - 2"; break;
+        default: vrs = c_szYes; break;
+        }
+
+        char vrs_tile_size[16];
+        sprintf_s(vrs_tile_size, "%u", d3d12opts6.ShadingRateImageTileSize);
+
+        const char* meshShaders = nullptr;
+        switch (d3d12opts7.MeshShaderTier)
+        {
+        case D3D12_MESH_SHADER_TIER_NOT_SUPPORTED:  meshShaders = c_szNo; break;
+        case D3D12_MESH_SHADER_TIER_1:              meshShaders = "Yes - Tier 1"; break;
+        default:                                    meshShaders = c_szYes; break;
+        }
+
+        const char* feedbackTier = nullptr;
+        switch (d3d12opts7.SamplerFeedbackTier)
+        {
+        case D3D12_SAMPLER_FEEDBACK_TIER_NOT_SUPPORTED:  feedbackTier = c_szNo; break;
+        case D3D12_SAMPLER_FEEDBACK_TIER_0_9:            feedbackTier = "Yes - Tier 0.9"; break;
+        case D3D12_SAMPLER_FEEDBACK_TIER_1_0:            feedbackTier = "Yes - Tier 1"; break;
+        default:                                         feedbackTier = c_szYes; break;
+        }
+
+        char shaderCache[64] = {};
+        if (d3d12sc.SupportFlags)
+        {
+            if (d3d12sc.SupportFlags & D3D12_SHADER_CACHE_SUPPORT_SINGLE_PSO)
+            {
+                strcat_s(shaderCache, "SinglePSO ");
+            }
+            if (d3d12sc.SupportFlags & D3D12_SHADER_CACHE_SUPPORT_LIBRARY)
+            {
+                strcat_s(shaderCache, "Library ");
+            }
+            if (d3d12sc.SupportFlags & D3D12_SHADER_CACHE_SUPPORT_AUTOMATIC_INPROC_CACHE)
+            {
+                strcat_s(shaderCache, "In-Proc ");
+            }
+            if (d3d12sc.SupportFlags & D3D12_SHADER_CACHE_SUPPORT_AUTOMATIC_DISK_CACHE)
+            {
+                strcat_s(shaderCache, "Disk ");
+            }
+        }
+        else
+        {
+            strcpy_s(shaderCache, "None");
+        }
+
+        if (!pPrintInfo)
+        {
+            LVYESNO("Double-precision Shaders", d3d12opts.DoublePrecisionFloatShaderOps);
+
+            LVLINE("Minimum Precision", precis);
+            LVYESNO("Native 16-bit Shader Ops", d3d12opts4.Native16BitShaderOpsSupported);
+
+            LVYESNO("Wave operations", d3d12opts1.WaveOps);
+            if (d3d12opts1.WaveOps)
+            {
+                LVLINE("Wave lane count", wave_lane_count);
+                LVLINE("Total lane count", lane_count);
+                LVYESNO("Expanded compute resource states", d3d12opts1.ExpandedComputeResourceStates);
+            }
+
+            LVYESNO("PS-Specified Stencil Ref", d3d12opts.PSSpecifiedStencilRefSupported);
+
+            LVYESNO("Barycentrics", d3d12opts3.BarycentricsSupported);
+
+            LVLINE("Variable Shading Rate (VRS)", vrs);
+            if (d3d12opts6.VariableShadingRateTier != D3D12_VARIABLE_SHADING_RATE_TIER_NOT_SUPPORTED)
+            {
+                LVYESNO("VRS: Additional shading rates", d3d12opts6.AdditionalShadingRatesSupported);
+                LVYESNO("VRS: Per-primitive w/ SV_ViewportIndex", d3d12opts6.PerPrimitiveShadingRateSupportedWithViewportIndexing);
+                LVLINE("VRS: Screen-space tile size", vrs_tile_size);
+            }
+
+            LVLINE("Mesh & Amplification Shaders", meshShaders);
+            LVLINE("Sampler Feedback", feedbackTier);
+
+            LVLINE("Shader Cache", shaderCache);
+        }
+        else
+        {
+            PRINTYESNO("Double-precision Shaders", d3d12opts.DoublePrecisionFloatShaderOps);
 
             PRINTLINE("Minimum Precision", precis);
+            PRINTYESNO("Native 16-bit Shader Ops", d3d12opts4.Native16BitShaderOpsSupported);
 
-            if (lParam3 != 0)
+            PRINTYESNO("Wave operations", d3d12opts1.WaveOps);
+            if (d3d12opts1.WaveOps)
             {
-                PRINTYESNO("Wave operations", d3d12opts1.WaveOps);
                 PRINTLINE("Wave lane count", wave_lane_count);
                 PRINTLINE("Total lane count", lane_count);
                 PRINTYESNO("Expanded compute resource states", d3d12opts1.ExpandedComputeResourceStates);
             }
+
+            PRINTYESNO("PS-Specified Stencil Ref", d3d12opts.PSSpecifiedStencilRefSupported);
+
+            PRINTYESNO("Barycentrics", d3d12opts3.BarycentricsSupported);
+
+            PRINTLINE("Variable Shading Rate (VRS)", vrs);
+            if (d3d12opts6.VariableShadingRateTier != D3D12_VARIABLE_SHADING_RATE_TIER_NOT_SUPPORTED)
+            {
+                PRINTYESNO("VRS: Additional shading rates", d3d12opts6.AdditionalShadingRatesSupported);
+                PRINTYESNO("VRS: Per-primitive w/ SV_ViewportIndex", d3d12opts6.PerPrimitiveShadingRateSupportedWithViewportIndexing);
+                PRINTLINE("VRS: Screen-space tile size", vrs_tile_size);
+            }
+
+            PRINTLINE("Mesh & Amplification Shaders", meshShaders);
+            PRINTLINE("Sampler Feedback", feedbackTier);
+
+            PRINTLINE("Shader Cache", shaderCache);
+        }
+
+        return S_OK;
+    }
+
+    HRESULT D3D12MultiGPU(LPARAM lParam1, LPARAM /*lParam2*/, LPARAM /*lParam3*/, PRINTCBINFO* pPrintInfo)
+    {
+        auto pDevice = reinterpret_cast<ID3D12Device*>(lParam1);
+        if (!pDevice)
+            return S_OK;
+
+        if (!pPrintInfo)
+        {
+            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 1, "Value", 60);
+        }
+
+        D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {};
+        HRESULT hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
+        if (FAILED(hr))
+            memset(&d3d12opts, 0, sizeof(d3d12opts));
+
+        D3D12_FEATURE_DATA_D3D12_OPTIONS4 d3d12opts4 = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS4, &d3d12opts4, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS4));
+        if (FAILED(hr))
+            memset(&d3d12opts4, 0, sizeof(d3d12opts4));
+
+        D3D12_FEATURE_DATA_CROSS_NODE d3d12xnode = {};
+        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_CROSS_NODE, &d3d12xnode, sizeof(D3D12_FEATURE_DATA_CROSS_NODE));
+        if (FAILED(hr))
+            memset(&d3d12xnode, 0, sizeof(d3d12xnode));
+
+        char sharing[16];
+        switch (d3d12opts.CrossNodeSharingTier)
+        {
+        case D3D12_CROSS_NODE_SHARING_TIER_NOT_SUPPORTED:   strcpy_s(sharing, c_szNo); break;
+        case D3D12_CROSS_NODE_SHARING_TIER_1_EMULATED:      strcpy_s(sharing, "Yes - Tier 1 (Emulated)"); break;
+        case D3D12_CROSS_NODE_SHARING_TIER_1:               strcpy_s(sharing, "Yes - Tier 1"); break;
+        case D3D12_CROSS_NODE_SHARING_TIER_2:               strcpy_s(sharing, "Yes - Tier 2"); break;
+        case D3D12_CROSS_NODE_SHARING_TIER_3:               strcpy_s(sharing, "Yes - Tier 3"); break;
+        default:                                            strcpy_s(sharing, c_szYes); break;
+        }
+
+        const char* sharedResTier = nullptr;
+        switch (d3d12opts4.SharedResourceCompatibilityTier)
+        {
+        case D3D12_SHARED_RESOURCE_COMPATIBILITY_TIER_0: sharedResTier = "Yes - Tier 0"; break;
+        case D3D12_SHARED_RESOURCE_COMPATIBILITY_TIER_1: sharedResTier = "Yes - Tier 1"; break;
+        case D3D12_SHARED_RESOURCE_COMPATIBILITY_TIER_2: sharedResTier = "Yes - Tier 2"; break;
+        default: sharedResTier = c_szYes; break;
+        }
+
+        if (!pPrintInfo)
+        {
+            LVLINE("Cross-node Sharing", sharing);
+            LVYESNO("Cross-adapter RM Texture", d3d12opts.CrossAdapterRowMajorTextureSupported);
+
+            LVLINE("Shared Resource Tier", sharedResTier);
+            LVYESNO("Atomic Shader Instructions", d3d12xnode.AtomicShaderInstructions);
+        }
+        else
+        {
+            PRINTLINE("Cross-node Sharing", sharing);
+            PRINTYESNO("Cross-adapter RM Texture", d3d12opts.CrossAdapterRowMajorTextureSupported);
+
+            PRINTLINE("Shared Resource Tier", sharedResTier);
+            PRINTYESNO("Atomic Shader Instructions", d3d12xnode.AtomicShaderInstructions);
         }
 
         return S_OK;
@@ -4930,16 +5309,14 @@ namespace
 
         TVAddNodeEx(hTreeD3D, "UAV Typed Load", FALSE, IDI_CAPS, D3D11Info3,
             (LPARAM)pDevice, (LPARAM)-1, (LPARAM)D3D11_FORMAT_SUPPORT2_UAV_TYPED_LOAD);
-
-        // TODO - Hardware JPEG information
     }
 
     //-----------------------------------------------------------------------------
-    void D3D12_FillTree(HTREEITEM hTree, ID3D12Device* pDevice, ID3D12Device1* pDevice1, D3D_DRIVER_TYPE devType)
+    void D3D12_FillTree(HTREEITEM hTree, ID3D12Device* pDevice, D3D_DRIVER_TYPE devType)
     {
         D3D_FEATURE_LEVEL fl = GetD3D12FeatureLevel(pDevice);
 
-        HTREEITEM hTreeD3D = TVAddNodeEx(hTree, "Direct3D 12", TRUE, IDI_CAPS, D3D12Info, (LPARAM)pDevice, (LPARAM)fl, (LPARAM)pDevice1);
+        HTREEITEM hTreeD3D = TVAddNodeEx(hTree, "Direct3D 12", TRUE, IDI_CAPS, D3D12Info, (LPARAM)pDevice, (LPARAM)fl, 0);
 
         TVAddNodeEx(hTreeD3D, FLName(fl), FALSE, IDI_CAPS, D3D_FeatureLevel, (LPARAM)fl, (LPARAM)pDevice, D3D_FL_LPARAM3_D3D12(devType));
 
@@ -4965,6 +5342,12 @@ namespace
                 break;
             }
         }
+
+        TVAddNodeEx(hTreeD3D, "Architecture", FALSE, IDI_CAPS, D3D12Architecture, (LPARAM)pDevice, 0, 0);
+
+        TVAddNodeEx(hTreeD3D, "Extended Shader Features", FALSE, IDI_CAPS, D3D12ExShaderInfo, (LPARAM)pDevice, 0, 0);
+
+        TVAddNodeEx(hTreeD3D, "Multi-GPU", FALSE, IDI_CAPS, D3D12MultiGPU, (LPARAM)pDevice, 0, 0);
     }
 }
 
@@ -5403,7 +5786,6 @@ VOID DXGI_FillTree(HWND hwndTV)
         OutputDebugStringA("Direct3D 12\n");
 #endif
         ID3D12Device* pDevice12 = nullptr;
-        ID3D12Device1* pDevice12_1 = nullptr;
 
         if (pAdapter3 != 0 && g_D3D12CreateDevice != 0)
         {
@@ -5414,14 +5796,7 @@ VOID DXGI_FillTree(HWND hwndTV)
                 D3D_FEATURE_LEVEL fl = GetD3D12FeatureLevel(pDevice12);
                 OutputDebugString(FLName(fl));
 #endif
-                hr = pDevice12->QueryInterface(IID_PPV_ARGS(&pDevice12_1));
-                if (FAILED(hr))
-                    pDevice12_1 = nullptr;
-
-#ifdef EXTRA_DEBUG
-                OutputDebugString(": Succeeded\n");
-#endif
-                D3D12_FillTree(hTreeA, pDevice12, pDevice12_1, D3D_DRIVER_TYPE_HARDWARE);
+                D3D12_FillTree(hTreeA, pDevice12, D3D_DRIVER_TYPE_HARDWARE);
             }
             else
             {
@@ -5513,7 +5888,6 @@ VOID DXGI_FillTree(HWND hwndTV)
     }
 
     ID3D12Device* pDeviceWARP12 = nullptr;
-    ID3D12Device1* pDeviceWARP12_1 = nullptr;
 
     if (g_D3D12CreateDevice != 0 && g_DXGIFactory4 != 0)
     {
@@ -5531,9 +5905,6 @@ VOID DXGI_FillTree(HWND hwndTV)
                 D3D_FEATURE_LEVEL fl = GetD3D12FeatureLevel(pDeviceWARP12);
                 OutputDebugString(FLName(fl));
 #endif
-                hr = pDeviceWARP12->QueryInterface(IID_PPV_ARGS(&pDeviceWARP12_1));
-                if (FAILED(hr))
-                    pDeviceWARP12_1 = nullptr;
             }
             else
             {
@@ -5555,7 +5926,7 @@ VOID DXGI_FillTree(HWND hwndTV)
 #endif
     }
 
-    if (pDeviceWARP10 || pDeviceWARP11 || pDeviceWARP11_1 || pDeviceWARP11_2 || pDeviceWARP11_3 || pDeviceWARP11_4 || pDeviceWARP12 || pDeviceWARP12_1)
+    if (pDeviceWARP10 || pDeviceWARP11 || pDeviceWARP11_1 || pDeviceWARP11_2 || pDeviceWARP11_3 || pDeviceWARP11_4 || pDeviceWARP12)
     {
         HTREEITEM hTreeW = TVAddNode(hTree, "Windows Advanced Rasterization Platform (WARP)", TRUE, IDI_CAPS, nullptr, 0, 0);
 
@@ -5578,7 +5949,7 @@ VOID DXGI_FillTree(HWND hwndTV)
             D3D11_FillTree3(hTreeW, pDeviceWARP11_3, pDeviceWARP11_4, flMaskWARP, D3D_DRIVER_TYPE_WARP);
 
         if (pDeviceWARP12)
-            D3D12_FillTree(hTreeW, pDeviceWARP12, pDeviceWARP12_1, D3D_DRIVER_TYPE_WARP);
+            D3D12_FillTree(hTreeW, pDeviceWARP12, D3D_DRIVER_TYPE_WARP);
     }
 
     // REFERENCE
