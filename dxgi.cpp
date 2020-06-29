@@ -3816,6 +3816,21 @@ namespace
             if (FAILED(hr))
                 memset(&d3d11opts4, 0, sizeof(d3d11opts4));
 
+            D3D11_FEATURE_DATA_D3D11_OPTIONS5 d3d11opts5 = {};
+            hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS5, &d3d11opts5, sizeof(d3d11opts5));
+            if (FAILED(hr))
+                memset(&d3d11opts5, 0, sizeof(d3d11opts5));
+
+            D3D11_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT d3d11vm = {};
+            hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, &d3d11vm, sizeof(d3d11vm));
+            if (FAILED(hr))
+                memset(&d3d11vm, 0, sizeof(d3d11vm));
+
+            D3D11_FEATURE_DATA_SHADER_CACHE d3d11sc = {};
+            hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_SHADER_CACHE, &d3d11sc, sizeof(d3d11sc));
+            if (FAILED(hr))
+                memset(&d3d11sc, 0, sizeof(d3d11sc));
+
             // Setup note
             const char* szNote = nullptr;
 
@@ -3857,6 +3872,39 @@ namespace
             else
                 sprintf_s(consrv_rast, "Tier %d", d3d11opts2.ConservativeRasterizationTier);
 
+            const char* sharedResTier = nullptr;
+            switch (d3d11opts5.SharedResourceTier)
+            {
+            case D3D11_SHARED_RESOURCE_TIER_0: sharedResTier = "Yes - Tier 0"; break;
+            case D3D11_SHARED_RESOURCE_TIER_1: sharedResTier = "Yes - Tier 1"; break;
+            case D3D11_SHARED_RESOURCE_TIER_2: sharedResTier = "Yes - Tier 2"; break;
+            case D3D11_SHARED_RESOURCE_TIER_3: sharedResTier = "Yes - Tier 3"; break;
+            default: sharedResTier = c_szYes; break;
+            }
+
+            char vmRes[16];
+            sprintf_s(vmRes, 16, "%u", d3d11vm.MaxGPUVirtualAddressBitsPerResource);
+
+            char vmProcess[16];
+            sprintf_s(vmProcess, 16, "%u", d3d11vm.MaxGPUVirtualAddressBitsPerProcess);
+
+            char shaderCache[32] = {};
+            if (d3d11sc.SupportFlags)
+            {
+                if (d3d11sc.SupportFlags & D3D11_SHADER_CACHE_SUPPORT_AUTOMATIC_INPROC_CACHE)
+                {
+                    strcat_s(shaderCache, "In-Proc ");
+                }
+                if (d3d11sc.SupportFlags & D3D11_SHADER_CACHE_SUPPORT_AUTOMATIC_DISK_CACHE)
+                {
+                    strcat_s(shaderCache, "Disk ");
+                }
+            }
+            else
+            {
+                strcpy_s(shaderCache, "None");
+            }
+
             if (!pPrintInfo)
             {
                 LVYESNO("Profile Marker Support", marker.Profile);
@@ -3875,7 +3923,13 @@ namespace
 
                 if (lParam3 != 0)
                 {
+                    LVLINE("Max GPU VM bits per resource", vmRes);
+                    LVLINE("Max GPU VM bits per process", vmProcess);
+
                     LVYESNO("Extended Shared NV12", d3d11opts4.ExtendedNV12SharedTextureSupported);
+                    LVLINE("Shader Cache", shaderCache);
+
+                    LVLINE("Shared Resource Tier", sharedResTier);
                 }
 
                 LVLINE("Note", szNote);
@@ -3898,7 +3952,13 @@ namespace
 
                 if (lParam3 != 0)
                 {
+                    PRINTLINE("Max GPU VM bits per resource", vmRes);
+                    PRINTLINE("Max GPU VM bits per process", vmProcess);
+
                     PRINTYESNO("Extended Shared NV12", d3d11opts4.ExtendedNV12SharedTextureSupported);
+                    PRINTLINE("Shader Cache", shaderCache);
+
+                    PRINTLINE("Shared Resource Tier", sharedResTier);
                 }
 
                 PRINTLINE("Note", szNote);
