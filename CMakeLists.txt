@@ -9,7 +9,7 @@ cmake_minimum_required (VERSION 3.11)
 
 project (dxcapsviewer LANGUAGES CXX)
 
-option(ENABLE_CODE_ANALYSIS "Use Static Code Analysis on build" ON)
+option(ENABLE_CODE_ANALYSIS "Use Static Code Analysis on build" OFF)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
