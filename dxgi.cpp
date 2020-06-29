@@ -4338,11 +4338,19 @@ namespace
         char heap[16];
         sprintf_s(heap, "Tier %d", d3d12opts.ResourceHeapTier);
 
-        char tiled_rsc[16];
+        char tiled_rsc[64] = {};
         if (d3d12opts.TiledResourcesTier == D3D12_TILED_RESOURCES_TIER_NOT_SUPPORTED)
             strcpy_s(tiled_rsc, "Not supported");
         else
+        {
             sprintf_s(tiled_rsc, "Tier %d", d3d12opts.TiledResourcesTier);
+
+            if ((d3d12opts.TiledResourcesTier < D3D12_TILED_RESOURCES_TIER_3)
+                && d3d12opts5.SRVOnlyTiledResourceTier3)
+            {
+                strcat_s(tiled_rsc, " (plus SRV only Volume textures)");
+            }
+        }
 
         char consrv_rast[16];
         if (d3d12opts.ConservativeRasterizationTier == D3D12_CONSERVATIVE_RASTERIZATION_TIER_NOT_SUPPORTED)
@@ -4924,6 +4932,86 @@ namespace
         }
     }
 
+    //-----------------------------------------------------------------------------
+    HRESULT D3D12InfoVideo(LPARAM lParam1, LPARAM /*lParam2*/, LPARAM /*lParam3*/, PRINTCBINFO* pPrintInfo)
+    {
+        auto pDevice = reinterpret_cast<ID3D12Device*>(lParam1);
+        if (!pDevice)
+            return S_OK;
+
+        if (!pPrintInfo)
+        {
+            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 1, "Texture2D", 15);
+            LVAddColumn(g_hwndLV, 2, "Input", 15);
+            LVAddColumn(g_hwndLV, 3, "Output", 15);
+            LVAddColumn(g_hwndLV, 4, "Encoder", 15);
+        }
+
+        static const DXGI_FORMAT cfsVideo[] =
+        {
+            DXGI_FORMAT_NV12,
+            DXGI_FORMAT_420_OPAQUE,
+            DXGI_FORMAT_YUY2,
+            DXGI_FORMAT_AYUV,
+            DXGI_FORMAT_Y410,
+            DXGI_FORMAT_Y416,
+            DXGI_FORMAT_P010,
+            DXGI_FORMAT_P016,
+            DXGI_FORMAT_Y210,
+            DXGI_FORMAT_Y216,
+            DXGI_FORMAT_NV11,
+            DXGI_FORMAT_AI44,
+            DXGI_FORMAT_IA44,
+            DXGI_FORMAT_P8,
+            DXGI_FORMAT_A8P8,
+        };
+
+        for (UINT i = 0; i < _countof(cfsVideo); ++i)
+        {
+            D3D12_FEATURE_DATA_FORMAT_SUPPORT fmtSupport = {
+                cfsVideo[i], D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2_NONE,
+            };
+            if (FAILED(pDevice->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT,
+                &fmtSupport, sizeof(D3D12_FEATURE_DATA_FORMAT_SUPPORT))))
+            {
+                fmtSupport.Support1 = D3D12_FORMAT_SUPPORT1_NONE;
+                fmtSupport.Support2 = D3D12_FORMAT_SUPPORT2_NONE;
+            }
+
+            bool any = (fmtSupport.Support1 & (D3D12_FORMAT_SUPPORT1_TEXTURE2D
+                | D3D12_FORMAT_SUPPORT1_VIDEO_PROCESSOR_INPUT
+                | D3D12_FORMAT_SUPPORT1_VIDEO_PROCESSOR_OUTPUT
+                | D3D12_FORMAT_SUPPORT1_VIDEO_ENCODER)) ? true : false;
+
+            if (!pPrintInfo)
+            {
+                if (g_dwViewState != IDM_VIEWALL && !any)
+                    continue;
+
+                LVAddText(g_hwndLV, 0, FormatName(fmtSupport.Format));
+
+                LVAddText(g_hwndLV, 1, (fmtSupport.Support1 & D3D12_FORMAT_SUPPORT1_TEXTURE2D) ? c_szYes : c_szNo);
+                LVAddText(g_hwndLV, 2, (fmtSupport.Support1 & D3D12_FORMAT_SUPPORT1_VIDEO_PROCESSOR_INPUT) ? c_szYes : c_szNo);
+                LVAddText(g_hwndLV, 3, (fmtSupport.Support1 & D3D12_FORMAT_SUPPORT1_VIDEO_PROCESSOR_OUTPUT) ? c_szYes : c_szNo);
+                LVAddText(g_hwndLV, 4, (fmtSupport.Support1 & D3D12_FORMAT_SUPPORT1_VIDEO_ENCODER) ? c_szYes : c_szNo);
+            }
+            else
+            {
+                TCHAR buff[1024];
+
+                sprintf_s(buff, "Texture2D: %-3s   Input: %-3s   Output: %-3s   Encoder: %-3s",
+                    (fmtSupport.Support1 & D3D12_FORMAT_SUPPORT1_TEXTURE2D) ? c_szYes : c_szNo,
+                    (fmtSupport.Support1 & D3D12_FORMAT_SUPPORT1_VIDEO_PROCESSOR_INPUT) ? c_szYes : c_szNo,
+                    (fmtSupport.Support1 & D3D12_FORMAT_SUPPORT1_VIDEO_PROCESSOR_OUTPUT) ? c_szYes : c_szNo,
+                    (fmtSupport.Support1 & D3D12_FORMAT_SUPPORT1_VIDEO_ENCODER) ? c_szYes : c_szNo);
+
+                PrintStringValueLine(FormatName(fmtSupport.Format), buff, pPrintInfo);
+            }
+        }
+
+        return S_OK;
+    }
 
     //-----------------------------------------------------------------------------
     void D3D11_FillTree(HTREEITEM hTree, ID3D11Device* pDevice, DWORD flMask, D3D_DRIVER_TYPE devType)
@@ -5145,7 +5233,7 @@ namespace
 
         if (devType != D3D_DRIVER_TYPE_REFERENCE)
         {
-            TVAddNodeEx(hTreeD3D, "Video", FALSE, IDI_CAPS, D3D11InfoVideo, (LPARAM)pDevice, 0, 1);
+            TVAddNodeEx(hTreeD3D, "Video", FALSE, IDI_CAPS, D3D11InfoVideo, (LPARAM)pDevice, 0, 0);
         }
     }
 
@@ -5348,6 +5436,8 @@ namespace
         TVAddNodeEx(hTreeD3D, "Extended Shader Features", FALSE, IDI_CAPS, D3D12ExShaderInfo, (LPARAM)pDevice, 0, 0);
 
         TVAddNodeEx(hTreeD3D, "Multi-GPU", FALSE, IDI_CAPS, D3D12MultiGPU, (LPARAM)pDevice, 0, 0);
+
+        TVAddNodeEx(hTreeD3D, "Video", FALSE, IDI_CAPS, D3D12InfoVideo, (LPARAM)pDevice, 0, 1);
     }
 }
 
