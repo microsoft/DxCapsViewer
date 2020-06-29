@@ -1698,10 +1698,16 @@ VOID DXG_FillTree(HWND hwndTV)
 //-----------------------------------------------------------------------------
 VOID DXG_CleanUp()
 {
-    if (g_pD3D)
-        g_pD3D->Release();
+    SAFE_RELEASE(g_pD3D);
 
-    // TODO -
+    if (g_hInstD3D)
+    {
+        g_direct3DCreate9 = nullptr;
+        g_direct3DCreate9Ex = nullptr;
+
+        FreeLibrary(g_hInstD3D);
+        g_hInstD3D = nullptr;
+    }
 }
 
 

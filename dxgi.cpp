@@ -5682,7 +5682,7 @@ VOID DXGI_CleanUp()
 {
     if (g_DXGIFactory)
     {
-        g_DXGIFactory->Release();
+        SAFE_RELEASE(g_DXGIFactory);
         g_DXGIFactory = nullptr;
         g_DXGIFactory1 = nullptr;
         g_DXGIFactory2 = nullptr;
