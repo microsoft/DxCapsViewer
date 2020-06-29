@@ -4800,7 +4800,7 @@ namespace
     //-----------------------------------------------------------------------------
     void D3D10_FillTree(HTREEITEM hTree, ID3D10Device* pDevice, D3D_DRIVER_TYPE devType)
     {
-        HTREEITEM hTreeD3D = TVAddNodeEx(hTree, "Direct3D 10", TRUE, IDI_CAPS, D3D10Info,
+        HTREEITEM hTreeD3D = TVAddNodeEx(hTree, "Direct3D 10.0", TRUE, IDI_CAPS, D3D10Info,
             (LPARAM)pDevice, 0, 0);
 
         TVAddNodeEx(hTreeD3D, "Features", FALSE, IDI_CAPS, D3D_FeatureLevel,
@@ -5020,7 +5020,7 @@ namespace
         if (fl > D3D_FEATURE_LEVEL_11_0)
             fl = D3D_FEATURE_LEVEL_11_0;
 
-        HTREEITEM hTreeD3D = TVAddNodeEx(hTree, "Direct3D 11", TRUE,
+        HTREEITEM hTreeD3D = TVAddNodeEx(hTree, "Direct3D 11.0", TRUE,
             IDI_CAPS, D3D11Info, (LPARAM)pDevice, 0, 0);
 
         TVAddNodeEx(hTreeD3D, FLName(fl), FALSE, IDI_CAPS, D3D_FeatureLevel,
@@ -5616,7 +5616,9 @@ VOID DXGI_FillTree(HWND hwndTV)
         }
 
         DXGI_ADAPTER_DESC aDesc;
-        pAdapter->GetDesc(&aDesc);
+        hr = pAdapter->GetDesc(&aDesc);
+        if (FAILED(hr))
+            continue;
 
         char szDesc[128];
         wcstombs_s(nullptr, szDesc, aDesc.Description, 128);
@@ -5663,6 +5665,145 @@ VOID DXGI_FillTree(HWND hwndTV)
             HTREEITEM hTreeD = TVAddNode(hTreeO, szDeviceName, TRUE, IDI_CAPS, DXGIOutputInfo, iOutput, (LPARAM)pOutput);
 
             TVAddNode(hTreeD, "Display Modes", FALSE, IDI_CAPS, DXGIOutputModes, iOutput, (LPARAM)pOutput);
+        }
+
+        // Direct3D 12
+#ifdef EXTRA_DEBUG
+        OutputDebugStringA("Direct3D 12\n");
+#endif
+        ID3D12Device* pDevice12 = nullptr;
+
+        if (pAdapter3 != 0 && g_D3D12CreateDevice != 0)
+        {
+            hr = g_D3D12CreateDevice(pAdapter3, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice12));
+            if (SUCCEEDED(hr))
+            {
+#ifdef EXTRA_DEBUG
+                D3D_FEATURE_LEVEL fl = GetD3D12FeatureLevel(pDevice12);
+                OutputDebugString(FLName(fl));
+#endif
+                D3D12_FillTree(hTreeA, pDevice12, D3D_DRIVER_TYPE_HARDWARE);
+            }
+            else
+            {
+#ifdef EXTRA_DEBUG
+                char buff[64] = {};
+                sprintf_s(buff, ": Failed (%08X)\n", hr);
+                OutputDebugStringA(buff);
+#endif
+                pDevice12 = nullptr;
+            }
+        }
+
+        // Direct3D 11.x
+#ifdef EXTRA_DEBUG
+        OutputDebugStringA("Direct3D 11.x\n");
+#endif
+
+        ID3D11Device* pDevice11 = nullptr;
+        ID3D11Device1* pDevice11_1 = nullptr;
+        ID3D11Device2* pDevice11_2 = nullptr;
+        ID3D11Device3* pDevice11_3 = nullptr;
+        ID3D11Device4* pDevice11_4 = nullptr;
+        DWORD flMaskDX11 = 0;
+        if (pAdapter1 != nullptr && g_D3D11CreateDevice != nullptr)
+        {
+            D3D_FEATURE_LEVEL flHigh = (D3D_FEATURE_LEVEL)0;
+
+            for (UINT i = 0; i < _countof(g_featureLevels); ++i)
+            {
+#ifdef EXTRA_DEBUG
+                OutputDebugString(FLName(g_featureLevels[i]));
+#endif
+                hr = g_D3D11CreateDevice(pAdapter1, D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, &g_featureLevels[i], 1,
+                    D3D11_SDK_VERSION, &pDevice11, nullptr, nullptr);
+                if (SUCCEEDED(hr))
+                {
+#ifdef EXTRA_DEBUG
+                    OutputDebugString(": Success\n");
+#endif
+                    switch (g_featureLevels[i])
+                    {
+                    case D3D_FEATURE_LEVEL_9_1:  flMaskDX11 |= FLMASK_9_1; break;
+                    case D3D_FEATURE_LEVEL_9_2:  flMaskDX11 |= FLMASK_9_2; break;
+                    case D3D_FEATURE_LEVEL_9_3:  flMaskDX11 |= FLMASK_9_3; break;
+                    case D3D_FEATURE_LEVEL_10_0: flMaskDX11 |= FLMASK_10_0; break;
+                    case D3D_FEATURE_LEVEL_10_1: flMaskDX11 |= FLMASK_10_1; break;
+                    case D3D_FEATURE_LEVEL_11_0: flMaskDX11 |= FLMASK_11_0; break;
+                    case D3D_FEATURE_LEVEL_11_1: flMaskDX11 |= FLMASK_11_1; break;
+                    case D3D_FEATURE_LEVEL_12_0: flMaskDX11 |= FLMASK_12_0; break;
+                    case D3D_FEATURE_LEVEL_12_1: flMaskDX11 |= FLMASK_12_1; break;
+                    }
+
+                    if (g_featureLevels[i] > flHigh)
+                        flHigh = g_featureLevels[i];
+                }
+                else
+                {
+#ifdef EXTRA_DEBUG
+                    char buff[64] = {};
+                    sprintf_s(buff, ": Failed (%08X)\n", hr);
+                    OutputDebugStringA(buff);
+#endif
+                    pDevice11 = nullptr;
+                }
+
+                if (pDevice11)
+                {
+                    // Some Intel Integrated Graphics WDDM 1.0 drivers will crash if you try to release here
+                    // For this application, leaking a few device instances is not a big deal
+                    if (aDesc.VendorId != 0x8086)
+                        pDevice11->Release();
+
+                    pDevice11 = nullptr;
+                }
+            }
+
+            if (flHigh > 0)
+            {
+                hr = g_D3D11CreateDevice(pAdapter1, D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, &flHigh, 1,
+                    D3D11_SDK_VERSION, &pDevice11, nullptr, nullptr);
+
+                if (SUCCEEDED(hr))
+                {
+                    hr = pDevice11->QueryInterface(IID_PPV_ARGS(&pDevice11_1));
+                    if (FAILED(hr))
+                        pDevice11_1 = nullptr;
+
+                    hr = pDevice11->QueryInterface(IID_PPV_ARGS(&pDevice11_2));
+                    if (FAILED(hr))
+                        pDevice11_2 = nullptr;
+
+                    hr = pDevice11->QueryInterface(IID_PPV_ARGS(&pDevice11_3));
+                    if (FAILED(hr))
+                        pDevice11_3 = nullptr;
+
+                    hr = pDevice11->QueryInterface(IID_PPV_ARGS(&pDevice11_4));
+                    if (FAILED(hr))
+                        pDevice11_4 = nullptr;
+                }
+                else if (FAILED(hr))
+                    pDevice11 = nullptr;
+            }
+        }
+
+        if (pDevice11 || pDevice11_1 || pDevice11_2 || pDevice11_3)
+        {
+            HTREEITEM hTree11 = (pDevice11_1 || pDevice11_2 || pDevice11_3)
+                ? TVAddNode(hTreeA, "Direct3D 11", TRUE, IDI_CAPS, nullptr, 0, 0)
+                : hTreeA;
+
+            if (pDevice11)
+                D3D11_FillTree(hTree11, pDevice11, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE);
+
+            if (pDevice11_1)
+                D3D11_FillTree1(hTree11, pDevice11_1, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE);
+
+            if (pDevice11_2)
+                D3D11_FillTree2(hTree11, pDevice11_2, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE);
+
+            if (pDevice11_3)
+                D3D11_FillTree3(hTree11, pDevice11_3, pDevice11_4, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE);
         }
 
         // Direct3D 10.x
@@ -5760,143 +5901,18 @@ VOID DXGI_FillTree(HWND hwndTV)
         }
 
         // Direct3D 10
-        if (pDevice10)
-            D3D10_FillTree(hTreeA, pDevice10, D3D_DRIVER_TYPE_HARDWARE);
-
-        // Direct3D 10.1 (includes 10level9 feature levels)
-        if (pDevice10_1)
-            D3D10_FillTree1(hTreeA, pDevice10_1, flMaskDX10, D3D_DRIVER_TYPE_HARDWARE);
-
-        // Direct3D 11.x
-#ifdef EXTRA_DEBUG
-        OutputDebugStringA("Direct3D 11.x\n");
-#endif
-
-        ID3D11Device* pDevice11 = nullptr;
-        ID3D11Device1* pDevice11_1 = nullptr;
-        ID3D11Device2* pDevice11_2 = nullptr;
-        ID3D11Device3* pDevice11_3 = nullptr;
-        ID3D11Device4* pDevice11_4 = nullptr;
-        DWORD flMaskDX11 = 0;
-        if (pAdapter1 != nullptr && g_D3D11CreateDevice != nullptr)
+        if (pDevice10 || pDevice10_1)
         {
-            D3D_FEATURE_LEVEL flHigh = (D3D_FEATURE_LEVEL)0;
+            HTREEITEM hTree10 = (pDevice10_1)
+                ? TVAddNode(hTreeA, "Direct3D 10", TRUE, IDI_CAPS, nullptr, 0, 0)
+                : hTreeA;
 
-            for (UINT i = 0; i < _countof(g_featureLevels); ++i)
-            {
-#ifdef EXTRA_DEBUG
-                OutputDebugString(FLName(g_featureLevels[i]));
-#endif
-                hr = g_D3D11CreateDevice(pAdapter1, D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, &g_featureLevels[i], 1,
-                    D3D11_SDK_VERSION, &pDevice11, nullptr, nullptr);
-                if (SUCCEEDED(hr))
-                {
-#ifdef EXTRA_DEBUG
-                    OutputDebugString(": Success\n");
-#endif
-                    switch (g_featureLevels[i])
-                    {
-                    case D3D_FEATURE_LEVEL_9_1:  flMaskDX11 |= FLMASK_9_1; break;
-                    case D3D_FEATURE_LEVEL_9_2:  flMaskDX11 |= FLMASK_9_2; break;
-                    case D3D_FEATURE_LEVEL_9_3:  flMaskDX11 |= FLMASK_9_3; break;
-                    case D3D_FEATURE_LEVEL_10_0: flMaskDX11 |= FLMASK_10_0; break;
-                    case D3D_FEATURE_LEVEL_10_1: flMaskDX11 |= FLMASK_10_1; break;
-                    case D3D_FEATURE_LEVEL_11_0: flMaskDX11 |= FLMASK_11_0; break;
-                    case D3D_FEATURE_LEVEL_11_1: flMaskDX11 |= FLMASK_11_1; break;
-                    case D3D_FEATURE_LEVEL_12_0: flMaskDX11 |= FLMASK_12_0; break;
-                    case D3D_FEATURE_LEVEL_12_1: flMaskDX11 |= FLMASK_12_1; break;
-                    }
+            if (pDevice10)
+                D3D10_FillTree(hTree10, pDevice10, D3D_DRIVER_TYPE_HARDWARE);
 
-                    if (g_featureLevels[i] > flHigh)
-                        flHigh = g_featureLevels[i];
-                }
-                else
-                {
-#ifdef EXTRA_DEBUG
-                    char buff[64] = {};
-                    sprintf_s(buff, ": Failed (%08X)\n", hr);
-                    OutputDebugStringA(buff);
-#endif
-                    pDevice11 = nullptr;
-                }
-
-                if (pDevice11)
-                {
-                    // Some Intel Integrated Graphics WDDM 1.0 drivers will crash if you try to release here
-                    // For this application, leaking a few device instances is not a big deal
-                    if (aDesc.VendorId != 0x8086)
-                        pDevice11->Release();
-
-                    pDevice11 = nullptr;
-                }
-            }
-
-            if (flHigh > 0)
-            {
-                hr = g_D3D11CreateDevice(pAdapter1, D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, &flHigh, 1,
-                    D3D11_SDK_VERSION, &pDevice11, nullptr, nullptr);
-
-                if (SUCCEEDED(hr))
-                {
-                    hr = pDevice11->QueryInterface(IID_PPV_ARGS(&pDevice11_1));
-                    if (FAILED(hr))
-                        pDevice11_1 = nullptr;
-
-                    hr = pDevice11->QueryInterface(IID_PPV_ARGS(&pDevice11_2));
-                    if (FAILED(hr))
-                        pDevice11_2 = nullptr;
-
-                    hr = pDevice11->QueryInterface(IID_PPV_ARGS(&pDevice11_3));
-                    if (FAILED(hr))
-                        pDevice11_3 = nullptr;
-
-                    hr = pDevice11->QueryInterface(IID_PPV_ARGS(&pDevice11_4));
-                    if (FAILED(hr))
-                        pDevice11_4 = nullptr;
-                }
-                else if (FAILED(hr))
-                    pDevice11 = nullptr;
-            }
-        }
-
-        if (pDevice11)
-            D3D11_FillTree(hTreeA, pDevice11, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE);
-
-        if (pDevice11_1)
-            D3D11_FillTree1(hTreeA, pDevice11_1, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE);
-
-        if (pDevice11_2)
-            D3D11_FillTree2(hTreeA, pDevice11_2, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE);
-
-        if (pDevice11_3)
-            D3D11_FillTree3(hTreeA, pDevice11_3, pDevice11_4, flMaskDX11, D3D_DRIVER_TYPE_HARDWARE);
-
-        // Direct3D 12
-#ifdef EXTRA_DEBUG
-        OutputDebugStringA("Direct3D 12\n");
-#endif
-        ID3D12Device* pDevice12 = nullptr;
-
-        if (pAdapter3 != 0 && g_D3D12CreateDevice != 0)
-        {
-            hr = g_D3D12CreateDevice(pAdapter3, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice12));
-            if (SUCCEEDED(hr))
-            {
-#ifdef EXTRA_DEBUG
-                D3D_FEATURE_LEVEL fl = GetD3D12FeatureLevel(pDevice12);
-                OutputDebugString(FLName(fl));
-#endif
-                D3D12_FillTree(hTreeA, pDevice12, D3D_DRIVER_TYPE_HARDWARE);
-            }
-            else
-            {
-#ifdef EXTRA_DEBUG
-                char buff[64] = {};
-                sprintf_s(buff, ": Failed (%08X)\n", hr);
-                OutputDebugStringA(buff);
-#endif
-                pDevice12 = nullptr;
-            }
+            // Direct3D 10.1 (includes 10level9 feature levels)
+            if (pDevice10_1)
+                D3D10_FillTree1(hTree10, pDevice10_1, flMaskDX10, D3D_DRIVER_TYPE_HARDWARE);
         }
     }
 
@@ -6020,26 +6036,39 @@ VOID DXGI_FillTree(HWND hwndTV)
     {
         HTREEITEM hTreeW = TVAddNode(hTree, "Windows Advanced Rasterization Platform (WARP)", TRUE, IDI_CAPS, nullptr, 0, 0);
 
-        if (pDeviceWARP10)
-            D3D10_FillTree(hTreeW, pDeviceWARP10, D3D_DRIVER_TYPE_WARP);
-
-        if (pDeviceWARP10)
-            D3D10_FillTree1(hTreeW, pDeviceWARP10, flMaskWARP, D3D_DRIVER_TYPE_WARP);
-
-        if (pDeviceWARP11)
-            D3D11_FillTree(hTreeW, pDeviceWARP11, flMaskWARP, D3D_DRIVER_TYPE_WARP);
-
-        if (pDeviceWARP11_1)
-            D3D11_FillTree1(hTreeW, pDeviceWARP11_1, flMaskWARP, D3D_DRIVER_TYPE_WARP);
-
-        if (pDeviceWARP11_2)
-            D3D11_FillTree2(hTreeW, pDeviceWARP11_2, flMaskWARP, D3D_DRIVER_TYPE_WARP);
-
-        if (pDeviceWARP11_3)
-            D3D11_FillTree3(hTreeW, pDeviceWARP11_3, pDeviceWARP11_4, flMaskWARP, D3D_DRIVER_TYPE_WARP);
-
+        // DirectX 12 (WARP)
         if (pDeviceWARP12)
             D3D12_FillTree(hTreeW, pDeviceWARP12, D3D_DRIVER_TYPE_WARP);
+
+        // DirectX 11.x (WARP)
+        if (pDeviceWARP11 || pDeviceWARP11_1 || pDeviceWARP11_2 || pDeviceWARP11_3)
+        {
+            HTREEITEM hTree11 = (pDeviceWARP11_1 || pDeviceWARP11_2 || pDeviceWARP11_3)
+                ? TVAddNode(hTreeW, "Direct3D 11", TRUE, IDI_CAPS, nullptr, 0, 0)
+                : hTreeW;
+
+            if (pDeviceWARP11)
+                D3D11_FillTree(hTree11, pDeviceWARP11, flMaskWARP, D3D_DRIVER_TYPE_WARP);
+
+            if (pDeviceWARP11_1)
+                D3D11_FillTree1(hTree11, pDeviceWARP11_1, flMaskWARP, D3D_DRIVER_TYPE_WARP);
+
+            if (pDeviceWARP11_2)
+                D3D11_FillTree2(hTree11, pDeviceWARP11_2, flMaskWARP, D3D_DRIVER_TYPE_WARP);
+
+            if (pDeviceWARP11_3)
+                D3D11_FillTree3(hTree11, pDeviceWARP11_3, pDeviceWARP11_4, flMaskWARP, D3D_DRIVER_TYPE_WARP);
+        }
+
+        // DirectX 10.x (WARP)
+        if (pDeviceWARP10)
+        {
+            // WARP supported both 10 and 10.1 when first released
+            HTREEITEM hTree10 = TVAddNode(hTreeW, "Direct3D 10", TRUE, IDI_CAPS, nullptr, 0, 0);
+
+            D3D10_FillTree(hTree10, pDeviceWARP10, D3D_DRIVER_TYPE_WARP);
+            D3D10_FillTree1(hTree10, pDeviceWARP10, flMaskWARP, D3D_DRIVER_TYPE_WARP);
+        }
     }
 
     // REFERENCE
@@ -6113,23 +6142,41 @@ VOID DXGI_FillTree(HWND hwndTV)
     {
         HTREEITEM hTreeR = TVAddNode(hTree, "Reference", TRUE, IDI_CAPS, nullptr, 0, 0);
 
-        if (pDeviceREF10)
-            D3D10_FillTree(hTreeR, pDeviceREF10, D3D_DRIVER_TYPE_REFERENCE);
+        // No REF for Direct3D 12
 
-        if (pDeviceREF10_1)
-            D3D10_FillTree1(hTreeR, pDeviceREF10_1, FLMASK_10_0 | FLMASK_10_1, D3D_DRIVER_TYPE_REFERENCE);
+        // Direct3D 11.x (REF)
+        if (pDeviceREF11 || pDeviceREF11_1 || pDeviceREF11_2 || pDeviceREF11_3)
+        {
+            HTREEITEM hTree11 = (pDeviceREF11_1 || pDeviceREF11_2 || pDeviceREF11_3)
+                ? TVAddNode(hTreeR, "Direct3D 11", TRUE, IDI_CAPS, nullptr, 0, 0)
+                : hTreeR;
 
-        if (pDeviceREF11)
-            D3D11_FillTree(hTreeR, pDeviceREF11, flMaskREF, D3D_DRIVER_TYPE_REFERENCE);
+            if (pDeviceREF11)
+                D3D11_FillTree(hTree11, pDeviceREF11, flMaskREF, D3D_DRIVER_TYPE_REFERENCE);
 
-        if (pDeviceREF11_1)
-            D3D11_FillTree1(hTreeR, pDeviceREF11_1, flMaskREF, D3D_DRIVER_TYPE_REFERENCE);
+            if (pDeviceREF11_1)
+                D3D11_FillTree1(hTree11, pDeviceREF11_1, flMaskREF, D3D_DRIVER_TYPE_REFERENCE);
 
-        if (pDeviceREF11_2)
-            D3D11_FillTree2(hTreeR, pDeviceREF11_2, flMaskREF, D3D_DRIVER_TYPE_REFERENCE);
+            if (pDeviceREF11_2)
+                D3D11_FillTree2(hTree11, pDeviceREF11_2, flMaskREF, D3D_DRIVER_TYPE_REFERENCE);
 
-        if (pDeviceREF11_3)
-            D3D11_FillTree3(hTreeR, pDeviceREF11_3, pDeviceREF11_4, flMaskREF, D3D_DRIVER_TYPE_REFERENCE);
+            if (pDeviceREF11_3)
+                D3D11_FillTree3(hTree11, pDeviceREF11_3, pDeviceREF11_4, flMaskREF, D3D_DRIVER_TYPE_REFERENCE);
+        }
+
+        // Direct3D 10.x (REF)
+        if (pDeviceREF10 || pDeviceREF10_1)
+        {
+            HTREEITEM hTree10 = (pDeviceREF10_1)
+                ? TVAddNode(hTreeR, "Direct3D 10", TRUE, IDI_CAPS, nullptr, 0, 0)
+                : hTreeR;
+
+            if (pDeviceREF10)
+                D3D10_FillTree(hTree10, pDeviceREF10, D3D_DRIVER_TYPE_REFERENCE);
+
+            if (pDeviceREF10_1)
+                D3D10_FillTree1(hTree10, pDeviceREF10_1, FLMASK_10_0 | FLMASK_10_1, D3D_DRIVER_TYPE_REFERENCE);
+        }
     }
 
     TreeView_Expand(hwndTV, hTree, TVE_EXPAND);
