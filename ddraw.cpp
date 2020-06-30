@@ -860,7 +860,7 @@ namespace
         int xMode, yLine;
 
         if (!lpInfo)
-            return FALSE;
+            return E_FAIL;
 
         xMode = (lpInfo->dwCurrIndent * DEF_TAB_SIZE * lpInfo->dwCharWidth);
         yLine = (lpInfo->dwCurrLine * lpInfo->dwLineHeight);
