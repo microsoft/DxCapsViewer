@@ -285,15 +285,21 @@ namespace
         return shaderModelOpt.HighestShaderModel;
     }
 
-    bool IsD3D12DXRSupported(_In_ ID3D12Device* device)
+    const char* D3D12DXRSupported(_In_ ID3D12Device* device)
     {
         D3D12_FEATURE_DATA_D3D12_OPTIONS5 d3d12opts = {};
         if (SUCCEEDED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS5))))
         {
-            return d3d12opts.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
+            switch (d3d12opts.RaytracingTier)
+            {
+            case D3D12_RAYTRACING_TIER_NOT_SUPPORTED: break;
+            case D3D12_RAYTRACING_TIER_1_0: return "Optional (Yes - Tier 1.0)";
+            case D3D12_RAYTRACING_TIER_1_1: return "Optional (Yes - Tier 1.1)";
+            default: return "Optional (Yes)";
+            }
         }
 
-        return false;
+        return "Optional (No)";
     }
 
     bool IsD3D12MeshShaderSupported(_In_ ID3D12Device* device)
@@ -1943,7 +1949,7 @@ namespace
         if (pD3D12)
         {
             meshShaders = IsD3D12MeshShaderSupported(pD3D12) ? "Optional (Yes)" : "Optional (No)";
-            dxr = IsD3D12DXRSupported(pD3D12) ? "Optional (Yes)" : "Optional (No)";
+            dxr = D3D12DXRSupported(pD3D12);
         }
 
         if (!pPrintInfo)
@@ -4453,8 +4459,8 @@ namespace
         switch (d3d12opts5.RaytracingTier)
         {
         case D3D12_RAYTRACING_TIER_NOT_SUPPORTED: dxr = c_szNo; break;
-        case D3D12_RAYTRACING_TIER_1_0: dxr = "Yes - 1.0"; break;
-        case D3D12_RAYTRACING_TIER_1_1: dxr = "Yes - 1.1"; break;
+        case D3D12_RAYTRACING_TIER_1_0: dxr = "Yes - Tier 1.0"; break;
+        case D3D12_RAYTRACING_TIER_1_1: dxr = "Yes - Tier 1.1"; break;
         default: dxr = c_szYes; break;
         }
 
