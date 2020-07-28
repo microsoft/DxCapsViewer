@@ -4,6 +4,9 @@
 // Desc: DirectX Capabilities Viewer Common Header
 //
 // Copyright (c) Microsoft Corporation. All Rights Reserved.
+// Licensed under the MIT License.
+//
+// https://go.microsoft.com/fwlink/?linkid=2136896
 //-----------------------------------------------------------------------------
 #include <Windows.h>
 #include <mmsystem.h>

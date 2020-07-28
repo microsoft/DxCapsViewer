@@ -4,6 +4,9 @@
 // Desc: DirectX Capabilities Viewer for Direct3D
 //
 // Copyright (c) Microsoft Corporation. All Rights Reserved.
+// Licensed under the MIT License.
+//
+// https://go.microsoft.com/fwlink/?linkid=2136896
 //-----------------------------------------------------------------------------
 #include "dxview.h"
 #include <d3d9.h>

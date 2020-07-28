@@ -3,7 +3,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 #
-# https://github.com/walbourn/dxcapsviewer
+# https://go.microsoft.com/fwlink/?linkid=2136896
 
 cmake_minimum_required (VERSION 3.11)
 
