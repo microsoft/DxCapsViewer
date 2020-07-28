@@ -4,6 +4,9 @@
 // Desc: DirectX Capabilities Viewer Printing Support
 //
 // Copyright (c) Microsoft Corporation. All Rights Reserved.
+// Licensed under the MIT License.
+//
+// https://go.microsoft.com/fwlink/?linkid=2136896
 //-----------------------------------------------------------------------------
 #include "dxview.h"
 

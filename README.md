@@ -1,4 +1,8 @@
+![DirectX Logo](https://github.com/microsoft/DxCapsViewer/wiki/Dx_Logo.gif)
+
 # DirectX Capabilities Viewer
+
+https://go.microsoft.com/fwlink/?linkid=2136896
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
@@ -7,6 +11,10 @@ This developer utility was originally shipped in the DirectX SDK, and then in 20
 ## Building the tool
 
 This project is set up to use CMake with the Ninja generation via VS 2019's CMake integration. It is currently set up to require the Windows 10 SDK (19041) headers, but will run on Windows 7 SP1 or later.
+
+# Documentation
+
+Documentation is available on the [GitHub wiki](https://github.com/microsoft/DxCapsViewer/wiki).
 
 ## Notices
 
