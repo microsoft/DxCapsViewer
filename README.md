@@ -20,6 +20,6 @@ Documentation is available on the [GitHub wiki](https://github.com/microsoft/DxC
 
 All content and source code for this package are subject to the terms of the [MIT License](http://opensource.org/licenses/MIT).
 
-For the latest version of this tool, bug reports, etc. please visit the project site on [GitHub](https://github.com/walbourn/dxcapsviewer/).
+For the latest version of this tool, bug reports, etc. please visit the project site on [GitHub](https://github.com/microsoft/DxCapsViewer).
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
