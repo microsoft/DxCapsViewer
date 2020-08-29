@@ -32,7 +32,13 @@ enum FLMASK
     FLMASK_11_1 = 0x40,
     FLMASK_12_0 = 0x80,
     FLMASK_12_1 = 0x100,
+    FLMASK_12_2 = 0x200,
 };
+
+#if !defined(NTDDI_WIN10_FE)
+#define D3D_FEATURE_LEVEL_12_2 static_cast<D3D_FEATURE_LEVEL>(0xc200)
+#pragma warning(disable : 4063 4702)
+#endif
 
 //-----------------------------------------------------------------------------
 namespace
@@ -250,6 +256,7 @@ namespace
 
     const D3D_FEATURE_LEVEL g_featureLevels[] =
     {
+          D3D_FEATURE_LEVEL_12_2,
           D3D_FEATURE_LEVEL_12_1,
           D3D_FEATURE_LEVEL_12_0,
           D3D_FEATURE_LEVEL_11_1,
@@ -264,7 +271,7 @@ namespace
     D3D_FEATURE_LEVEL GetD3D12FeatureLevel(_In_ ID3D12Device* device)
     {
         D3D12_FEATURE_DATA_FEATURE_LEVELS flData = {};
-        flData.NumFeatureLevels = 4; // D3D12 requires FL 11.0 or greater
+        flData.NumFeatureLevels = 5; // D3D12 requires FL 11.0 or greater
         flData.pFeatureLevelsRequested = g_featureLevels;
 
         if (SUCCEEDED(device->CheckFeatureSupport(D3D12_FEATURE_FEATURE_LEVELS, &flData, sizeof(D3D12_FEATURE_DATA_FEATURE_LEVELS))))
@@ -495,6 +502,7 @@ namespace
             ENUMNAME(D3D_FEATURE_LEVEL_11_1);
             ENUMNAME(D3D_FEATURE_LEVEL_12_0);
             ENUMNAME(D3D_FEATURE_LEVEL_12_1);
+            return TEXT("D3D_FEATURE_LEVEL_12_2");
 
         default:
             return TEXT("D3D_FEATURE_LEVEL_UNKNOWN");
@@ -1230,37 +1238,38 @@ namespace
         const char* rast_ordered_views = nullptr;
         const char* ps_stencil_ref = nullptr;
         const char* instancing = nullptr;
+        const char* vrs = nullptr;
+        const char* meshShaders = nullptr;
+        const char* dxr = nullptr;
 
         BOOL _10level9 = FALSE;
 
         switch (fl)
         {
-        case D3D_FEATURE_LEVEL_12_1:
-        case D3D_FEATURE_LEVEL_12_0:
-            shaderModel = "5.0";
-            computeShader = "Yes (CS 5.0)";
-            extFormats = c_szYes;
-            x2_10BitFormat = c_szYes;
-            logic_ops = c_szYes;
-            cb_partial = c_szYes;
-            cb_offsetting = c_szYes;
-            uavEveryStage = c_szYes;
-            uavOnlyRender = "16";
-            nonpow2 = "Full";
-            bpp16 = c_szYes;
-            instancing = c_szYes;
-
+        case D3D_FEATURE_LEVEL_12_2:
             if (pD3D12)
             {
-                maxTexDim = XTOSTRING(D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION);
-                maxCubeDim = XTOSTRING(D3D12_REQ_TEXTURECUBE_DIMENSION);
-                maxVolDim = XTOSTRING(D3D12_REQ_TEXTURE3D_U_V_OR_W_DIMENSION);
-                maxTexRepeat = XTOSTRING(D3D12_REQ_FILTERING_HW_ADDRESSABLE_RESOURCE_DIMENSION);
-                maxAnisotropy = XTOSTRING(D3D12_REQ_MAXANISOTROPY);
-                maxInputSlots = XTOSTRING(D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT);
-                mrt = XTOSTRING(D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT);
-                uavSlots = XTOSTRING(D3D12_UAV_SLOT_COUNT);
+                switch (GetD3D12ShaderModel(pD3D12))
+                {
+                case D3D_SHADER_MODEL_6_6:
+                    shaderModel = "6.6 (Optional)";
+                    computeShader = "Yes (CS 6.6)";
+                    break;
+                default:
+                    shaderModel = "6.5";
+                    computeShader = "Yes (CS 6.5)";
+                    break;
+                }
+                vrs = "Yes - Tier 2";
+                meshShaders = c_szYes;
+                dxr = "Yes - Tier 1.1";
+            }
+            // Fall-through
 
+        case D3D_FEATURE_LEVEL_12_1:
+        case D3D_FEATURE_LEVEL_12_0:
+            if (!shaderModel)
+            {
                 switch (GetD3D12ShaderModel(pD3D12))
                 {
                 case D3D_SHADER_MODEL_6_6:
@@ -1296,6 +1305,28 @@ namespace
                     computeShader = "Yes (CS 5.1)";
                     break;
                 }
+            }
+            extFormats = c_szYes;
+            x2_10BitFormat = c_szYes;
+            logic_ops = c_szYes;
+            cb_partial = c_szYes;
+            cb_offsetting = c_szYes;
+            uavEveryStage = c_szYes;
+            uavOnlyRender = "16";
+            nonpow2 = "Full";
+            bpp16 = c_szYes;
+            instancing = c_szYes;
+
+            if (pD3D12)
+            {
+                maxTexDim = XTOSTRING(D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION);
+                maxCubeDim = XTOSTRING(D3D12_REQ_TEXTURECUBE_DIMENSION);
+                maxVolDim = XTOSTRING(D3D12_REQ_TEXTURE3D_U_V_OR_W_DIMENSION);
+                maxTexRepeat = XTOSTRING(D3D12_REQ_FILTERING_HW_ADDRESSABLE_RESOURCE_DIMENSION);
+                maxAnisotropy = XTOSTRING(D3D12_REQ_MAXANISOTROPY);
+                maxInputSlots = XTOSTRING(D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT);
+                mrt = XTOSTRING(D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT);
+                uavSlots = XTOSTRING(D3D12_UAV_SLOT_COUNT);
 
                 D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {};
                 HRESULT hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
@@ -1304,7 +1335,7 @@ namespace
 
                 switch (d3d12opts.TiledResourcesTier)
                 {
-                    // 12.0 & 12.1 should be T2 or greater
+                    // 12.0 & 12.1 should be T2 or greater, 12.2 is T3 or greater
                 case D3D12_TILED_RESOURCES_TIER_2:  tiled_rsc = "Yes - Tier 2"; break;
                 case D3D12_TILED_RESOURCES_TIER_3:  tiled_rsc = "Yes - Tier 3"; break;
                 case D3D12_TILED_RESOURCES_TIER_4:  tiled_rsc = "Yes - Tier 4"; break;
@@ -1313,7 +1344,7 @@ namespace
 
                 switch (d3d12opts.ResourceBindingTier)
                 {
-                    // 12.0 & 12.1 should be T2 or greater
+                    // 12.0 & 12.1 should be T2 or greater, 12.2 is T3 or greater
                 case D3D12_RESOURCE_BINDING_TIER_2: binding_rsc = "Yes - Tier 2"; break;
                 case D3D12_RESOURCE_BINDING_TIER_3: binding_rsc = "Yes - Tier 3"; break;
                 default:                            binding_rsc = c_szYes;        break;
@@ -1323,7 +1354,7 @@ namespace
                 {
                     switch (d3d12opts.ConservativeRasterizationTier)
                     {
-                        // 12.1 requires T1
+                        // 12.1 requires T1, 12.2 requires T3
                     case D3D12_CONSERVATIVE_RASTERIZATION_TIER_1:   consrv_rast = "Yes - Tier 1";  break;
                     case D3D12_CONSERVATIVE_RASTERIZATION_TIER_2:   consrv_rast = "Yes - Tier 2";  break;
                     case D3D12_CONSERVATIVE_RASTERIZATION_TIER_3:   consrv_rast = "Yes - Tier 3";  break;
@@ -1371,7 +1402,7 @@ namespace
 
                 switch (tiled)
                 {
-                    // 12.0 & 12.1 should be T2 or greater
+                    // 12.0 & 12.1 should be T2 or greater, 12.2 is T3 or greater
                 case D3D11_TILED_RESOURCES_TIER_2:          tiled_rsc = "Yes - Tier 2";  break;
                 case D3D11_TILED_RESOURCES_TIER_3:          tiled_rsc = "Yes - Tier 3";  break;
                 default:                                    tiled_rsc = c_szYes;         break;
@@ -1983,14 +2014,22 @@ namespace
             maxTexDim = (pD3D12 || pD3D11_3 || pD3D11_2 || pD3D11_1) ? "16777216" : "65536";
         }
 
-        const char* vrs = nullptr;
-        const char* meshShaders = nullptr;
-        const char* dxr = nullptr;
         if (pD3D12)
         {
-            vrs = D3D12VRSSupported(pD3D12);
-            meshShaders = IsD3D12MeshShaderSupported(pD3D12) ? c_szOptYes : c_szOptNo;
-            dxr = D3D12DXRSupported(pD3D12);
+            if (!vrs)
+            {
+                vrs = D3D12VRSSupported(pD3D12);
+            }
+
+            if (!meshShaders)
+            {
+                meshShaders = IsD3D12MeshShaderSupported(pD3D12) ? c_szOptYes : c_szOptNo;
+            }
+
+            if (!dxr)
+            {
+                dxr = D3D12DXRSupported(pD3D12);
+            }
         }
 
         if (!pPrintInfo)
@@ -5430,6 +5469,14 @@ namespace
 
             switch (fl)
             {
+            case D3D_FEATURE_LEVEL_12_2:
+                if (flMask & FLMASK_12_1)
+                {
+                    TVAddNodeEx(hTreeF, "D3D_FEATURE_LEVEL_12_1", FALSE, IDI_CAPS, D3D_FeatureLevel,
+                        (LPARAM)D3D_FEATURE_LEVEL_12_1, (LPARAM)pDevice, D3D_FL_LPARAM3_D3D11_3(devType));
+                }
+                // Fall thru
+
             case D3D_FEATURE_LEVEL_12_1:
                 if (flMask & FLMASK_12_0)
                 {
@@ -5517,6 +5564,11 @@ namespace
 
             switch (fl)
             {
+            case D3D_FEATURE_LEVEL_12_2:
+                TVAddNodeEx(hTreeF, "D3D_FEATURE_LEVEL_12_1", FALSE, IDI_CAPS, D3D_FeatureLevel,
+                    (LPARAM)D3D_FEATURE_LEVEL_12_1, (LPARAM)pDevice, D3D_FL_LPARAM3_D3D12(devType));
+                // Fall thru
+
             case D3D_FEATURE_LEVEL_12_1:
                 TVAddNodeEx(hTreeF, "D3D_FEATURE_LEVEL_12_0", FALSE, IDI_CAPS, D3D_FeatureLevel,
                     (LPARAM)D3D_FEATURE_LEVEL_12_0, (LPARAM)pDevice, D3D_FL_LPARAM3_D3D12(devType));
@@ -5813,7 +5865,7 @@ VOID DXGI_FillTree(HWND hwndTV)
         {
             D3D_FEATURE_LEVEL flHigh = (D3D_FEATURE_LEVEL)0;
 
-            for (UINT i = 0; i < _countof(g_featureLevels); ++i)
+            for (UINT i = 1 /* Skip 12.2 for DX11 */; i < _countof(g_featureLevels); ++i)
             {
 #ifdef EXTRA_DEBUG
                 OutputDebugString(FLName(g_featureLevels[i]));
@@ -6047,14 +6099,15 @@ VOID DXGI_FillTree(HWND hwndTV)
         OutputDebugString("WARP11\n");
 #endif
         D3D_FEATURE_LEVEL fl;
+        // Skip 12.2
         hr = g_D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0,
-            g_featureLevels, _countof(g_featureLevels),
+            &g_featureLevels[1], _countof(g_featureLevels) - 1,
             D3D11_SDK_VERSION, &pDeviceWARP11, &fl, nullptr);
         if (FAILED(hr))
         {
-            // Try without 12.1 or 12.0
+            // Try without 12.x
             hr = g_D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0,
-                &g_featureLevels[2], _countof(g_featureLevels) - 2,
+                &g_featureLevels[3], _countof(g_featureLevels) - 3,
                 D3D11_SDK_VERSION, &pDeviceWARP11, &fl, nullptr);
 
             if (FAILED(hr))
