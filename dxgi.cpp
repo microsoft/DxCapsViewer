@@ -308,6 +308,23 @@ namespace
         return c_szOptNo;
     }
 
+    const char* D3D12VRSSupported(_In_ ID3D12Device* device)
+    {
+        D3D12_FEATURE_DATA_D3D12_OPTIONS6 d3d12opts = {};
+        if (SUCCEEDED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS6))))
+        {
+            switch (d3d12opts.VariableShadingRateTier)
+            {
+            case D3D12_VARIABLE_SHADING_RATE_TIER_NOT_SUPPORTED: break;
+            case D3D12_VARIABLE_SHADING_RATE_TIER_1: return "Optional (Yes - Tier 1)";
+            case D3D12_VARIABLE_SHADING_RATE_TIER_2: return "Optional (Yes - Teir 2)";
+            default: return c_szOptYes;
+            }
+        }
+
+        return c_szOptNo;
+    }
+
     bool IsD3D12MeshShaderSupported(_In_ ID3D12Device* device)
     {
         D3D12_FEATURE_DATA_D3D12_OPTIONS7 d3d12opts = {};
@@ -1247,31 +1264,31 @@ namespace
                 switch (GetD3D12ShaderModel(pD3D12))
                 {
                 case D3D_SHADER_MODEL_6_6:
-                    shaderModel = "6.6";
+                    shaderModel = "6.6 (Optional)";
                     computeShader = "Yes (CS 6.6)";
                     break;
                 case D3D_SHADER_MODEL_6_5:
-                    shaderModel = "6.5";
+                    shaderModel = "6.5 (Optional)";
                     computeShader = "Yes (CS 6.5)";
                     break;
                 case D3D_SHADER_MODEL_6_4:
-                    shaderModel = "6.4";
+                    shaderModel = "6.4 (Optional)";
                     computeShader = "Yes (CS 6.4)";
                     break;
                 case D3D_SHADER_MODEL_6_3:
-                    shaderModel = "6.3";
+                    shaderModel = "6.3 (Optional)";
                     computeShader = "Yes (CS 6.3)";
                     break;
                 case D3D_SHADER_MODEL_6_2:
-                    shaderModel = "6.2";
+                    shaderModel = "6.2 (Optional)";
                     computeShader = "Yes (CS 6.2)";
                     break;
                 case D3D_SHADER_MODEL_6_1:
-                    shaderModel = "6.1";
+                    shaderModel = "6.1 (Optional)";
                     computeShader = "Yes (CS 6.1)";
                     break;
                 case D3D_SHADER_MODEL_6_0:
-                    shaderModel = "6.0";
+                    shaderModel = "6.0 (Optional)";
                     computeShader = "Yes (CS 6.0)";
                     break;
                 default:
@@ -1435,6 +1452,14 @@ namespace
                 default:                                        tiled_rsc = c_szOptYes; break;
                 }
 
+                switch (d3d12opts.ResourceBindingTier)
+                {
+                case D3D12_RESOURCE_BINDING_TIER_1: binding_rsc = "Yes - Tier 1"; break;
+                case D3D12_RESOURCE_BINDING_TIER_2: binding_rsc = "Yes - Tier 2"; break;
+                case D3D12_RESOURCE_BINDING_TIER_3: binding_rsc = "Yes - Tier 3"; break;
+                default:                            binding_rsc = c_szYes;        break;
+                }
+
                 switch (d3d12opts.ConservativeRasterizationTier)
                 {
                 case D3D12_CONSERVATIVE_RASTERIZATION_TIER_NOT_SUPPORTED:   consrv_rast = c_szOptNo; break;
@@ -1533,6 +1558,14 @@ namespace
                 case D3D12_TILED_RESOURCES_TIER_3:              tiled_rsc = "Optional (Yes - Tier 3)";  break;
                 case D3D12_TILED_RESOURCES_TIER_4:              tiled_rsc = "Optional (Yes - Tier 4)";  break;
                 default:                                        tiled_rsc = c_szOptYes; break;
+                }
+
+                switch (d3d12opts.ResourceBindingTier)
+                {
+                case D3D12_RESOURCE_BINDING_TIER_1: binding_rsc = "Yes - Tier 1"; break;
+                case D3D12_RESOURCE_BINDING_TIER_2: binding_rsc = "Yes - Tier 2"; break;
+                case D3D12_RESOURCE_BINDING_TIER_3: binding_rsc = "Yes - Tier 3"; break;
+                default:                            binding_rsc = c_szYes;        break;
                 }
 
                 logic_ops = d3d12opts.OutputMergerLogicOp ? c_szOptYes : c_szOptNo;
@@ -1950,10 +1983,12 @@ namespace
             maxTexDim = (pD3D12 || pD3D11_3 || pD3D11_2 || pD3D11_1) ? "16777216" : "65536";
         }
 
+        const char* vrs = nullptr;
         const char* meshShaders = nullptr;
         const char* dxr = nullptr;
         if (pD3D12)
         {
+            vrs = D3D12VRSSupported(pD3D12);
             meshShaders = IsD3D12MeshShaderSupported(pD3D12) ? c_szOptYes : c_szOptNo;
             dxr = D3D12DXRSupported(pD3D12);
         }
@@ -1976,6 +2011,7 @@ namespace
 
             if (pD3D12)
             {
+                LVLINE("Variable Rate Shading (VRS)", vrs);
                 LVLINE("Mesh & Amplification Shaders", meshShaders);
                 LVLINE("DirectX Raytracing", dxr);
             }
@@ -2150,6 +2186,7 @@ namespace
 
             if (pD3D12)
             {
+                PRINTLINE("Variable Rate Shading (VRS)", vrs);
                 PRINTLINE("Mesh & Amplification Shaders", meshShaders);
                 PRINTLINE("DirectX Raytracing", dxr);
             }
