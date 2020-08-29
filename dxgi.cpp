@@ -96,6 +96,9 @@ extern const char c_szYes[];
 extern const char c_szNo[];
 extern const char c_szNA[];
 
+const char c_szOptYes[] = "Optional (Yes)";
+const char c_szOptNo[] = "Optional (No)";
+
 namespace
 {
     const char* szRotation[] =
@@ -298,11 +301,11 @@ namespace
             case D3D12_RAYTRACING_TIER_NOT_SUPPORTED: break;
             case D3D12_RAYTRACING_TIER_1_0: return "Optional (Yes - Tier 1.0)";
             case D3D12_RAYTRACING_TIER_1_1: return "Optional (Yes - Tier 1.1)";
-            default: return "Optional (Yes)";
+            default: return c_szOptYes;
             }
         }
 
-        return "Optional (No)";
+        return c_szOptNo;
     }
 
     bool IsD3D12MeshShaderSupported(_In_ ID3D12Device* device)
@@ -1316,17 +1319,17 @@ namespace
                 {
                     switch (d3d12opts.ConservativeRasterizationTier)
                     {
-                    case D3D12_CONSERVATIVE_RASTERIZATION_TIER_NOT_SUPPORTED:   consrv_rast = "Optional (No)";            break;
+                    case D3D12_CONSERVATIVE_RASTERIZATION_TIER_NOT_SUPPORTED:   consrv_rast = c_szOptNo; break;
                     case D3D12_CONSERVATIVE_RASTERIZATION_TIER_1:               consrv_rast = "Optional (Yes - Tier 1)";  break;
                     case D3D12_CONSERVATIVE_RASTERIZATION_TIER_2:               consrv_rast = "Optional (Yes - Tier 2)";  break;
                     case D3D12_CONSERVATIVE_RASTERIZATION_TIER_3:               consrv_rast = "Optional (Yes - Tier 3)";  break;
-                    default:                                                    consrv_rast = "Optional (Yes)";           break;
+                    default:                                                    consrv_rast = c_szOptYes; break;
                     }
 
-                    rast_ordered_views = (d3d12opts.ROVsSupported) ? "Optional (Yes)" : "Optional (No)";
+                    rast_ordered_views = (d3d12opts.ROVsSupported) ? c_szOptYes : c_szOptNo;
                 }
 
-                ps_stencil_ref = (d3d12opts.PSSpecifiedStencilRefSupported) ? "Optional (Yes)" : "Optional (No)";
+                ps_stencil_ref = (d3d12opts.PSSpecifiedStencilRefSupported) ? c_szOptYes : c_szOptNo;
                 minmaxfilter = c_szYes;
                 mapdefaultbuff = c_szYes;
             }
@@ -1374,17 +1377,17 @@ namespace
                 {
                     switch (crast)
                     {
-                    case D3D11_CONSERVATIVE_RASTERIZATION_NOT_SUPPORTED:    consrv_rast = "Optional (No)";            break;
+                    case D3D11_CONSERVATIVE_RASTERIZATION_NOT_SUPPORTED:    consrv_rast = c_szOptNo; break;
                     case D3D11_CONSERVATIVE_RASTERIZATION_TIER_1:           consrv_rast = "Optional (Yes - Tier 1)";  break;
                     case D3D11_CONSERVATIVE_RASTERIZATION_TIER_2:           consrv_rast = "Optional (Yes - Tier 2)";  break;
                     case D3D11_CONSERVATIVE_RASTERIZATION_TIER_3:           consrv_rast = "Optional (Yes - Tier 3)";  break;
-                    default:                                                consrv_rast = "Optional (Yes)";           break;
+                    default:                                                consrv_rast = c_szOptYes; break;
                     }
 
-                    rast_ordered_views = (rovs) ? "Optional (Yes)" : "Optional (No)";
+                    rast_ordered_views = (rovs) ? c_szOptYes : c_szOptNo;
                 }
 
-                ps_stencil_ref = (pssref) ? "Optional (Yes)" : "Optional (No)";
+                ps_stencil_ref = (pssref) ? c_szOptYes : c_szOptNo;
                 minmaxfilter = c_szYes;
                 mapdefaultbuff = c_szYes;
             }
@@ -1424,25 +1427,25 @@ namespace
 
                 switch (d3d12opts.TiledResourcesTier)
                 {
-                case D3D12_TILED_RESOURCES_TIER_NOT_SUPPORTED:  tiled_rsc = "Optional (No)";            break;
+                case D3D12_TILED_RESOURCES_TIER_NOT_SUPPORTED:  tiled_rsc = c_szOptNo; break;
                 case D3D12_TILED_RESOURCES_TIER_1:              tiled_rsc = "Optional (Yes - Tier 1)";  break;
                 case D3D12_TILED_RESOURCES_TIER_2:              tiled_rsc = "Optional (Yes - Tier 2)";  break;
                 case D3D12_TILED_RESOURCES_TIER_3:              tiled_rsc = "Optional (Yes - Tier 3)";  break;
                 case D3D12_TILED_RESOURCES_TIER_4:              tiled_rsc = "Optional (Yes - Tier 4)";  break;
-                default:                                        tiled_rsc = "Optional (Yes)";           break;
+                default:                                        tiled_rsc = c_szOptYes; break;
                 }
 
                 switch (d3d12opts.ConservativeRasterizationTier)
                 {
-                case D3D12_CONSERVATIVE_RASTERIZATION_TIER_NOT_SUPPORTED:   consrv_rast = "Optional (No)";            break;
+                case D3D12_CONSERVATIVE_RASTERIZATION_TIER_NOT_SUPPORTED:   consrv_rast = c_szOptNo; break;
                 case D3D12_CONSERVATIVE_RASTERIZATION_TIER_1:               consrv_rast = "Optional (Yes - Tier 1)";  break;
                 case D3D12_CONSERVATIVE_RASTERIZATION_TIER_2:               consrv_rast = "Optional (Yes - Tier 2)";  break;
                 case D3D12_CONSERVATIVE_RASTERIZATION_TIER_3:               consrv_rast = "Optional (Yes - Tier 3)";  break;
-                default:                                                    consrv_rast = "Optional (Yes)";           break;
+                default:                                                    consrv_rast = c_szOptYes; break;
                 }
 
-                rast_ordered_views = (d3d12opts.ROVsSupported) ? "Optional (Yes)" : "Optional (No)";
-                ps_stencil_ref = (d3d12opts.PSSpecifiedStencilRefSupported) ? "Optional (Yes)" : "Optional (No)";
+                rast_ordered_views = (d3d12opts.ROVsSupported) ? c_szOptYes : c_szOptNo;
+                ps_stencil_ref = (d3d12opts.PSSpecifiedStencilRefSupported) ? c_szOptYes : c_szOptNo;
                 minmaxfilter = c_szYes;
                 mapdefaultbuff = c_szYes;
             }
@@ -1458,26 +1461,26 @@ namespace
 
                 switch (tiled)
                 {
-                case D3D11_TILED_RESOURCES_NOT_SUPPORTED:   tiled_rsc = "Optional (No)";            break;
+                case D3D11_TILED_RESOURCES_NOT_SUPPORTED:   tiled_rsc = c_szOptNo; break;
                 case D3D11_TILED_RESOURCES_TIER_1:          tiled_rsc = "Optional (Yes - Tier 1)";  break;
                 case D3D11_TILED_RESOURCES_TIER_2:          tiled_rsc = "Optional (Yes - Tier 2)";  break;
                 case D3D11_TILED_RESOURCES_TIER_3:          tiled_rsc = "Optional (Yes - Tier 3)";  break;
-                default:                                    tiled_rsc = "Optional (Yes)";           break;
+                default:                                    tiled_rsc = c_szOptYes; break;
                 }
 
                 switch (crast)
                 {
-                case D3D11_CONSERVATIVE_RASTERIZATION_NOT_SUPPORTED:    consrv_rast = "Optional (No)";            break;
+                case D3D11_CONSERVATIVE_RASTERIZATION_NOT_SUPPORTED:    consrv_rast = c_szOptNo; break;
                 case D3D11_CONSERVATIVE_RASTERIZATION_TIER_1:           consrv_rast = "Optional (Yes - Tier 1)";  break;
                 case D3D11_CONSERVATIVE_RASTERIZATION_TIER_2:           consrv_rast = "Optional (Yes - Tier 2)";  break;
                 case D3D11_CONSERVATIVE_RASTERIZATION_TIER_3:           consrv_rast = "Optional (Yes - Tier 3)";  break;
-                default:                                                consrv_rast = "Optional (Yes)";           break;
+                default:                                                consrv_rast = c_szOptYes; break;
                 }
 
-                rast_ordered_views = (rovs) ? "Optional (Yes)" : "Optional (No)";
-                ps_stencil_ref = (pssref) ? "Optional (Yes)" : "Optional (No)";
-                minmaxfilter = bMinMaxFilter ? "Optional (Yes)" : "Optional (No)";
-                mapdefaultbuff = bMapDefaultBuff ? "Optional (Yes)" : "Optional (No)";
+                rast_ordered_views = (rovs) ? c_szOptYes : c_szOptNo;
+                ps_stencil_ref = (pssref) ? c_szOptYes : c_szOptNo;
+                minmaxfilter = bMinMaxFilter ? c_szOptYes : c_szOptNo;
+                mapdefaultbuff = bMapDefaultBuff ? c_szOptYes : c_szOptNo;
             }
             else if (pD3D11_2)
             {
@@ -1487,14 +1490,14 @@ namespace
 
                 switch (tiled)
                 {
-                case D3D11_TILED_RESOURCES_NOT_SUPPORTED:   tiled_rsc = "Optional (No)";            break;
+                case D3D11_TILED_RESOURCES_NOT_SUPPORTED:   tiled_rsc = c_szOptNo; break;
                 case D3D11_TILED_RESOURCES_TIER_1:          tiled_rsc = "Optional (Yes - Tier 1)";  break;
                 case D3D11_TILED_RESOURCES_TIER_2:          tiled_rsc = "Optional (Yes - Tier 2)";  break;
-                default:                                    tiled_rsc = "Optional (Yes)";           break;
+                default:                                    tiled_rsc = c_szOptYes; break;
                 }
 
-                minmaxfilter = bMinMaxFilter ? "Optional (Yes)" : "Optional (No)";
-                mapdefaultbuff = bMapDefaultBuff ? "Optional (Yes)" : "Optional (No)";
+                minmaxfilter = bMinMaxFilter ? c_szOptYes : c_szOptNo;
+                mapdefaultbuff = bMapDefaultBuff ? c_szOptYes : c_szOptNo;
             }
             break;
 
@@ -1524,15 +1527,15 @@ namespace
 
                 switch (d3d12opts.TiledResourcesTier)
                 {
-                case D3D12_TILED_RESOURCES_TIER_NOT_SUPPORTED:  tiled_rsc = "Optional (No)";            break;
+                case D3D12_TILED_RESOURCES_TIER_NOT_SUPPORTED:  tiled_rsc = c_szOptNo; break;
                 case D3D12_TILED_RESOURCES_TIER_1:              tiled_rsc = "Optional (Yes - Tier 1)";  break;
                 case D3D12_TILED_RESOURCES_TIER_2:              tiled_rsc = "Optional (Yes - Tier 2)";  break;
                 case D3D12_TILED_RESOURCES_TIER_3:              tiled_rsc = "Optional (Yes - Tier 3)";  break;
                 case D3D12_TILED_RESOURCES_TIER_4:              tiled_rsc = "Optional (Yes - Tier 4)";  break;
-                default:                                        tiled_rsc = "Optional (Yes)";           break;
+                default:                                        tiled_rsc = c_szOptYes; break;
                 }
 
-                logic_ops = d3d12opts.OutputMergerLogicOp ? "Optional (Yes)" : "Optional (No)";
+                logic_ops = d3d12opts.OutputMergerLogicOp ? c_szOptYes : c_szOptNo;
                 consrv_rast = rast_ordered_views = ps_stencil_ref = minmaxfilter = c_szNo;
                 mapdefaultbuff = c_szYes;
 
@@ -1557,15 +1560,15 @@ namespace
 
                 switch (tiled)
                 {
-                case D3D11_TILED_RESOURCES_NOT_SUPPORTED:   tiled_rsc = "Optional (No)";            break;
+                case D3D11_TILED_RESOURCES_NOT_SUPPORTED:   tiled_rsc = c_szOptNo; break;
                 case D3D11_TILED_RESOURCES_TIER_1:          tiled_rsc = "Optional (Yes - Tier 1)";  break;
                 case D3D11_TILED_RESOURCES_TIER_2:          tiled_rsc = "Optional (Yes - Tier 2)";  break;
                 case D3D11_TILED_RESOURCES_TIER_3:          tiled_rsc = "Optional (Yes - Tier 3)";  break;
-                default:                                    tiled_rsc = "Optional (Yes)";           break;
+                default:                                    tiled_rsc = c_szOptYes; break;
                 }
 
                 consrv_rast = rast_ordered_views = ps_stencil_ref = minmaxfilter = c_szNo;
-                mapdefaultbuff = bMapDefaultBuff ? "Optional (Yes)" : "Optional (No)";
+                mapdefaultbuff = bMapDefaultBuff ? c_szOptYes : c_szOptNo;
             }
             else if (pD3D11_2)
             {
@@ -1575,14 +1578,14 @@ namespace
 
                 switch (tiled)
                 {
-                case D3D11_TILED_RESOURCES_NOT_SUPPORTED:   tiled_rsc = "Optional (No)";            break;
+                case D3D11_TILED_RESOURCES_NOT_SUPPORTED:   tiled_rsc = c_szOptNo; break;
                 case D3D11_TILED_RESOURCES_TIER_1:          tiled_rsc = "Optional (Yes - Tier 1)";  break;
                 case D3D11_TILED_RESOURCES_TIER_2:          tiled_rsc = "Optional (Yes - Tier 2)";  break;
-                default:                                    tiled_rsc = "Optional (Yes)";           break;
+                default:                                    tiled_rsc = c_szOptYes; break;
                 }
 
                 minmaxfilter = c_szNo;
-                mapdefaultbuff = bMapDefaultBuff ? "Optional (Yes)" : "Optional (No)";
+                mapdefaultbuff = bMapDefaultBuff ? c_szOptYes : c_szOptNo;
             }
 
             if (pD3D11_1 || pD3D11_2 || pD3D11_3)
@@ -1591,13 +1594,13 @@ namespace
 
                 bool bLogicOps, bCBpartial, bCBoffsetting;
                 CheckD3D11Ops(pD3D, bLogicOps, bCBpartial, bCBoffsetting);
-                logic_ops = bLogicOps ? "Optional (Yes)" : "Optional (No)";
-                cb_partial = bCBpartial ? "Optional (Yes)" : "Optional (No)";
-                cb_offsetting = bCBoffsetting ? "Optional (Yes)" : "Optional (No)";
+                logic_ops = bLogicOps ? c_szOptYes : c_szOptNo;
+                cb_partial = bCBpartial ? c_szOptYes : c_szOptNo;
+                cb_offsetting = bCBoffsetting ? c_szOptYes : c_szOptNo;
 
                 BOOL ext, x2, bpp565;
                 CheckExtendedFormats(pD3D, ext, x2, bpp565);
-                bpp16 = (bpp565) ? "Optional (Yes)" : "Optional (No)";
+                bpp16 = (bpp565) ? c_szOptYes : c_szOptNo;
 
                 uavSlots = "8";
                 uavEveryStage = c_szNo;
@@ -1638,22 +1641,22 @@ namespace
                 }
                 else
                 {
-                    computeShader = "Optional (No)";
+                    computeShader = c_szOptNo;
                 }
 
                 bool bLogicOps, bCBpartial, bCBoffsetting;
                 CheckD3D11Ops(pD3D, bLogicOps, bCBpartial, bCBoffsetting);
-                logic_ops = bLogicOps ? "Optional (Yes)" : "Optional (No)";
-                cb_partial = bCBpartial ? "Optional (Yes)" : "Optional (No)";
-                cb_offsetting = bCBoffsetting ? "Optional (Yes)" : "Optional (No)";
+                logic_ops = bLogicOps ? c_szOptYes : c_szOptNo;
+                cb_partial = bCBpartial ? c_szOptYes : c_szOptNo;
+                cb_offsetting = bCBoffsetting ? c_szOptYes : c_szOptNo;
 
                 BOOL ext, x2, bpp565;
                 CheckExtendedFormats(pD3D, ext, x2, bpp565);
 
-                extFormats = (ext) ? "Optional (Yes)" : "Optional (No)";
-                x2_10BitFormat = (x2) ? "Optional (Yes)" : "Optional (No)";
+                extFormats = (ext) ? c_szOptYes : c_szOptNo;
+                x2_10BitFormat = (x2) ? c_szOptYes : c_szOptNo;
                 nonpow2 = "Full";
-                bpp16 = (bpp565) ? "Optional (Yes)" : "Optional (No)";
+                bpp16 = (bpp565) ? c_szOptYes : c_szOptNo;
             }
             else if (pD3D11)
             {
@@ -1662,29 +1665,29 @@ namespace
                 if (FAILED(hr))
                     memset(&d3d10xhw, 0, sizeof(d3d10xhw));
 
-                computeShader = (d3d10xhw.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x) ? "Optional (Yes - CS 4.x)" : "Optional (No)";
+                computeShader = (d3d10xhw.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x) ? "Optional (Yes - CS 4.x)" : c_szOptNo;
 
                 BOOL ext, x2, bpp565;
                 CheckExtendedFormats(pD3D11, ext, x2, bpp565);
 
-                extFormats = (ext) ? "Optional (Yes)" : "Optional (No)";
-                x2_10BitFormat = (x2) ? "Optional (Yes)" : "Optional (No)";
+                extFormats = (ext) ? c_szOptYes : c_szOptNo;
+                x2_10BitFormat = (x2) ? c_szOptYes : c_szOptNo;
             }
             else if (pD3D10_1)
             {
                 BOOL ext, x2;
                 CheckExtendedFormats(pD3D10_1, ext, x2);
 
-                extFormats = (ext) ? "Optional (Yes)" : "Optional (No)";
-                x2_10BitFormat = (x2) ? "Optional (Yes)" : "Optional (No)";
+                extFormats = (ext) ? c_szOptYes : c_szOptNo;
+                x2_10BitFormat = (x2) ? c_szOptYes : c_szOptNo;
             }
             else if (pD3D10)
             {
                 BOOL ext, x2;
                 CheckExtendedFormats(pD3D10, ext, x2);
 
-                extFormats = (ext) ? "Optional (Yes)" : "Optional (No)";
-                x2_10BitFormat = (x2) ? "Optional (Yes)" : "Optional (No)";
+                extFormats = (ext) ? c_szOptYes : c_szOptNo;
+                x2_10BitFormat = (x2) ? c_szOptYes : c_szOptNo;
             }
 
             maxTexDim = XTOSTRING(D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION);
@@ -1728,22 +1731,22 @@ namespace
                 }
                 else
                 {
-                    computeShader = "Optional (No)";
+                    computeShader = c_szOptNo;
                 }
 
                 bool bLogicOps, bCBpartial, bCBoffsetting;
                 CheckD3D11Ops(pD3D, bLogicOps, bCBpartial, bCBoffsetting);
-                logic_ops = bLogicOps ? "Optional (Yes)" : "Optional (No)";
-                cb_partial = bCBpartial ? "Optional (Yes)" : "Optional (No)";
-                cb_offsetting = bCBoffsetting ? "Optional (Yes)" : "Optional (No)";
+                logic_ops = bLogicOps ? c_szOptYes : c_szOptNo;
+                cb_partial = bCBpartial ? c_szOptYes : c_szOptNo;
+                cb_offsetting = bCBoffsetting ? c_szOptYes : c_szOptNo;
 
                 BOOL ext, x2, bpp565;
                 CheckExtendedFormats(pD3D, ext, x2, bpp565);
 
-                extFormats = (ext) ? "Optional (Yes)" : "Optional (No)";
-                x2_10BitFormat = (x2) ? "Optional (Yes)" : "Optional (No)";
+                extFormats = (ext) ? c_szOptYes : c_szOptNo;
+                x2_10BitFormat = (x2) ? c_szOptYes : c_szOptNo;
                 nonpow2 = "Full";
-                bpp16 = (bpp565) ? "Optional (Yes)" : "Optional (No)";
+                bpp16 = (bpp565) ? c_szOptYes : c_szOptNo;
             }
             else if (pD3D11)
             {
@@ -1752,29 +1755,29 @@ namespace
                 if (FAILED(hr))
                     memset(&d3d10xhw, 0, sizeof(d3d10xhw));
 
-                computeShader = (d3d10xhw.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x) ? "Optional (Yes - CS 4.0)" : "Optional (No)";
+                computeShader = (d3d10xhw.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x) ? "Optional (Yes - CS 4.0)" : c_szOptNo;
 
                 BOOL ext, x2, bpp565;
                 CheckExtendedFormats(pD3D11, ext, x2, bpp565);
 
-                extFormats = (ext) ? "Optional (Yes)" : "Optional (No)";
-                x2_10BitFormat = (x2) ? "Optional (Yes)" : "Optional (No)";
+                extFormats = (ext) ? c_szOptYes : c_szOptNo;
+                x2_10BitFormat = (x2) ? c_szOptYes : c_szOptNo;
             }
             else if (pD3D10_1)
             {
                 BOOL ext, x2;
                 CheckExtendedFormats(pD3D10_1, ext, x2);
 
-                extFormats = (ext) ? "Optional (Yes)" : "Optional (No)";
-                x2_10BitFormat = (x2) ? "Optional (Yes)" : "Optional (No)";
+                extFormats = (ext) ? c_szOptYes : c_szOptNo;
+                x2_10BitFormat = (x2) ? c_szOptYes : c_szOptNo;
             }
             else if (pD3D10)
             {
                 BOOL ext, x2;
                 CheckExtendedFormats(pD3D10, ext, x2);
 
-                extFormats = (ext) ? "Optional (Yes)" : "Optional (No)";
-                x2_10BitFormat = (x2) ? "Optional (Yes)" : "Optional (No)";
+                extFormats = (ext) ? c_szOptYes : c_szOptNo;
+                x2_10BitFormat = (x2) ? c_szOptYes : c_szOptNo;
             }
 
             maxTexDim = XTOSTRING(D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION);
@@ -1811,13 +1814,13 @@ namespace
                 BOOL ext, x2, bpp565;
                 CheckExtendedFormats(pD3D, ext, x2, bpp565);
 
-                bpp16 = (bpp565) ? "Optional (Yes)" : "Optional (No)";
+                bpp16 = (bpp565) ? c_szOptYes : c_szOptNo;
 
                 bool bNonPow2, bShadows, bInstancing, bCubeRT;
                 CheckD3D9Ops1(pD3D, bNonPow2, bShadows, bInstancing, bCubeRT);
                 nonpow2 = bNonPow2 ? "Optional (Full)" : "Conditional";
-                shadows = bShadows ? "Optional (Yes)" : "Optional (No)";
-                cubeRT = bCubeRT ? "Optional (Yes)" : "Optional (No)";
+                shadows = bShadows ? c_szOptYes : c_szOptNo;
+                cubeRT = bCubeRT ? c_szOptYes : c_szOptNo;
             }
             else if (pD3D11_1)
             {
@@ -1827,12 +1830,12 @@ namespace
                 BOOL ext, x2, bpp565;
                 CheckExtendedFormats(pD3D11_1, ext, x2, bpp565);
 
-                bpp16 = (bpp565) ? "Optional (Yes)" : "Optional (No)";
+                bpp16 = (bpp565) ? c_szOptYes : c_szOptNo;
 
                 bool bNonPow2, bShadows;
                 CheckD3D9Ops(pD3D11_1, bNonPow2, bShadows);
                 nonpow2 = bNonPow2 ? "Optional (Full)" : "Conditional";
-                shadows = bShadows ? "Optional (Yes)" : "Optional (No)";
+                shadows = bShadows ? c_szOptYes : c_szOptNo;
             }
             break;
 
@@ -1861,14 +1864,14 @@ namespace
                 BOOL ext, x2, bpp565;
                 CheckExtendedFormats(pD3D, ext, x2, bpp565);
 
-                bpp16 = (bpp565) ? "Optional (Yes)" : "Optional (No)";
+                bpp16 = (bpp565) ? c_szOptYes : c_szOptNo;
 
                 bool bNonPow2, bShadows, bInstancing, bCubeRT;
                 CheckD3D9Ops1(pD3D, bNonPow2, bShadows, bInstancing, bCubeRT);
                 nonpow2 = bNonPow2 ? "Optional (Full)" : "Conditional";
-                shadows = bShadows ? "Optional (Yes)" : "Optional (No)";
-                instancing = bInstancing ? "Optional (Simple)" : "Optional (No)";
-                cubeRT = bCubeRT ? "Optional (Yes)" : "Optional (No)";
+                shadows = bShadows ? c_szOptYes : c_szOptNo;
+                instancing = bInstancing ? "Optional (Simple)" : c_szOptNo;
+                cubeRT = bCubeRT ? c_szOptYes : c_szOptNo;
             }
             else if (pD3D11_1)
             {
@@ -1878,12 +1881,12 @@ namespace
                 BOOL ext, x2, bpp565;
                 CheckExtendedFormats(pD3D11_1, ext, x2, bpp565);
 
-                bpp16 = (bpp565) ? "Optional (Yes)" : "Optional (No)";
+                bpp16 = (bpp565) ? c_szOptYes : c_szOptNo;
 
                 bool bNonPow2, bShadows;
                 CheckD3D9Ops(pD3D11_1, bNonPow2, bShadows);
                 nonpow2 = bNonPow2 ? "Optional (Full)" : "Conditional";
-                shadows = bShadows ? "Optional (Yes)" : "Optional (No)";
+                shadows = bShadows ? c_szOptYes : c_szOptNo;
             }
             break;
 
@@ -1912,14 +1915,14 @@ namespace
                 BOOL ext, x2, bpp565;
                 CheckExtendedFormats(pD3D, ext, x2, bpp565);
 
-                bpp16 = (bpp565) ? "Optional (Yes)" : "Optional (No)";
+                bpp16 = (bpp565) ? c_szOptYes : c_szOptNo;
 
                 bool bNonPow2, bShadows, bInstancing, bCubeRT;
                 CheckD3D9Ops1(pD3D, bNonPow2, bShadows, bInstancing, bCubeRT);
                 nonpow2 = bNonPow2 ? "Optional (Full)" : "Conditional";
-                shadows = bShadows ? "Optional (Yes)" : "Optional (No)";
-                instancing = bInstancing ? "Optional (Simple)" : "Optional (No)";
-                cubeRT = bCubeRT ? "Optional (Yes)" : "Optional (No)";
+                shadows = bShadows ? c_szOptYes : c_szOptNo;
+                instancing = bInstancing ? "Optional (Simple)" : c_szOptNo;
+                cubeRT = bCubeRT ? c_szOptYes : c_szOptNo;
             }
             else if (pD3D11_1)
             {
@@ -1929,12 +1932,12 @@ namespace
                 BOOL ext, x2, bpp565;
                 CheckExtendedFormats(pD3D11_1, ext, x2, bpp565);
 
-                bpp16 = (bpp565) ? "Optional (Yes)" : "Optional (No)";
+                bpp16 = (bpp565) ? c_szOptYes : c_szOptNo;
 
                 bool bNonPow2, bShadows;
                 CheckD3D9Ops(pD3D11_1, bNonPow2, bShadows);
                 nonpow2 = bNonPow2 ? "Optional (Full)" : "Conditional";
-                shadows = bShadows ? "Optional (Yes)" : "Optional (No)";
+                shadows = bShadows ? c_szOptYes : c_szOptNo;
             }
             break;
 
@@ -1951,7 +1954,7 @@ namespace
         const char* dxr = nullptr;
         if (pD3D12)
         {
-            meshShaders = IsD3D12MeshShaderSupported(pD3D12) ? "Optional (Yes)" : "Optional (No)";
+            meshShaders = IsD3D12MeshShaderSupported(pD3D12) ? c_szOptYes : c_szOptNo;
             dxr = D3D12DXRSupported(pD3D12);
         }
 
@@ -2053,12 +2056,9 @@ namespace
                 }
             }
 
-            if (pD3D12)
+            if (pD3D12 && binding_rsc)
             {
-                if (binding_rsc)
-                {
-                    LVLINE("Resource Binding", binding_rsc);
-                }
+                LVLINE("Resource Binding", binding_rsc);
             }
 
             if (g_DXGIFactory1 && !pD3D12)
@@ -2230,12 +2230,9 @@ namespace
                 }
             }
 
-            if (pD3D12)
+            if (pD3D12 && binding_rsc)
             {
-                if (binding_rsc)
-                {
-                    PRINTLINE("Resource Binding", binding_rsc);
-                }
+                PRINTLINE("Resource Binding", binding_rsc);
             }
 
             if (g_DXGIFactory1 && !pD3D12)
@@ -4750,7 +4747,7 @@ namespace
 
             LVYESNO("Barycentrics", d3d12opts3.BarycentricsSupported);
 
-            LVLINE("Variable Shading Rate (VRS)", vrs);
+            LVLINE("Variable Rate Shading (VRS)", vrs);
             if (d3d12opts6.VariableShadingRateTier != D3D12_VARIABLE_SHADING_RATE_TIER_NOT_SUPPORTED)
             {
                 LVYESNO("VRS: Additional shading rates", d3d12opts6.AdditionalShadingRatesSupported);
@@ -4782,7 +4779,7 @@ namespace
 
             PRINTYESNO("Barycentrics", d3d12opts3.BarycentricsSupported);
 
-            PRINTLINE("Variable Shading Rate (VRS)", vrs);
+            PRINTLINE("Variable Rate Shading (VRS)", vrs);
             if (d3d12opts6.VariableShadingRateTier != D3D12_VARIABLE_SHADING_RATE_TIER_NOT_SUPPORTED)
             {
                 PRINTYESNO("VRS: Additional shading rates", d3d12opts6.AdditionalShadingRatesSupported);
@@ -5784,7 +5781,8 @@ VOID DXGI_FillTree(HWND hwndTV)
 #ifdef EXTRA_DEBUG
                 OutputDebugString(FLName(g_featureLevels[i]));
 #endif
-                hr = g_D3D11CreateDevice(pAdapter1, D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, &g_featureLevels[i], 1,
+                hr = g_D3D11CreateDevice(pAdapter1, D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0,
+                    &g_featureLevels[i], 1,
                     D3D11_SDK_VERSION, &pDevice11, nullptr, nullptr);
                 if (SUCCEEDED(hr))
                 {
@@ -5802,6 +5800,7 @@ VOID DXGI_FillTree(HWND hwndTV)
                     case D3D_FEATURE_LEVEL_11_1: flMaskDX11 |= FLMASK_11_1; break;
                     case D3D_FEATURE_LEVEL_12_0: flMaskDX11 |= FLMASK_12_0; break;
                     case D3D_FEATURE_LEVEL_12_1: flMaskDX11 |= FLMASK_12_1; break;
+                    default: break;
                     }
 
                     if (g_featureLevels[i] > flHigh)
@@ -6011,12 +6010,14 @@ VOID DXGI_FillTree(HWND hwndTV)
         OutputDebugString("WARP11\n");
 #endif
         D3D_FEATURE_LEVEL fl;
-        hr = g_D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0, g_featureLevels, _countof(g_featureLevels),
+        hr = g_D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0,
+            g_featureLevels, _countof(g_featureLevels),
             D3D11_SDK_VERSION, &pDeviceWARP11, &fl, nullptr);
         if (FAILED(hr))
         {
             // Try without 12.1 or 12.0
-            hr = g_D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0, &g_featureLevels[2], _countof(g_featureLevels) - 2,
+            hr = g_D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0,
+                &g_featureLevels[2], _countof(g_featureLevels) - 2,
                 D3D11_SDK_VERSION, &pDeviceWARP11, &fl, nullptr);
 
             if (FAILED(hr))
