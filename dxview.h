@@ -9,11 +9,14 @@
 // https://go.microsoft.com/fwlink/?linkid=2136896
 //-----------------------------------------------------------------------------
 #include <Windows.h>
+
 #include <mmsystem.h>
 #include <commctrl.h>
 #include <tchar.h>
-#include <time.h>
-#include <stdio.h>
+
+#include <ctime>
+#include <cstdio>
+#include <iterator>
 
 #include "resource.h"
 

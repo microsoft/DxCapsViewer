@@ -3046,7 +3046,7 @@ namespace
             }
             else
             {
-                count = _countof(g_cfsMSAA_11);
+                count = static_cast<UINT>(std::size(g_cfsMSAA_11));
                 array = g_cfsMSAA_11;
             }
             break;
@@ -3802,7 +3802,7 @@ namespace
             switch (lParam3)
             {
             case D3D11_FORMAT_SUPPORT2_SHAREABLE:
-                count = _countof(cfsShareable);
+                count = static_cast<UINT>(std::size(cfsShareable));
                 array = cfsShareable;
                 break;
 
@@ -4104,7 +4104,7 @@ namespace
             switch (lParam3)
             {
             case D3D11_FORMAT_SUPPORT2_UAV_TYPED_LOAD:
-                count = _countof(cfsUAVTypedLoad);
+                count = static_cast<UINT>(std::size(cfsUAVTypedLoad));
                 array = cfsUAVTypedLoad;
                 break;
 
@@ -4356,7 +4356,7 @@ namespace
             DXGI_FORMAT_A8P8,
         };
 
-        for (UINT i = 0; i < _countof(cfsVideo); ++i)
+        for (UINT i = 0; i < std::size(cfsVideo); ++i)
         {
             DXGI_FORMAT fmt = cfsVideo[i];
 
@@ -5109,7 +5109,7 @@ namespace
             DXGI_FORMAT_A8P8,
         };
 
-        for (UINT i = 0; i < _countof(cfsVideo); ++i)
+        for (UINT i = 0; i < std::size(cfsVideo); ++i)
         {
             D3D12_FEATURE_DATA_FORMAT_SUPPORT fmtSupport = {
                 cfsVideo[i], D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2_NONE,
@@ -5865,7 +5865,7 @@ VOID DXGI_FillTree(HWND hwndTV)
         {
             D3D_FEATURE_LEVEL flHigh = (D3D_FEATURE_LEVEL)0;
 
-            for (UINT i = 1 /* Skip 12.2 for DX11 */; i < _countof(g_featureLevels); ++i)
+            for (UINT i = 1 /* Skip 12.2 for DX11 */; i < std::size(g_featureLevels); ++i)
             {
 #ifdef EXTRA_DEBUG
                 OutputDebugString(FLName(g_featureLevels[i]));
@@ -5981,7 +5981,7 @@ VOID DXGI_FillTree(HWND hwndTV)
 
             // Test every feature-level since some devices might be missing some
             D3D10_FEATURE_LEVEL1 flHigh = (D3D10_FEATURE_LEVEL1)0;
-            for (UINT i = 0; i < _countof(lvl); ++i)
+            for (UINT i = 0; i < std::size(lvl); ++i)
             {
                 if (g_DXGIFactory1 == 0)
                 {
@@ -6101,13 +6101,13 @@ VOID DXGI_FillTree(HWND hwndTV)
         D3D_FEATURE_LEVEL fl;
         // Skip 12.2
         hr = g_D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0,
-            &g_featureLevels[1], _countof(g_featureLevels) - 1,
+            &g_featureLevels[1], static_cast<UINT>(std::size(g_featureLevels) - 1),
             D3D11_SDK_VERSION, &pDeviceWARP11, &fl, nullptr);
         if (FAILED(hr))
         {
             // Try without 12.x
             hr = g_D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0,
-                &g_featureLevels[3], _countof(g_featureLevels) - 3,
+                &g_featureLevels[3], static_cast<UINT>(std::size(g_featureLevels) - 3),
                 D3D11_SDK_VERSION, &pDeviceWARP11, &fl, nullptr);
 
             if (FAILED(hr))
