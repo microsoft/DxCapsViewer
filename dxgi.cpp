@@ -37,6 +37,7 @@ enum FLMASK
 
 #if !defined(NTDDI_WIN10_FE)
 #define D3D_FEATURE_LEVEL_12_2 static_cast<D3D_FEATURE_LEVEL>(0xc200)
+#define D3D_SHADER_MODEL_6_7 static_cast<D3D_SHADER_MODEL>(0x67)
 #pragma warning(disable : 4063 4702)
 #endif
 
@@ -283,7 +284,7 @@ namespace
     D3D_SHADER_MODEL GetD3D12ShaderModel(_In_ ID3D12Device* device)
     {
         D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
-        shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_6_6;
+        shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_6_7;
         HRESULT hr = device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
         while (hr == E_INVALIDARG && shaderModelOpt.HighestShaderModel > D3D_SHADER_MODEL_6_0)
         {
@@ -1251,6 +1252,10 @@ namespace
             {
                 switch (GetD3D12ShaderModel(pD3D12))
                 {
+                case D3D_SHADER_MODEL_6_7:
+                    shaderModel = "6.7 (Optional)";
+                    computeShader = "Yes (CS 6.7)";
+                    break;
                 case D3D_SHADER_MODEL_6_6:
                     shaderModel = "6.6 (Optional)";
                     computeShader = "Yes (CS 6.6)";
@@ -1272,6 +1277,10 @@ namespace
             {
                 switch (GetD3D12ShaderModel(pD3D12))
                 {
+                case D3D_SHADER_MODEL_6_7:
+                    shaderModel = "6.7 (Optional)";
+                    computeShader = "Yes (CS 6.7)";
+                    break;
                 case D3D_SHADER_MODEL_6_6:
                     shaderModel = "6.6 (Optional)";
                     computeShader = "Yes (CS 6.6)";
@@ -4460,6 +4469,7 @@ namespace
         const char* shaderModel = "Unknown";
         switch (GetD3D12ShaderModel(pDevice))
         {
+        case D3D_SHADER_MODEL_6_7: shaderModel = "6.7"; break;
         case D3D_SHADER_MODEL_6_6: shaderModel = "6.6"; break;
         case D3D_SHADER_MODEL_6_5: shaderModel = "6.5"; break;
         case D3D_SHADER_MODEL_6_4: shaderModel = "6.4"; break;
