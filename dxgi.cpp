@@ -283,7 +283,7 @@ namespace
     D3D_SHADER_MODEL GetD3D12ShaderModel(_In_ ID3D12Device* device)
     {
         D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
-        shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_6_5;
+        shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_6_6;
         HRESULT hr = device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
         while (hr == E_INVALIDARG && shaderModelOpt.HighestShaderModel > D3D_SHADER_MODEL_6_0)
         {
