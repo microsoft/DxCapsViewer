@@ -17,6 +17,7 @@
 #include <ctime>
 #include <cstdio>
 #include <iterator>
+#include <new>
 
 #include "resource.h"
 

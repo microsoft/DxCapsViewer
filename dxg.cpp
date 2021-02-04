@@ -1622,7 +1622,7 @@ VOID DXG_FillTree(HWND hwndTV)
                 hr = g_pD3D->GetDeviceCaps(iAdapter, devType, &caps);
                 if (FAILED(hr))
                     memset(&caps, 0, sizeof(caps));
-                pCapsCopy = new D3DCAPS9;
+                pCapsCopy = new (std::nothrow) D3DCAPS9;
                 if (!pCapsCopy)
                     continue;
                 *pCapsCopy = caps;

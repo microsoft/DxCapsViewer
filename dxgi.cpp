@@ -839,7 +839,9 @@ namespace
 
             if (SUCCEEDED(hr) && num > 0)
             {
-                DXGI_MODE_DESC* pDescs = new DXGI_MODE_DESC[num];
+                auto pDescs = new (std::nothrow) DXGI_MODE_DESC[num];
+                if (!pDescs)
+                   return E_OUTOFMEMORY;
 
                 hr = pOutput->GetDisplayModeList(fmt, flags, &num, pDescs);
 
