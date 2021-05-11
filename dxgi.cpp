@@ -10,11 +10,17 @@
 //-----------------------------------------------------------------------------
 #include "dxview.h"
 
+#ifdef USING_D3D12_AGILITY_SDK
+#include <directx/dxgiformat.h>
+#include <directx/d3d12.h>
+#else
+#include <d3d12.h>
+#endif
+
 #include <D3Dcommon.h>
-#include <dxgi1_5.h>
+#include <dxgi1_6.h>
 #include <d3d10_1.h>
 #include <d3d11_4.h>
-#include <d3d12.h>
 
 // Define for some debug output
 //#define EXTRA_DEBUG
@@ -35,7 +41,7 @@ enum FLMASK
     FLMASK_12_2 = 0x200,
 };
 
-#if !defined(NTDDI_WIN10_FE)
+#if !defined(NTDDI_WIN10_FE) && !defined(USING_D3D12_AGILITY_SDK)
 #define D3D_FEATURE_LEVEL_12_2 static_cast<D3D_FEATURE_LEVEL>(0xc200)
 #define D3D_SHADER_MODEL_6_7 static_cast<D3D_SHADER_MODEL>(0x67)
 #pragma warning(disable : 4063 4702)
