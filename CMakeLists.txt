@@ -47,7 +47,7 @@ if (VCPKG_TOOLCHAIN)
     message("INFO: Using VCPKG for DirectX-Headers.")
     find_package(directx-headers CONFIG REQUIRED)
     target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DirectX-Headers)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE USING_D3D12_AGILITY_SDK)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE USING_DIRECTX_HEADERS USING_D3D12_AGILITY_SDK)
 endif()
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )

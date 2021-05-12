@@ -10,7 +10,7 @@
 //-----------------------------------------------------------------------------
 #include "dxview.h"
 
-#ifdef USING_D3D12_AGILITY_SDK
+#ifdef USING_DIRECTX_HEADERS
 #include <directx/dxgiformat.h>
 #include <directx/d3d12.h>
 #else
