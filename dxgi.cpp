@@ -512,7 +512,7 @@ namespace
             ENUMNAME(D3D_FEATURE_LEVEL_11_1);
             ENUMNAME(D3D_FEATURE_LEVEL_12_0);
             ENUMNAME(D3D_FEATURE_LEVEL_12_1);
-            return TEXT("D3D_FEATURE_LEVEL_12_2");
+            ENUMNAME(D3D_FEATURE_LEVEL_12_2);
 
         default:
             return TEXT("D3D_FEATURE_LEVEL_UNKNOWN");
