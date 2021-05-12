@@ -5072,9 +5072,6 @@ namespace
         case D3D12_SHARED_RESOURCE_COMPATIBILITY_TIER_0: sharedResTier = "Yes - Tier 0"; break;
         case D3D12_SHARED_RESOURCE_COMPATIBILITY_TIER_1: sharedResTier = "Yes - Tier 1"; break;
         case D3D12_SHARED_RESOURCE_COMPATIBILITY_TIER_2: sharedResTier = "Yes - Tier 2"; break;
-#if defined(NTDDI_WIN10_CO) || defined(USING_D3D12_AGILITY_SDK)
-        case D3D12_SHARED_RESOURCE_COMPATIBILITY_TIER_3: sharedResTier = "Yes - Tier 3"; break;
-#endif
         default: sharedResTier = c_szYes; break;
         }
 
