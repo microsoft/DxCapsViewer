@@ -8,6 +8,8 @@ Copyright (c) Microsoft Corporation. All rights reserved.
 
 This developer utility was originally shipped in the DirectX SDK, and then in 2012 was moved to the Windows 8 SDK, Windows 8.1 SDK, and Windows 10 SDK. The tool is designed to allow developers to explore the Direct3D capabilities exposed by the hardware/software/drivers on their system.
 
+Visit the [DirectX Landing Page](https://devblogs.microsoft.com/directx/landing-page/) for more resources for DirectX developers.
+
 ## Building the tool
 
 This project is set up to use CMake with the Ninja generation via VS 2019's CMake integration. It is currently set up to require the Windows 10 SDK (19041) headers, but will run on Windows 7 SP1 or later.
