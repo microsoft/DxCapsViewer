@@ -1,4 +1,4 @@
-![DirectX Logo](https://github.com/microsoft/DxCapsViewer/wiki/Dx_Logo.gif)
+![DirectX Logo](https://raw.githubusercontent.com/wiki/microsoft/DxCapsViewer/Dx_Logo.gif)
 
 # DirectX Capabilities Viewer
 
