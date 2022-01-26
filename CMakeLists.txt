@@ -1,13 +1,12 @@
-# DirectX Capabilities Viewer
-#
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
-#
-# https://go.microsoft.com/fwlink/?linkid=2136896
 
-cmake_minimum_required (VERSION 3.11)
+cmake_minimum_required (VERSION 3.13)
 
-project (dxcapsviewer LANGUAGES CXX)
+project (dxcapsviewer
+  DESCRIPTION "DirectX Capabilities Viewer"
+  HOMEPAGE_URL "https://go.microsoft.com/fwlink/?linkid=2136896"
+  LANGUAGES CXX)
 
 option(ENABLE_CODE_ANALYSIS "Use Static Code Analysis on build" OFF)
 
