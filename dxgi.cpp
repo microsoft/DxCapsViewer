@@ -27,7 +27,8 @@
 
 //-----------------------------------------------------------------------------
 
-enum FLMASK
+// This mask is only needed for Direct3D 10.x/11 where some devices had 'holes' in the feature support.
+enum FLMASK : uint32_t
 {
     FLMASK_9_1 = 0x1,
     FLMASK_9_2 = 0x2,
@@ -38,7 +39,6 @@ enum FLMASK
     FLMASK_11_1 = 0x40,
     FLMASK_12_0 = 0x80,
     FLMASK_12_1 = 0x100,
-    FLMASK_12_2 = 0x200,
 };
 
 #if !defined(NTDDI_WIN10_FE) && !defined(USING_D3D12_AGILITY_SDK)
@@ -850,7 +850,7 @@ namespace
             {
                 auto pDescs = new (std::nothrow) DXGI_MODE_DESC[num];
                 if (!pDescs)
-                   return E_OUTOFMEMORY;
+                    return E_OUTOFMEMORY;
 
                 hr = pOutput->GetDisplayModeList(fmt, flags, &num, pDescs);
 
@@ -1138,7 +1138,7 @@ namespace
         cubemapRT = (d3d9opts.TextureCubeFaceRenderTargetWithNonCubeDepthStencilSupported) ? true : false;
     }
 
-//-----------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------
 #define D3D_FL_LPARAM3_D3D10( d3dType ) ( ( (d3dType & 0xff) << 8 ) | 0 )
 #define D3D_FL_LPARAM3_D3D10_1( d3dType ) ( ( (d3dType & 0xff) << 8 ) | 1 )
 #define D3D_FL_LPARAM3_D3D11( d3dType ) ( ( (d3dType & 0xff) << 8 ) | 2 )
@@ -2409,7 +2409,7 @@ namespace
 
         return S_OK;
     }
-  
+
 
     //-----------------------------------------------------------------------------
     HRESULT D3D10Info(LPARAM lParam1, LPARAM lParam2, LPARAM lParam3, PRINTCBINFO* pPrintInfo)
@@ -2656,25 +2656,25 @@ namespace
             {
                 LVLINE("Feature Level", FLName(fl));
 
-                    if (g_DXGIFactory1 != nullptr && (fl >= D3D10_FEATURE_LEVEL_10_0))
-                    {
-                        LVYESNO("Extended Formats (BGRA, etc.)", ext);
-                        LVYESNO("10-bit XR High Color Format", x2);
-                    }
+                if (g_DXGIFactory1 != nullptr && (fl >= D3D10_FEATURE_LEVEL_10_0))
+                {
+                    LVYESNO("Extended Formats (BGRA, etc.)", ext);
+                    LVYESNO("10-bit XR High Color Format", x2);
+                }
 
-                    LVLINE("Note", szNote);
+                LVLINE("Note", szNote);
             }
             else
             {
                 PRINTLINE("Feature Level", FLName(fl));
 
-                    if (g_DXGIFactory1 != nullptr && (fl >= D3D10_FEATURE_LEVEL_10_0))
-                    {
-                        PRINTYESNO("Extended Formats (BGRA, etc.)", ext);
-                        PRINTYESNO("10-bit XR High Color Format", x2);
-                    }
+                if (g_DXGIFactory1 != nullptr && (fl >= D3D10_FEATURE_LEVEL_10_0))
+                {
+                    PRINTYESNO("Extended Formats (BGRA, etc.)", ext);
+                    PRINTYESNO("10-bit XR High Color Format", x2);
+                }
 
-                    PRINTLINE("Note", szNote);
+                PRINTLINE("Note", szNote);
             }
 
             return S_OK;
@@ -2794,7 +2794,7 @@ namespace
 
                 if (!pPrintInfo)
                 {
-                    LVYESNO(FormatName(fmt), fmtSupport& (UINT)lParam2);
+                    LVYESNO(FormatName(fmt), fmtSupport & (UINT)lParam2);
                 }
                 else
                 {
@@ -2981,7 +2981,7 @@ namespace
                 LVYESNO("Double-precision Shaders", doubles.DoublePrecisionFloatShaderOps);
                 LVYESNO("DirectCompute CS 4.x", d3d10xhw.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x);
 
-                    LVLINE("Note", szNote);
+                LVLINE("Note", szNote);
             }
             else
             {
@@ -2992,7 +2992,7 @@ namespace
                 PRINTYESNO("Double-precision Shaders", doubles.DoublePrecisionFloatShaderOps);
                 PRINTYESNO("DirectCompute CS 4.x", d3d10xhw.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x);
 
-                    PRINTLINE("Note", szNote);
+                PRINTLINE("Note", szNote);
             }
 
             return S_OK;
@@ -3251,7 +3251,7 @@ namespace
             {
                 LVYESNO("Map NO_OVERWRITE on Dynamic SRV", d3d11opts.MapNoOverwriteOnDynamicBufferSRV);
                 LVYESNO("MSAA with ForcedSampleCount=1", d3d11opts.MultisampleRTVWithForcedSampleCountOne);
-                    LVYESNO("Extended resource sharing", d3d11opts.ExtendedResourceSharing);
+                LVYESNO("Extended resource sharing", d3d11opts.ExtendedResourceSharing);
             }
 
             if (fl >= D3D_FEATURE_LEVEL_11_0)
@@ -3261,7 +3261,7 @@ namespace
 
             LVYESNO("Tile-based Deferred Renderer", d3d11arch.TileBasedDeferredRenderer);
 
-                LVLINE("Non-Power-of-2 Textures", nonpow2);
+            LVLINE("Non-Power-of-2 Textures", nonpow2);
 
             LVLINE("Pixel Shader Precision", ps_precis);
             LVLINE("Other Stage Precision", other_precis);
