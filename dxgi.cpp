@@ -334,7 +334,7 @@ namespace
             {
             case D3D12_VARIABLE_SHADING_RATE_TIER_NOT_SUPPORTED: break;
             case D3D12_VARIABLE_SHADING_RATE_TIER_1: return "Optional (Yes - Tier 1)";
-            case D3D12_VARIABLE_SHADING_RATE_TIER_2: return "Optional (Yes - Teir 2)";
+            case D3D12_VARIABLE_SHADING_RATE_TIER_2: return "Optional (Yes - Tier 2)";
             default: return c_szOptYes;
             }
         }
