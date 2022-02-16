@@ -3,7 +3,7 @@
 //
 // Desc: DirectX Capabilities Viewer for DXGI (Direct3D 10.x / 11.x / 12.0)
 //
-// Copyright Microsoft Corporation. All Rights Reserved.
+// Copyright(c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // https://go.microsoft.com/fwlink/?linkid=2136896

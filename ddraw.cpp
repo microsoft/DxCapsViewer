@@ -3,7 +3,7 @@
 //
 // Desc: DirectX Capabilities Viewer for DirectDraw
 //
-// Copyright (c) Microsoft Corporation. All Rights Reserved.
+// Copyright(c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // https://go.microsoft.com/fwlink/?linkid=2136896
