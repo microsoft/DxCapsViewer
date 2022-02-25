@@ -1,6 +1,6 @@
 # DirectX Capabilities Viewer
 
-Release available for download on [GitHub](https://github.com/walbourn/dxcapsviewer/releases)
+Release available for download on [GitHub](https://github.com/microsoft/DxCapsViewer/releases)
 
 ## Release History
 
