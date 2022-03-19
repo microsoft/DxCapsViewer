@@ -62,10 +62,18 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
 
     if(ENABLE_CODE_ANALYSIS)
       target_compile_options(${PROJECT_NAME} PRIVATE /analyze)
-   endif()
+    endif()
+
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.24)
+        target_compile_options(${PROJECT_NAME} PRIVATE /ZH:SHA_256)
+    endif()
 
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.26)
         target_compile_options(${PROJECT_NAME} PRIVATE /Zc:preprocessor /wd5105)
+    endif()
+
+    if ((CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.27) AND (NOT (${DIRECTX_ARCH} MATCHES "arm(64)?")))
+        target_link_options(${PROJECT_NAME} PRIVATE /CETCOMPAT)
     endif()
 endif()
 
