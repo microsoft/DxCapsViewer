@@ -20,6 +20,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
 
 if (DEFINED VCPKG_TARGET_ARCHITECTURE)
     set(DIRECTX_ARCH ${VCPKG_TARGET_ARCHITECTURE})
+elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Ww][Ii][Nn]32$")
+    set(DIRECTX_ARCH x86)
+elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Xx]64$")
+    set(DIRECTX_ARCH x64)
+elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Aa][Rr][Mm]$")
+    set(DIRECTX_ARCH arm)
+elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Aa][Rr][Mm]64$")
+    set(DIRECTX_ARCH arm64)
 endif()
 
 if(MSVC)
@@ -47,12 +55,13 @@ add_executable(${PROJECT_NAME} WIN32
 target_link_libraries(${PROJECT_NAME} PRIVATE dxguid.lib comctl32.lib version.lib)
 
 if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELEASE>:/guard:cf>")
+    target_compile_options(${PROJECT_NAME} PRIVATE "$<$<NOT:$<CONFIG:DEBUG>>:/guard:cf>")
 
     target_link_options(${PROJECT_NAME} PRIVATE /DEBUG)
 
     if((${CMAKE_SIZEOF_VOID_P} EQUAL 4) AND (NOT ${DIRECTX_ARCH} MATCHES "arm"))
         target_compile_options(${PROJECT_NAME} PRIVATE /arch:SSE2)
+        target_link_options(${PROJECT_NAME} PRIVATE /SAFESEH)
     endif()
 endif()
 
