@@ -18,6 +18,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/CMake")
 
+if (DEFINED VCPKG_TARGET_ARCHITECTURE)
+    set(DIRECTX_ARCH ${VCPKG_TARGET_ARCHITECTURE})
+endif()
+
 if(MSVC)
     # Use max Warning Level 
     string(REPLACE "/W3 " "/W4 " CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
@@ -43,9 +47,13 @@ add_executable(${PROJECT_NAME} WIN32
 target_link_libraries(${PROJECT_NAME} PRIVATE dxguid.lib comctl32.lib version.lib)
 
 if(MSVC)
-    target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:RELEASE>:/guard:cf>")
+    target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELEASE>:/guard:cf>")
 
-    target_link_options(${PROJECT_NAME} PUBLIC /DEBUG)
+    target_link_options(${PROJECT_NAME} PRIVATE /DEBUG)
+
+    if((${CMAKE_SIZEOF_VOID_P} EQUAL 4) AND (NOT ${DIRECTX_ARCH} MATCHES "arm"))
+        target_compile_options(${PROJECT_NAME} PRIVATE /arch:SSE2)
+    endif()
 endif()
 
 if (VCPKG_TOOLCHAIN)
@@ -64,7 +72,7 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
     target_compile_options(${PROJECT_NAME} PRIVATE ${WarningsEXE})
 endif()
 if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-    target_compile_options(${PROJECT_NAME} PRIVATE /permissive- /JMC- /Zc:__cplusplus)
+    target_compile_options(${PROJECT_NAME} PRIVATE /sdl /permissive- /JMC- /Zc:__cplusplus)
 
     if(ENABLE_CODE_ANALYSIS)
       target_compile_options(${PROJECT_NAME} PRIVATE /analyze)
