@@ -42,6 +42,12 @@ add_executable(${PROJECT_NAME} WIN32
 
 target_link_libraries(${PROJECT_NAME} PRIVATE dxguid.lib comctl32.lib version.lib)
 
+if(MSVC)
+    target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:RELEASE>:/guard:cf>")
+
+    target_link_options(${PROJECT_NAME} PUBLIC /DEBUG)
+endif()
+
 if (VCPKG_TOOLCHAIN)
     message("INFO: Using VCPKG for DirectX-Headers.")
     find_package(directx-headers CONFIG REQUIRED)
