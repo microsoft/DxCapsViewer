@@ -56,8 +56,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE dxguid.lib comctl32.lib version.li
 
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE "$<$<NOT:$<CONFIG:DEBUG>>:/guard:cf>")
-
-    target_link_options(${PROJECT_NAME} PRIVATE /DEBUG)
+    target_link_options(${PROJECT_NAME} PRIVATE /DYNAMICBASE /NXCOMPAT)
 
     if((${CMAKE_SIZEOF_VOID_P} EQUAL 4) AND (NOT ${DIRECTX_ARCH} MATCHES "arm"))
         target_compile_options(${PROJECT_NAME} PRIVATE /arch:SSE2)
