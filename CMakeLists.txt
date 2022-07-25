@@ -62,6 +62,11 @@ if(MSVC)
         target_compile_options(${PROJECT_NAME} PRIVATE /arch:SSE2)
         target_link_options(${PROJECT_NAME} PRIVATE /SAFESEH)
     endif()
+
+    if((MSVC_VERSION GREATER_EQUAL 1928) AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
+        target_compile_options(${PROJECT_NAME} PRIVATE "$<$<NOT:$<CONFIG:DEBUG>>:/guard:ehcont>")
+        target_link_options(${PROJECT_NAME} PRIVATE "$<$<NOT:$<CONFIG:DEBUG>>:/guard:ehcont>")
+    endif()
 endif()
 
 if (VCPKG_TOOLCHAIN)
