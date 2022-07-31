@@ -4342,6 +4342,7 @@ namespace
         auto d3d12opts5 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS5, D3D12_FEATURE_DATA_D3D12_OPTIONS5>(pDevice);
         auto d3d12opts6 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS6, D3D12_FEATURE_DATA_D3D12_OPTIONS6>(pDevice);
 
+        auto d3d12eheaps = GetD3D12Options<D3D12_FEATURE_EXISTING_HEAPS, D3D12_FEATURE_DATA_EXISTING_HEAPS>(pDevice);
         auto d3d12serial = GetD3D12Options<D3D12_FEATURE_SERIALIZATION, D3D12_FEATURE_DATA_SERIALIZATION>(pDevice);
 
         const char* shaderModel = "Unknown";
@@ -4480,6 +4481,8 @@ namespace
             LVYESNO("Casting fully typed formats", d3d12opts3.CastingFullyTypedFormatSupported);
             LVYESNO("Copy queue timestamp queries", d3d12opts3.CopyQueueTimestampQueriesSupported);
 
+            LVYESNO("Create heaps f/ existing sysmem", d3d12eheaps.Supported);
+
             LVYESNO("64KB aligned MSAA textures", d3d12opts4.MSAA64KBAlignedTextureSupported);
 
             LVLINE("Heap serialization", heapSerial);
@@ -4524,6 +4527,8 @@ namespace
 
             PRINTYESNO("Casting fully typed formats", d3d12opts3.CastingFullyTypedFormatSupported);
             PRINTYESNO("Copy queue timestamp queries", d3d12opts3.CopyQueueTimestampQueriesSupported);
+
+            PRINTYESNO("Create heaps f/ existing sysmem", d3d12eheaps.Supported);
 
             PRINTYESNO("64KB aligned MSAA textures", d3d12opts4.MSAA64KBAlignedTextureSupported);
 
