@@ -353,6 +353,28 @@ namespace
         return false;
     }
 
+    template<D3D11_FEATURE feature, typename T>
+    T GetD3D11Options(_In_ ID3D11Device* device)
+    {
+        T opts = {};
+        if (FAILED(device->CheckFeatureSupport(feature, &opts, sizeof(T))))
+        {
+            memset(&opts, 0, sizeof(T));
+        }
+        return opts;
+    }
+
+    template<D3D12_FEATURE feature, typename T>
+    T GetD3D12Options(_In_ ID3D12Device* device)
+    {
+        T opts = {};
+        if (FAILED(device->CheckFeatureSupport(feature, &opts, sizeof(T))))
+        {
+            memset(&opts, 0, sizeof(T));
+        }
+        return opts;
+    }
+
     //-----------------------------------------------------------------------------
 #define ENUMNAME(a) case a: return TEXT(#a)
 
@@ -1045,28 +1067,22 @@ namespace
     //-----------------------------------------------------------------------------
     void CheckD3D11Ops(ID3D11Device* pDevice, bool& logicOps, bool& cbPartial, bool& cbOffsetting)
     {
-        D3D11_FEATURE_DATA_D3D11_OPTIONS d3d11opts = {};
-        HRESULT hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS, &d3d11opts, sizeof(d3d11opts));
-        if (FAILED(hr))
-            memset(&d3d11opts, 0, sizeof(d3d11opts));
+        auto opts = GetD3D11Options<D3D11_FEATURE_D3D11_OPTIONS, D3D11_FEATURE_DATA_D3D11_OPTIONS>(pDevice);
 
-        logicOps = (d3d11opts.OutputMergerLogicOp) ? true : false;
-        cbPartial = (d3d11opts.ConstantBufferPartialUpdate) ? true : false;
-        cbOffsetting = (d3d11opts.ConstantBufferOffsetting) ? true : false;
+        logicOps = (opts.OutputMergerLogicOp) ? true : false;
+        cbPartial = (opts.ConstantBufferPartialUpdate) ? true : false;
+        cbOffsetting = (opts.ConstantBufferOffsetting) ? true : false;
     }
 
 
     //-----------------------------------------------------------------------------
     void CheckD3D11Ops1(ID3D11Device* pDevice, D3D11_TILED_RESOURCES_TIER& tiled, bool& minmaxfilter, bool& mapdefaultbuff)
     {
-        D3D11_FEATURE_DATA_D3D11_OPTIONS1 d3d11opts1 = {};
-        HRESULT hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS1, &d3d11opts1, sizeof(d3d11opts1));
-        if (FAILED(hr))
-            memset(&d3d11opts1, 0, sizeof(d3d11opts1));
+        auto opts = GetD3D11Options<D3D11_FEATURE_D3D11_OPTIONS1, D3D11_FEATURE_DATA_D3D11_OPTIONS1>(pDevice);
 
-        tiled = d3d11opts1.TiledResourcesTier;
-        minmaxfilter = (d3d11opts1.MinMaxFiltering) ? true : false;
-        mapdefaultbuff = (d3d11opts1.MapOnDefaultBuffers) ? true : false;
+        tiled = opts.TiledResourcesTier;
+        minmaxfilter = (opts.MinMaxFiltering) ? true : false;
+        mapdefaultbuff = (opts.MapOnDefaultBuffers) ? true : false;
     }
 
 
@@ -1074,33 +1090,22 @@ namespace
     void CheckD3D11Ops2(ID3D11Device* pDevice, D3D11_TILED_RESOURCES_TIER& tiled, D3D11_CONSERVATIVE_RASTERIZATION_TIER& crast,
         bool& rovs, bool& pssref)
     {
-        D3D11_FEATURE_DATA_D3D11_OPTIONS2 d3d11opts2 = {};
-        HRESULT hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS2, &d3d11opts2, sizeof(d3d11opts2));
-        if (FAILED(hr))
-            memset(&d3d11opts2, 0, sizeof(d3d11opts2));
+        auto opts = GetD3D11Options<D3D11_FEATURE_D3D11_OPTIONS2, D3D11_FEATURE_DATA_D3D11_OPTIONS2>(pDevice);
 
-        crast = d3d11opts2.ConservativeRasterizationTier;
-        tiled = d3d11opts2.TiledResourcesTier;
-        rovs = (d3d11opts2.ROVsSupported) ? true : false;
-        pssref = (d3d11opts2.PSSpecifiedStencilRefSupported) ? true : false;
+        crast = opts.ConservativeRasterizationTier;
+        tiled = opts.TiledResourcesTier;
+        rovs = (opts.ROVsSupported) ? true : false;
+        pssref = (opts.PSSpecifiedStencilRefSupported) ? true : false;
     }
 
 
     //-----------------------------------------------------------------------------
     void CheckD3D9Ops(ID3D11Device* pDevice, bool& nonpow2, bool& shadows)
     {
-        D3D11_FEATURE_DATA_D3D9_OPTIONS d3d9opts = {};
-        HRESULT hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D9_OPTIONS, &d3d9opts, sizeof(d3d9opts));
-        if (FAILED(hr))
-            memset(&d3d9opts, 0, sizeof(d3d9opts));
-
+        auto d3d9opts = GetD3D11Options<D3D11_FEATURE_D3D9_OPTIONS, D3D11_FEATURE_DATA_D3D9_OPTIONS>(pDevice);
         nonpow2 = (d3d9opts.FullNonPow2TextureSupport) ? true : false;
 
-        D3D11_FEATURE_DATA_D3D9_SHADOW_SUPPORT d3d9shadows = {};
-        hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D9_SHADOW_SUPPORT, &d3d9shadows, sizeof(d3d9shadows));
-        if (FAILED(hr))
-            memset(&d3d9shadows, 0, sizeof(d3d9shadows));
-
+        auto d3d9shadows = GetD3D11Options<D3D11_FEATURE_D3D9_SHADOW_SUPPORT, D3D11_FEATURE_DATA_D3D9_SHADOW_SUPPORT>(pDevice);
         shadows = (d3d9shadows.SupportsDepthAsTextureWithLessEqualComparisonFilter) ? true : false;
     }
 
@@ -1108,26 +1113,7 @@ namespace
     //-----------------------------------------------------------------------------
     void CheckD3D9Ops1(ID3D11Device* pDevice, bool& nonpow2, bool& shadows, bool& instancing, bool& cubemapRT)
     {
-        D3D11_FEATURE_DATA_D3D9_OPTIONS1 d3d9opts = {};
-        HRESULT hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D9_OPTIONS1, &d3d9opts, sizeof(d3d9opts));
-        if (FAILED(hr))
-        {
-            memset(&d3d9opts, 0, sizeof(d3d9opts));
-
-            // Handle Windows 8.1 Preview by falling back to D3D9_OPTIONS, D3D9_SHADOW_SUPPORT, and D3D9_SIMPLE_INSTANCING_SUPPORT
-            CheckD3D9Ops(pDevice, nonpow2, shadows);
-
-            D3D11_FEATURE_DATA_D3D9_SIMPLE_INSTANCING_SUPPORT d3d9si = {};
-            hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D9_SIMPLE_INSTANCING_SUPPORT, &d3d9si, sizeof(d3d9si));
-            if (FAILED(hr))
-                memset(&d3d9si, 0, sizeof(d3d9si));
-
-            instancing = (d3d9si.SimpleInstancingSupported) ? true : false;
-
-            cubemapRT = false;
-
-            return;
-        }
+        auto d3d9opts = GetD3D11Options<D3D11_FEATURE_D3D9_OPTIONS1, D3D11_FEATURE_DATA_D3D9_OPTIONS1>(pDevice);
 
         nonpow2 = (d3d9opts.FullNonPow2TextureSupported) ? true : false;
 
@@ -1348,10 +1334,7 @@ namespace
                 mrt = XTOSTRING(D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT);
                 uavSlots = XTOSTRING(D3D12_UAV_SLOT_COUNT);
 
-                D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {};
-                HRESULT hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
-                if (FAILED(hr))
-                    memset(&d3d12opts, 0, sizeof(d3d12opts));
+                auto d3d12opts = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS, D3D12_FEATURE_DATA_D3D12_OPTIONS>(pD3D12);
 
                 switch (d3d12opts.TiledResourcesTier)
                 {
@@ -1488,10 +1471,7 @@ namespace
                 shaderModel = "5.1";
                 computeShader = "Yes (CS 5.1)";
 
-                D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {};
-                HRESULT hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
-                if (FAILED(hr))
-                    memset(&d3d12opts, 0, sizeof(d3d12opts));
+                auto d3d12opts = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS, D3D12_FEATURE_DATA_D3D12_OPTIONS>(pD3D12);
 
                 switch (d3d12opts.TiledResourcesTier)
                 {
@@ -1596,10 +1576,7 @@ namespace
                 shaderModel = "5.1";
                 computeShader = "Yes (CS 5.1)";
 
-                D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {};
-                HRESULT hr = pD3D12->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
-                if (FAILED(hr))
-                    memset(&d3d12opts, 0, sizeof(d3d12opts));
+                auto d3d12opts = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS, D3D12_FEATURE_DATA_D3D12_OPTIONS>(pD3D12);
 
                 switch (d3d12opts.TiledResourcesTier)
                 {
@@ -1711,10 +1688,7 @@ namespace
             {
                 ID3D11Device* pD3D = (pD3D11_3) ? pD3D11_3 : ((pD3D11_2) ? pD3D11_2 : pD3D11_1);
 
-                D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS d3d10xhw = {};
-                HRESULT hr = pD3D->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &d3d10xhw, sizeof(d3d10xhw));
-                if (FAILED(hr))
-                    memset(&d3d10xhw, 0, sizeof(d3d10xhw));
+                auto d3d10xhw = GetD3D11Options<D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS>(pD3D);
 
                 if (d3d10xhw.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x)
                 {
@@ -1744,10 +1718,7 @@ namespace
             }
             else if (pD3D11)
             {
-                D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS d3d10xhw = {};
-                HRESULT hr = pD3D11->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &d3d10xhw, sizeof(d3d10xhw));
-                if (FAILED(hr))
-                    memset(&d3d10xhw, 0, sizeof(d3d10xhw));
+                auto d3d10xhw = GetD3D11Options<D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS>(pD3D11);
 
                 computeShader = (d3d10xhw.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x) ? "Optional (Yes - CS 4.x)" : c_szOptNo;
 
@@ -1800,11 +1771,7 @@ namespace
             if (pD3D11_1 || pD3D11_2 || pD3D11_3)
             {
                 ID3D11Device* pD3D = (pD3D11_3) ? pD3D11_3 : ((pD3D11_2) ? pD3D11_2 : pD3D11_1);
-
-                D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS d3d10xhw = {};
-                HRESULT hr = pD3D->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &d3d10xhw, sizeof(d3d10xhw));
-                if (FAILED(hr))
-                    memset(&d3d10xhw, 0, sizeof(d3d10xhw));
+                auto d3d10xhw = GetD3D11Options<D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS>(pD3D);
 
                 if (d3d10xhw.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x)
                 {
@@ -1834,10 +1801,7 @@ namespace
             }
             else if (pD3D11)
             {
-                D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS d3d10xhw = {};
-                HRESULT hr = pD3D11->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &d3d10xhw, sizeof(d3d10xhw));
-                if (FAILED(hr))
-                    memset(&d3d10xhw, 0, sizeof(d3d10xhw));
+                auto d3d10xhw = GetD3D11Options<D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS>(pD3D11);
 
                 computeShader = (d3d10xhw.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x) ? "Optional (Yes - CS 4.0)" : c_szOptNo;
 
@@ -2936,20 +2900,9 @@ namespace
                 fl = D3D_FEATURE_LEVEL_11_0;
 
             // CheckFeatureSupport
-            D3D11_FEATURE_DATA_THREADING threading = {};
-            HRESULT hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_THREADING, &threading, sizeof(threading));
-            if (FAILED(hr))
-                memset(&threading, 0, sizeof(threading));
-
-            D3D11_FEATURE_DATA_DOUBLES doubles = {};
-            hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_DOUBLES, &doubles, sizeof(doubles));
-            if (FAILED(hr))
-                memset(&doubles, 0, sizeof(doubles));
-
-            D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS d3d10xhw = {};
-            hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &d3d10xhw, sizeof(d3d10xhw));
-            if (FAILED(hr))
-                memset(&d3d10xhw, 0, sizeof(d3d10xhw));
+            auto threading = GetD3D11Options<D3D11_FEATURE_THREADING, D3D11_FEATURE_DATA_THREADING>(pDevice);
+            auto doubles   = GetD3D11Options<D3D11_FEATURE_DOUBLES, D3D11_FEATURE_DATA_DOUBLES>(pDevice);
+            auto d3d10xhw  = GetD3D11Options<D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS>(pDevice);
 
             // Setup note
             const char* szNote = nullptr;
@@ -3142,48 +3095,18 @@ namespace
         D3D_FEATURE_LEVEL fl = pDevice->GetFeatureLevel();
 
         // CheckFeatureSupport
-        D3D11_FEATURE_DATA_THREADING threading = {};
-        HRESULT hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_THREADING, &threading, sizeof(threading));
-        if (FAILED(hr))
-            memset(&threading, 0, sizeof(threading));
-
-        D3D11_FEATURE_DATA_DOUBLES doubles = {};
-        hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_DOUBLES, &doubles, sizeof(doubles));
-        if (FAILED(hr))
-            memset(&doubles, 0, sizeof(doubles));
-
-        D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS d3d10xhw = {};
-        hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &d3d10xhw, sizeof(d3d10xhw));
-        if (FAILED(hr))
-            memset(&d3d10xhw, 0, sizeof(d3d10xhw));
-
-        D3D11_FEATURE_DATA_D3D11_OPTIONS d3d11opts = {};
-        hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS, &d3d11opts, sizeof(d3d11opts));
-        if (FAILED(hr))
-            memset(&d3d11opts, 0, sizeof(d3d11opts));
-
-        D3D11_FEATURE_DATA_D3D9_OPTIONS d3d9opts = {};
-        hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D9_OPTIONS, &d3d9opts, sizeof(d3d9opts));
-        if (FAILED(hr))
-            memset(&d3d9opts, 0, sizeof(d3d9opts));
-
-        D3D11_FEATURE_DATA_ARCHITECTURE_INFO d3d11arch = {};
-        hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_ARCHITECTURE_INFO, &d3d11arch, sizeof(d3d11arch));
-        if (FAILED(hr))
-            memset(&d3d11arch, 0, sizeof(d3d11arch));
-
-        D3D11_FEATURE_DATA_SHADER_MIN_PRECISION_SUPPORT minprecis = {};
-        hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_SHADER_MIN_PRECISION_SUPPORT, &minprecis, sizeof(minprecis));
-        if (FAILED(hr))
-            memset(&minprecis, 0, sizeof(minprecis));
+        auto threading = GetD3D11Options<D3D11_FEATURE_THREADING, D3D11_FEATURE_DATA_THREADING>(pDevice);
+        auto doubles   = GetD3D11Options<D3D11_FEATURE_DOUBLES, D3D11_FEATURE_DATA_DOUBLES>(pDevice);
+        auto d3d10xhw  = GetD3D11Options<D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS>(pDevice);
+        auto d3d11opts = GetD3D11Options<D3D11_FEATURE_D3D11_OPTIONS, D3D11_FEATURE_DATA_D3D11_OPTIONS>(pDevice);
+        auto d3d9opts  = GetD3D11Options<D3D11_FEATURE_D3D9_OPTIONS, D3D11_FEATURE_DATA_D3D9_OPTIONS>(pDevice);
+        auto d3d11arch = GetD3D11Options<D3D11_FEATURE_ARCHITECTURE_INFO, D3D11_FEATURE_DATA_ARCHITECTURE_INFO>(pDevice);
+        auto minprecis = GetD3D11Options<D3D11_FEATURE_SHADER_MIN_PRECISION_SUPPORT, D3D11_FEATURE_DATA_SHADER_MIN_PRECISION_SUPPORT>(pDevice);
 
         D3D11_FEATURE_DATA_D3D11_OPTIONS1 d3d11opts1 = {};
-        memset(&d3d11opts1, 0, sizeof(d3d11opts1));
         if (bDev2)
         {
-            hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS1, &d3d11opts1, sizeof(d3d11opts1));
-            if (FAILED(hr))
-                memset(&d3d11opts1, 0, sizeof(d3d11opts1));
+            d3d11opts1 = GetD3D11Options<D3D11_FEATURE_D3D11_OPTIONS1, D3D11_FEATURE_DATA_D3D11_OPTIONS1>(pDevice);
         }
 
         const char* clearview = nullptr;
@@ -3717,10 +3640,7 @@ namespace
         {
             D3D11FeatureSupportInfo1(pDevice, true, pPrintInfo);
 
-            D3D11_FEATURE_DATA_MARKER_SUPPORT marker = {};
-            HRESULT hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_MARKER_SUPPORT, &marker, sizeof(marker));
-            if (FAILED(hr))
-                memset(&marker, 0, sizeof(marker));
+            auto marker = GetD3D11Options<D3D11_FEATURE_MARKER_SUPPORT, D3D11_FEATURE_DATA_MARKER_SUPPORT>(pDevice);
 
             // Setup note
             const char* szNote = nullptr;
@@ -3898,40 +3818,13 @@ namespace
         {
             D3D11FeatureSupportInfo1(pDevice, true, pPrintInfo);
 
-            D3D11_FEATURE_DATA_MARKER_SUPPORT marker = {};
-            HRESULT hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_MARKER_SUPPORT, &marker, sizeof(marker));
-            if (FAILED(hr))
-                memset(&marker, 0, sizeof(marker));
-
-            D3D11_FEATURE_DATA_D3D11_OPTIONS2 d3d11opts2 = {};
-            hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS2, &d3d11opts2, sizeof(d3d11opts2));
-            if (FAILED(hr))
-                memset(&d3d11opts2, 0, sizeof(d3d11opts2));
-
-            D3D11_FEATURE_DATA_D3D11_OPTIONS3 d3d11opts3 = {};
-            hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS3, &d3d11opts3, sizeof(d3d11opts3));
-            if (FAILED(hr))
-                memset(&d3d11opts3, 0, sizeof(d3d11opts3));
-
-            D3D11_FEATURE_DATA_D3D11_OPTIONS4 d3d11opts4 = {};
-            hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS4, &d3d11opts4, sizeof(d3d11opts4));
-            if (FAILED(hr))
-                memset(&d3d11opts4, 0, sizeof(d3d11opts4));
-
-            D3D11_FEATURE_DATA_D3D11_OPTIONS5 d3d11opts5 = {};
-            hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS5, &d3d11opts5, sizeof(d3d11opts5));
-            if (FAILED(hr))
-                memset(&d3d11opts5, 0, sizeof(d3d11opts5));
-
-            D3D11_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT d3d11vm = {};
-            hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, &d3d11vm, sizeof(d3d11vm));
-            if (FAILED(hr))
-                memset(&d3d11vm, 0, sizeof(d3d11vm));
-
-            D3D11_FEATURE_DATA_SHADER_CACHE d3d11sc = {};
-            hr = pDevice->CheckFeatureSupport(D3D11_FEATURE_SHADER_CACHE, &d3d11sc, sizeof(d3d11sc));
-            if (FAILED(hr))
-                memset(&d3d11sc, 0, sizeof(d3d11sc));
+            auto marker     = GetD3D11Options<D3D11_FEATURE_MARKER_SUPPORT, D3D11_FEATURE_DATA_MARKER_SUPPORT>(pDevice);
+            auto d3d11opts2 = GetD3D11Options<D3D11_FEATURE_D3D11_OPTIONS2, D3D11_FEATURE_DATA_D3D11_OPTIONS2>(pDevice);
+            auto d3d11opts3 = GetD3D11Options<D3D11_FEATURE_D3D11_OPTIONS3, D3D11_FEATURE_DATA_D3D11_OPTIONS3>(pDevice);
+            auto d3d11opts4 = GetD3D11Options<D3D11_FEATURE_D3D11_OPTIONS4, D3D11_FEATURE_DATA_D3D11_OPTIONS4>(pDevice);
+            auto d3d11opts5 = GetD3D11Options<D3D11_FEATURE_D3D11_OPTIONS5, D3D11_FEATURE_DATA_D3D11_OPTIONS5>(pDevice);
+            auto d3d11sc    = GetD3D11Options<D3D11_FEATURE_SHADER_CACHE, D3D11_FEATURE_DATA_SHADER_CACHE>(pDevice);
+            auto d3d11vm    = GetD3D11Options<D3D11_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, D3D11_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT>(pDevice);
 
             // Setup note
             const char* szNote = nullptr;
@@ -4442,40 +4335,13 @@ namespace
             rootSigOpt.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
         }
 
-        D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
-        if (FAILED(hr))
-            memset(&d3d12opts, 0, sizeof(d3d12opts));
-
-        D3D12_FEATURE_DATA_D3D12_OPTIONS2 d3d12opts2 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS2, &d3d12opts2, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS2));
-        if (FAILED(hr))
-            memset(&d3d12opts2, 0, sizeof(d3d12opts2));
-
-        D3D12_FEATURE_DATA_D3D12_OPTIONS3 d3d12opts3 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &d3d12opts3, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS3));
-        if (FAILED(hr))
-            memset(&d3d12opts3, 0, sizeof(d3d12opts3));
-
-        D3D12_FEATURE_DATA_D3D12_OPTIONS4 d3d12opts4 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS4, &d3d12opts4, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS4));
-        if (FAILED(hr))
-            memset(&d3d12opts4, 0, sizeof(d3d12opts4));
-
-        D3D12_FEATURE_DATA_D3D12_OPTIONS5 d3d12opts5 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &d3d12opts5, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS5));
-        if (FAILED(hr))
-            memset(&d3d12opts5, 0, sizeof(d3d12opts5));
-
-        D3D12_FEATURE_DATA_D3D12_OPTIONS6 d3d12opts6 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &d3d12opts6, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS6));
-        if (FAILED(hr))
-            memset(&d3d12opts6, 0, sizeof(d3d12opts6));
-
-        D3D12_FEATURE_DATA_SERIALIZATION d3d12serial = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_SERIALIZATION, &d3d12serial, sizeof(D3D12_FEATURE_DATA_SERIALIZATION));
-        if (FAILED(hr))
-            memset(&d3d12serial, 0, sizeof(d3d12serial));
+        auto d3d12opts   = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS, D3D12_FEATURE_DATA_D3D12_OPTIONS>(pDevice);
+        auto d3d12opts2  = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS2, D3D12_FEATURE_DATA_D3D12_OPTIONS2>(pDevice);
+        auto d3d12opts3  = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS3, D3D12_FEATURE_DATA_D3D12_OPTIONS3>(pDevice);
+        auto d3d12opts4  = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS4, D3D12_FEATURE_DATA_D3D12_OPTIONS4>(pDevice);
+        auto d3d12opts5  = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS5, D3D12_FEATURE_DATA_D3D12_OPTIONS5>(pDevice);
+        auto d3d12opts6  = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS6, D3D12_FEATURE_DATA_D3D12_OPTIONS6>(pDevice);
+        auto d3d12serial = GetD3D12Options<D3D12_FEATURE_SERIALIZATION, D3D12_FEATURE_DATA_SERIALIZATION>(pDevice);
 
         const char* shaderModel = "Unknown";
         switch (GetD3D12ShaderModel(pDevice))
@@ -4655,23 +4521,17 @@ namespace
             LVAddColumn(g_hwndLV, 1, "Value", 60);
         }
 
-        D3D12_FEATURE_DATA_ARCHITECTURE d3d12arch = {};
-        HRESULT hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE, &d3d12arch, sizeof(D3D12_FEATURE_DATA_ARCHITECTURE));
-        if (FAILED(hr))
-            memset(&d3d12arch, 0, sizeof(d3d12arch));
+        auto d3d12arch = GetD3D12Options<D3D12_FEATURE_ARCHITECTURE, D3D12_FEATURE_DATA_ARCHITECTURE>(pDevice);
 
         bool usearch1 = false;
         D3D12_FEATURE_DATA_ARCHITECTURE1 d3d12arch1 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE1, &d3d12arch1, sizeof(D3D12_FEATURE_DATA_ARCHITECTURE1));
+        HRESULT hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE1, &d3d12arch1, sizeof(D3D12_FEATURE_DATA_ARCHITECTURE1));
         if (SUCCEEDED(hr))
             usearch1 = true;
         else
             memset(&d3d12arch1, 0, sizeof(d3d12arch1));
 
-        D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT d3d12vm = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, &d3d12vm, sizeof(D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT));
-        if (FAILED(hr))
-            memset(&d3d12vm, 0, sizeof(d3d12vm));
+        auto d3d12vm = GetD3D12Options<D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT>(pDevice);
 
         char vmRes[16];
         sprintf_s(vmRes, 16, "%u", d3d12vm.MaxGPUVirtualAddressBitsPerResource);
@@ -4721,40 +4581,14 @@ namespace
             LVAddColumn(g_hwndLV, 1, "Value", 60);
         }
 
-        D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {};
-        HRESULT hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
-        if (FAILED(hr))
-            memset(&d3d12opts, 0, sizeof(d3d12opts));
+        auto d3d12opts  = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS, D3D12_FEATURE_DATA_D3D12_OPTIONS>(pDevice);
+        auto d3d12opts1 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS1, D3D12_FEATURE_DATA_D3D12_OPTIONS1>(pDevice);
+        auto d3d12opts3 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS3, D3D12_FEATURE_DATA_D3D12_OPTIONS3>(pDevice);
+        auto d3d12opts4 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS4, D3D12_FEATURE_DATA_D3D12_OPTIONS4>(pDevice);
+        auto d3d12opts6 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS6, D3D12_FEATURE_DATA_D3D12_OPTIONS6>(pDevice);
+        auto d3d12opts7 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS7, D3D12_FEATURE_DATA_D3D12_OPTIONS7>(pDevice);
 
-        D3D12_FEATURE_DATA_D3D12_OPTIONS1 d3d12opts1 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS1, &d3d12opts1, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS1));
-        if (FAILED(hr))
-            memset(&d3d12opts1, 0, sizeof(d3d12opts1));
-
-        D3D12_FEATURE_DATA_D3D12_OPTIONS3 d3d12opts3 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &d3d12opts3, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS3));
-        if (FAILED(hr))
-            memset(&d3d12opts3, 0, sizeof(d3d12opts3));
-
-        D3D12_FEATURE_DATA_D3D12_OPTIONS4 d3d12opts4 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS4, &d3d12opts4, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS4));
-        if (FAILED(hr))
-            memset(&d3d12opts4, 0, sizeof(d3d12opts4));
-
-        D3D12_FEATURE_DATA_D3D12_OPTIONS6 d3d12opts6 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &d3d12opts6, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS6));
-        if (FAILED(hr))
-            memset(&d3d12opts6, 0, sizeof(d3d12opts6));
-
-        D3D12_FEATURE_DATA_D3D12_OPTIONS7 d3d12opts7 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &d3d12opts7, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS7));
-        if (FAILED(hr))
-            memset(&d3d12opts7, 0, sizeof(d3d12opts7));
-
-        D3D12_FEATURE_DATA_SHADER_CACHE d3d12sc = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_SHADER_CACHE, &d3d12sc, sizeof(D3D12_FEATURE_DATA_SHADER_CACHE));
-        if (FAILED(hr))
-            memset(&d3d12sc, 0, sizeof(d3d12sc));
+        auto d3d12sc = GetD3D12Options<D3D12_FEATURE_SHADER_CACHE, D3D12_FEATURE_DATA_SHADER_CACHE>(pDevice);
 
         const char* precis = nullptr;
         switch (d3d12opts.MinPrecisionSupport & (D3D12_SHADER_MIN_PRECISION_SUPPORT_16_BIT | D3D12_SHADER_MIN_PRECISION_SUPPORT_10_BIT))
@@ -4805,10 +4639,7 @@ namespace
         const char* msrtarrayindex = nullptr;
         char atomicInt64[64] = {};
 #if defined(NTDDI_WIN10_FE) || defined(USING_D3D12_AGILITY_SDK)
-        D3D12_FEATURE_DATA_D3D12_OPTIONS9 d3d12opts9 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS9, &d3d12opts9, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS9));
-        if (FAILED(hr))
-            memset(&d3d12opts9, 0, sizeof(d3d12opts9));
+        auto d3d12opts9 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS9, D3D12_FEATURE_DATA_D3D12_OPTIONS9>(pDevice);
 
         if (d3d12opts9.AtomicInt64OnTypedResourceSupported)
         {
@@ -4875,19 +4706,11 @@ namespace
         const char* vrssum = nullptr;
         const char* msperprim = nullptr;
 #if defined(NTDDI_WIN10_CO) || defined(USING_D3D12_AGILITY_SDK)
-        D3D12_FEATURE_DATA_D3D12_OPTIONS10 d3d12opts10 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS10, &d3d12opts10, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS10));
-        if (FAILED(hr))
-            memset(&d3d12opts10, 0, sizeof(d3d12opts10));
-
+        auto d3d12opts10 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS10, D3D12_FEATURE_DATA_D3D12_OPTIONS10 >(pDevice);
         vrssum = (d3d12opts10.VariableRateShadingSumCombinerSupported) ? c_szYes : c_szNo;
         msperprim = (d3d12opts10.MeshShaderPerPrimitiveShadingRateSupported) ? c_szYes : c_szNo;
 
-        D3D12_FEATURE_DATA_D3D12_OPTIONS11 d3d12opts11 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS11, &d3d12opts11, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS11));
-        if (FAILED(hr))
-            memset(&d3d12opts11, 0, sizeof(d3d12opts11));
-
+        auto d3d12opts11 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS11, D3D12_FEATURE_DATA_D3D12_OPTIONS11>(pDevice);
         if (d3d12opts11.AtomicInt64OnDescriptorHeapResourceSupported)
         {
             strcat_s(atomicInt64, "DescHeap ");
@@ -5040,20 +4863,10 @@ namespace
             LVAddColumn(g_hwndLV, 1, "Value", 60);
         }
 
-        D3D12_FEATURE_DATA_D3D12_OPTIONS d3d12opts = {};
-        HRESULT hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &d3d12opts, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
-        if (FAILED(hr))
-            memset(&d3d12opts, 0, sizeof(d3d12opts));
+        auto d3d12opts  = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS, D3D12_FEATURE_DATA_D3D12_OPTIONS>(pDevice);
+        auto d3d12opts4 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS4, D3D12_FEATURE_DATA_D3D12_OPTIONS4>(pDevice);
 
-        D3D12_FEATURE_DATA_D3D12_OPTIONS4 d3d12opts4 = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS4, &d3d12opts4, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS4));
-        if (FAILED(hr))
-            memset(&d3d12opts4, 0, sizeof(d3d12opts4));
-
-        D3D12_FEATURE_DATA_CROSS_NODE d3d12xnode = {};
-        hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_CROSS_NODE, &d3d12xnode, sizeof(D3D12_FEATURE_DATA_CROSS_NODE));
-        if (FAILED(hr))
-            memset(&d3d12xnode, 0, sizeof(d3d12xnode));
+        auto d3d12xnode = GetD3D12Options<D3D12_FEATURE_CROSS_NODE, D3D12_FEATURE_DATA_CROSS_NODE>(pDevice);
 
         char sharing[16];
         switch (d3d12opts.CrossNodeSharingTier)
