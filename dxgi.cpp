@@ -2901,8 +2901,8 @@ namespace
 
             // CheckFeatureSupport
             auto threading = GetD3D11Options<D3D11_FEATURE_THREADING, D3D11_FEATURE_DATA_THREADING>(pDevice);
-            auto doubles   = GetD3D11Options<D3D11_FEATURE_DOUBLES, D3D11_FEATURE_DATA_DOUBLES>(pDevice);
-            auto d3d10xhw  = GetD3D11Options<D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS>(pDevice);
+            auto doubles = GetD3D11Options<D3D11_FEATURE_DOUBLES, D3D11_FEATURE_DATA_DOUBLES>(pDevice);
+            auto d3d10xhw = GetD3D11Options<D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS>(pDevice);
 
             // Setup note
             const char* szNote = nullptr;
@@ -3096,10 +3096,10 @@ namespace
 
         // CheckFeatureSupport
         auto threading = GetD3D11Options<D3D11_FEATURE_THREADING, D3D11_FEATURE_DATA_THREADING>(pDevice);
-        auto doubles   = GetD3D11Options<D3D11_FEATURE_DOUBLES, D3D11_FEATURE_DATA_DOUBLES>(pDevice);
-        auto d3d10xhw  = GetD3D11Options<D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS>(pDevice);
+        auto doubles = GetD3D11Options<D3D11_FEATURE_DOUBLES, D3D11_FEATURE_DATA_DOUBLES>(pDevice);
+        auto d3d10xhw = GetD3D11Options<D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS>(pDevice);
         auto d3d11opts = GetD3D11Options<D3D11_FEATURE_D3D11_OPTIONS, D3D11_FEATURE_DATA_D3D11_OPTIONS>(pDevice);
-        auto d3d9opts  = GetD3D11Options<D3D11_FEATURE_D3D9_OPTIONS, D3D11_FEATURE_DATA_D3D9_OPTIONS>(pDevice);
+        auto d3d9opts = GetD3D11Options<D3D11_FEATURE_D3D9_OPTIONS, D3D11_FEATURE_DATA_D3D9_OPTIONS>(pDevice);
         auto d3d11arch = GetD3D11Options<D3D11_FEATURE_ARCHITECTURE_INFO, D3D11_FEATURE_DATA_ARCHITECTURE_INFO>(pDevice);
         auto minprecis = GetD3D11Options<D3D11_FEATURE_SHADER_MIN_PRECISION_SUPPORT, D3D11_FEATURE_DATA_SHADER_MIN_PRECISION_SUPPORT>(pDevice);
 
@@ -3818,13 +3818,13 @@ namespace
         {
             D3D11FeatureSupportInfo1(pDevice, true, pPrintInfo);
 
-            auto marker     = GetD3D11Options<D3D11_FEATURE_MARKER_SUPPORT, D3D11_FEATURE_DATA_MARKER_SUPPORT>(pDevice);
+            auto marker = GetD3D11Options<D3D11_FEATURE_MARKER_SUPPORT, D3D11_FEATURE_DATA_MARKER_SUPPORT>(pDevice);
             auto d3d11opts2 = GetD3D11Options<D3D11_FEATURE_D3D11_OPTIONS2, D3D11_FEATURE_DATA_D3D11_OPTIONS2>(pDevice);
             auto d3d11opts3 = GetD3D11Options<D3D11_FEATURE_D3D11_OPTIONS3, D3D11_FEATURE_DATA_D3D11_OPTIONS3>(pDevice);
             auto d3d11opts4 = GetD3D11Options<D3D11_FEATURE_D3D11_OPTIONS4, D3D11_FEATURE_DATA_D3D11_OPTIONS4>(pDevice);
             auto d3d11opts5 = GetD3D11Options<D3D11_FEATURE_D3D11_OPTIONS5, D3D11_FEATURE_DATA_D3D11_OPTIONS5>(pDevice);
-            auto d3d11sc    = GetD3D11Options<D3D11_FEATURE_SHADER_CACHE, D3D11_FEATURE_DATA_SHADER_CACHE>(pDevice);
-            auto d3d11vm    = GetD3D11Options<D3D11_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, D3D11_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT>(pDevice);
+            auto d3d11sc = GetD3D11Options<D3D11_FEATURE_SHADER_CACHE, D3D11_FEATURE_DATA_SHADER_CACHE>(pDevice);
+            auto d3d11vm = GetD3D11Options<D3D11_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT, D3D11_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT>(pDevice);
 
             // Setup note
             const char* szNote = nullptr;
@@ -4335,12 +4335,13 @@ namespace
             rootSigOpt.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
         }
 
-        auto d3d12opts   = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS, D3D12_FEATURE_DATA_D3D12_OPTIONS>(pDevice);
-        auto d3d12opts2  = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS2, D3D12_FEATURE_DATA_D3D12_OPTIONS2>(pDevice);
-        auto d3d12opts3  = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS3, D3D12_FEATURE_DATA_D3D12_OPTIONS3>(pDevice);
-        auto d3d12opts4  = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS4, D3D12_FEATURE_DATA_D3D12_OPTIONS4>(pDevice);
-        auto d3d12opts5  = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS5, D3D12_FEATURE_DATA_D3D12_OPTIONS5>(pDevice);
-        auto d3d12opts6  = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS6, D3D12_FEATURE_DATA_D3D12_OPTIONS6>(pDevice);
+        auto d3d12opts = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS, D3D12_FEATURE_DATA_D3D12_OPTIONS>(pDevice);
+        auto d3d12opts2 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS2, D3D12_FEATURE_DATA_D3D12_OPTIONS2>(pDevice);
+        auto d3d12opts3 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS3, D3D12_FEATURE_DATA_D3D12_OPTIONS3>(pDevice);
+        auto d3d12opts4 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS4, D3D12_FEATURE_DATA_D3D12_OPTIONS4>(pDevice);
+        auto d3d12opts5 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS5, D3D12_FEATURE_DATA_D3D12_OPTIONS5>(pDevice);
+        auto d3d12opts6 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS6, D3D12_FEATURE_DATA_D3D12_OPTIONS6>(pDevice);
+
         auto d3d12serial = GetD3D12Options<D3D12_FEATURE_SERIALIZATION, D3D12_FEATURE_DATA_SERIALIZATION>(pDevice);
 
         const char* shaderModel = "Unknown";
@@ -4435,6 +4436,25 @@ namespace
         default: heapSerial = c_szYes; break;
         }
 
+#if defined(NTDDI_WIN10_NI) || defined(USING_D3D12_AGILITY_SDK)
+        auto d3d12opts12 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS12, D3D12_FEATURE_DATA_D3D12_OPTIONS12>(pDevice);
+        auto d3d12opts13 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS13, D3D12_FEATURE_DATA_D3D12_OPTIONS13>(pDevice);
+
+        char vp_flips[16] = {};
+        if (d3d12opts13.InvertedViewportHeightFlipsYSupported)
+        {
+            strcat_s(vp_flips, "Y ");
+        }
+        if (d3d12opts13.InvertedViewportDepthFlipsZSupported)
+        {
+            strcat_s(vp_flips, "Z ");
+        }
+        if (vp_flips[0] == 0)
+        {
+            strcpy_s(vp_flips, c_szNo);
+        }
+#endif
+
         if (!pPrintInfo)
         {
             LVLINE("Feature Level", FLName(fl));
@@ -4469,6 +4489,16 @@ namespace
             LVLINE("DirectX Raytracing", dxr);
 
             LVYESNO("Background processing supported", d3d12opts6.BackgroundProcessingSupported);
+
+#if defined(NTDDI_WIN10_NI) || defined(USING_D3D12_AGILITY_SDK)
+            LVYESNO("Enhanced Barriers", d3d12opts12.EnhancedBarriersSupported);
+            LVYESNO("Relaxed format casting", d3d12opts12.RelaxedFormatCastingSupported);
+            LVYESNO("Alpha blend factor support", d3d12opts13.AlphaBlendFactorSupported);
+            LVYESNO("Unalign buffer/texture cpy pitch", d3d12opts13.UnrestrictedBufferTextureCopyPitchSupported);
+            LVYESNO("Unalign vertex alignment", d3d12opts13.UnrestrictedVertexElementAlignmentSupported);
+            LVYESNO("Copy textures any dimension", d3d12opts13.TextureCopyBetweenDimensionsSupported);
+            LVLINE("Inverted viewport flips support", vp_flips)
+#endif
         }
         else
         {
@@ -4504,6 +4534,16 @@ namespace
             PRINTLINE("DirectX Raytracing", dxr);
 
             PRINTYESNO("Background processing supported", d3d12opts6.BackgroundProcessingSupported);
+
+#if defined(NTDDI_WIN10_NI) || defined(USING_D3D12_AGILITY_SDK)
+            PRINTYESNO("Enhanced Barriers", d3d12opts12.EnhancedBarriersSupported);
+            PRINTYESNO("Relaxed format casting", d3d12opts12.RelaxedFormatCastingSupported);
+            PRINTYESNO("Alpha blend factor support", d3d12opts13.AlphaBlendFactorSupported);
+            PRINTYESNO("Unalign buffer/texture cpy pitch", d3d12opts13.UnrestrictedBufferTextureCopyPitchSupported);
+            PRINTYESNO("Unalign vertex alignment", d3d12opts13.UnrestrictedVertexElementAlignmentSupported);
+            PRINTYESNO("Copy textures any dimension", d3d12opts13.TextureCopyBetweenDimensionsSupported);
+            PRINTLINE("Inverted viewport flips support", vp_flips)
+#endif
         }
 
         return S_OK;
@@ -4581,7 +4621,7 @@ namespace
             LVAddColumn(g_hwndLV, 1, "Value", 60);
         }
 
-        auto d3d12opts  = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS, D3D12_FEATURE_DATA_D3D12_OPTIONS>(pDevice);
+        auto d3d12opts = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS, D3D12_FEATURE_DATA_D3D12_OPTIONS>(pDevice);
         auto d3d12opts1 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS1, D3D12_FEATURE_DATA_D3D12_OPTIONS1>(pDevice);
         auto d3d12opts3 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS3, D3D12_FEATURE_DATA_D3D12_OPTIONS3>(pDevice);
         auto d3d12opts4 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS4, D3D12_FEATURE_DATA_D3D12_OPTIONS4>(pDevice);
@@ -4660,7 +4700,7 @@ namespace
         case D3D12_WAVE_MMA_TIER_1_0:           wavemmatier = "Yes - Tier 1"; break;
         default:                                wavemmatier = c_szYes; break;
         }
-#endif
+#endif // FE
 
         char shaderCache[64] = {};
         if (d3d12sc.SupportFlags)
@@ -4686,7 +4726,7 @@ namespace
             {
                 strcat_s(shaderCache, "DrvMng ");
             }
-#endif
+#endif // FE
 #if defined(NTDDI_WIN10_CO) || defined(USING_D3D12_AGILITY_SDK)
             if (d3d12sc.SupportFlags & D3D12_SHADER_CACHE_SUPPORT_SHADER_CONTROL_CLEAR)
             {
@@ -4696,7 +4736,7 @@ namespace
             {
                 strcat_s(shaderCache, "Delete ");
             }
-#endif
+#endif // CO
         }
         else
         {
@@ -4715,6 +4755,12 @@ namespace
         {
             strcat_s(atomicInt64, "DescHeap ");
         }
+#endif // CO
+
+        const char* msstatsculled = nullptr;
+#if defined(NTDDI_WIN10_NI) || defined(USING_D3D12_AGILITY_SDK)
+        auto d3d12opts12 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS12, D3D12_FEATURE_DATA_D3D12_OPTIONS12>(pDevice);
+        msstatsculled = d3d12opts12.MSPrimitivesPipelineStatisticIncludesCulledPrimitives ? c_szYes : c_szNo;
 #endif
 
         if (!pPrintInfo)
@@ -4750,7 +4796,7 @@ namespace
             if (d3d12opts6.VariableShadingRateTier != D3D12_VARIABLE_SHADING_RATE_TIER_NOT_SUPPORTED)
             {
                 LVYESNO("VRS: Additional shading rates", d3d12opts6.AdditionalShadingRatesSupported);
-                LVYESNO("VRS: Per-primitive w/ SV_ViewportIndex", d3d12opts6.PerPrimitiveShadingRateSupportedWithViewportIndexing);
+                LVYESNO("VRS: PP SV_ViewportIndex", d3d12opts6.PerPrimitiveShadingRateSupportedWithViewportIndexing);
                 LVLINE("VRS: Screen-space tile size", vrs_tile_size);
 
                 if (vrssum)
@@ -4775,6 +4821,11 @@ namespace
                 if (msrtarrayindex)
                 {
                     LVLINE("MS: RT Array Index Support", msrtarrayindex);
+                }
+
+                if (msstatsculled)
+                {
+                    LVLINE("MS: Stats incl culled prims", msstatsculled);
                 }
             }
 
@@ -4815,7 +4866,7 @@ namespace
             if (d3d12opts6.VariableShadingRateTier != D3D12_VARIABLE_SHADING_RATE_TIER_NOT_SUPPORTED)
             {
                 PRINTYESNO("VRS: Additional shading rates", d3d12opts6.AdditionalShadingRatesSupported);
-                PRINTYESNO("VRS: Per-primitive w/ SV_ViewportIndex", d3d12opts6.PerPrimitiveShadingRateSupportedWithViewportIndexing);
+                PRINTYESNO("VRS: PP SV_ViewportIndex", d3d12opts6.PerPrimitiveShadingRateSupportedWithViewportIndexing);
                 PRINTLINE("VRS: Screen-space tile size", vrs_tile_size);
 
                 if (vrssum)
@@ -4841,6 +4892,11 @@ namespace
                 {
                     PRINTLINE("MS: RT Array Index Support", msrtarrayindex);
                 }
+
+                if (msstatsculled)
+                {
+                    PRINTLINE("MS: Stats incl culled prims", msstatsculled);
+                }
             }
 
             PRINTLINE("Sampler Feedback", feedbackTier);
@@ -4863,7 +4919,7 @@ namespace
             LVAddColumn(g_hwndLV, 1, "Value", 60);
         }
 
-        auto d3d12opts  = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS, D3D12_FEATURE_DATA_D3D12_OPTIONS>(pDevice);
+        auto d3d12opts = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS, D3D12_FEATURE_DATA_D3D12_OPTIONS>(pDevice);
         auto d3d12opts4 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS4, D3D12_FEATURE_DATA_D3D12_OPTIONS4>(pDevice);
 
         auto d3d12xnode = GetD3D12Options<D3D12_FEATURE_CROSS_NODE, D3D12_FEATURE_DATA_CROSS_NODE>(pDevice);
