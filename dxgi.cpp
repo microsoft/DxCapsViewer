@@ -568,7 +568,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
             LVAddColumn(g_hwndLV, 1, "Value", 50);
         }
 
@@ -634,7 +634,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
             LVAddColumn(g_hwndLV, 1, "Value", 50);
         }
 
@@ -704,7 +704,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
             LVAddColumn(g_hwndLV, 1, "Value", 50);
         }
 
@@ -806,7 +806,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
             LVAddColumn(g_hwndLV, 1, "Value", 30);
         }
 
@@ -969,7 +969,7 @@ namespace
         {
             if (!pPrintInfo)
             {
-                LVAddColumn(g_hwndLV, 0, "Name", 30);
+                LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
                 LVAddColumn(g_hwndLV, 1, "Value", 60);
             }
 
@@ -1207,7 +1207,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
             LVAddColumn(g_hwndLV, 1, "Value", 60);
         }
 
@@ -2397,7 +2397,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
 
             if (lParam2 == D3D10_FORMAT_SUPPORT_MULTISAMPLE_RENDERTARGET)
             {
@@ -2589,7 +2589,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
 
             if (lParam2 == D3D10_FORMAT_SUPPORT_MULTISAMPLE_RENDERTARGET)
             {
@@ -2794,7 +2794,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
 
             UINT column = 1;
             for (UINT samples = 2; samples <= D3D10_MAX_MULTISAMPLE_SAMPLE_COUNT; ++samples)
@@ -2892,7 +2892,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
 
             if (lParam2 == D3D11_FORMAT_SUPPORT_MULTISAMPLE_RENDERTARGET)
             {
@@ -3248,7 +3248,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
 
             if (lParam2 == D3D11_FORMAT_SUPPORT_MULTISAMPLE_RENDERTARGET)
             {
@@ -3642,7 +3642,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
             LVAddColumn(g_hwndLV, 1, "Value", 60);
         }
 
@@ -3820,7 +3820,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
             LVAddColumn(g_hwndLV, 1, "Value", 60);
         }
 
@@ -4096,7 +4096,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
 
             UINT column = 1;
             for (UINT samples = 2; samples <= D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT; ++samples)
@@ -4256,7 +4256,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
             LVAddColumn(g_hwndLV, 1, "Texture2D", 15);
             LVAddColumn(g_hwndLV, 2, "Input", 15);
             LVAddColumn(g_hwndLV, 3, "Output", 15);
@@ -4336,7 +4336,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
             LVAddColumn(g_hwndLV, 1, "Value", 60);
         }
 
@@ -4593,7 +4593,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
             LVAddColumn(g_hwndLV, 1, "Value", 60);
         }
 
@@ -4653,7 +4653,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
             LVAddColumn(g_hwndLV, 1, "Value", 60);
         }
 
@@ -4979,7 +4979,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
             LVAddColumn(g_hwndLV, 1, "Value", 60);
         }
 
@@ -5172,7 +5172,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Name", 30);
+            LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
             LVAddColumn(g_hwndLV, 1, "Texture2D", 15);
             LVAddColumn(g_hwndLV, 2, "Input", 15);
             LVAddColumn(g_hwndLV, 3, "Output", 15);

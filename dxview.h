@@ -24,9 +24,11 @@
 //-----------------------------------------------------------------------------
 // Defines
 //-----------------------------------------------------------------------------
-#define DXView_WIDTH    700          // Window dimensions
-#define DXView_HEIGHT   400
+#define DXView_WIDTH    800          // Window dimensions
+#define DXView_HEIGHT   640
 #define DEF_TAB_SIZE    3
+
+constexpr int c_DefNameLength = 30;
 
 #define IDC_LV          0x2000       // Child controls
 #define IDC_TV          0x2003
