@@ -849,8 +849,8 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Resolution", 10);
-            LVAddColumn(g_hwndLV, 1, "Pixel Format", 30);
+            LVAddColumn(g_hwndLV, 0, "Resolution", 12);
+            LVAddColumn(g_hwndLV, 1, "Pixel Format", 40);
             LVAddColumn(g_hwndLV, 2, "Refresh Rate", 10);
         }
 
@@ -4500,7 +4500,7 @@ namespace
             LVYESNO("Casting fully typed formats", d3d12opts3.CastingFullyTypedFormatSupported);
             LVYESNO("Copy queue timestamp queries", d3d12opts3.CopyQueueTimestampQueriesSupported);
 
-            LVYESNO("Create heaps f/ existing sysmem", d3d12eheaps.Supported);
+            LVYESNO("Create heaps f/ existing system memory", d3d12eheaps.Supported);
 
             LVYESNO("64KB aligned MSAA textures", d3d12opts4.MSAA64KBAlignedTextureSupported);
 
@@ -4516,16 +4516,16 @@ namespace
             LVYESNO("Enhanced Barriers", d3d12opts12.EnhancedBarriersSupported);
             LVYESNO("Relaxed format casting", d3d12opts12.RelaxedFormatCastingSupported);
             LVYESNO("Alpha blend factor support", d3d12opts13.AlphaBlendFactorSupported);
-            LVYESNO("Unalign buffer/texture cpy pitch", d3d12opts13.UnrestrictedBufferTextureCopyPitchSupported);
-            LVYESNO("Unalign vertex alignment", d3d12opts13.UnrestrictedVertexElementAlignmentSupported);
-            LVYESNO("Copy textures any dimension", d3d12opts13.TextureCopyBetweenDimensionsSupported);
+            LVYESNO("Unrestricted buffer/texture copy pitch", d3d12opts13.UnrestrictedBufferTextureCopyPitchSupported);
+            LVYESNO("Unrestricted vertex alignment", d3d12opts13.UnrestrictedVertexElementAlignmentSupported);
+            LVYESNO("Copy between textures of any dimension", d3d12opts13.TextureCopyBetweenDimensionsSupported);
             LVLINE("Inverted viewport flips support", vp_flips)
 #endif
 
 #if defined(NTDDI_WIN10_CU) || defined(USING_D3D12_AGILITY_SDK)
-            LVYESNO("Ind. F/B Stencil RefMask", d3d12opts14.IndependentFrontAndBackStencilRefMaskSupported);
+            LVYESNO("Independent F/B Stencil RefMask", d3d12opts14.IndependentFrontAndBackStencilRefMaskSupported);
             LVYESNO("Triangle fans primitives", d3d12opts15.TriangleFanSupported);
-            LVYESNO("Dynamic IB strip-cut", d3d12opts15.DynamicIndexBufferStripCutSupported);
+            LVYESNO("Dynamic IB strip-cut support", d3d12opts15.DynamicIndexBufferStripCutSupported);
 #endif
         }
         else
@@ -4553,7 +4553,7 @@ namespace
             PRINTYESNO("Casting fully typed formats", d3d12opts3.CastingFullyTypedFormatSupported);
             PRINTYESNO("Copy queue timestamp queries", d3d12opts3.CopyQueueTimestampQueriesSupported);
 
-            PRINTYESNO("Create heaps f/ existing sysmem", d3d12eheaps.Supported);
+            PRINTYESNO("Create heaps f/ existing system memory", d3d12eheaps.Supported);
 
             PRINTYESNO("64KB aligned MSAA textures", d3d12opts4.MSAA64KBAlignedTextureSupported);
 
@@ -4569,16 +4569,16 @@ namespace
             PRINTYESNO("Enhanced Barriers", d3d12opts12.EnhancedBarriersSupported);
             PRINTYESNO("Relaxed format casting", d3d12opts12.RelaxedFormatCastingSupported);
             PRINTYESNO("Alpha blend factor support", d3d12opts13.AlphaBlendFactorSupported);
-            PRINTYESNO("Unalign buffer/texture cpy pitch", d3d12opts13.UnrestrictedBufferTextureCopyPitchSupported);
-            PRINTYESNO("Unalign vertex alignment", d3d12opts13.UnrestrictedVertexElementAlignmentSupported);
-            PRINTYESNO("Copy textures any dimension", d3d12opts13.TextureCopyBetweenDimensionsSupported);
+            PRINTYESNO("Unrestricted buffer/texture copy pitch", d3d12opts13.UnrestrictedBufferTextureCopyPitchSupported);
+            PRINTYESNO("Unrestricted vertex alignment", d3d12opts13.UnrestrictedVertexElementAlignmentSupported);
+            PRINTYESNO("Copy between textures of any dimension", d3d12opts13.TextureCopyBetweenDimensionsSupported);
             PRINTLINE("Inverted viewport flips support", vp_flips);
 #endif
 
 #if defined(NTDDI_WIN10_CU) || defined(USING_D3D12_AGILITY_SDK)
-            PRINTYESNO("Ind. F/B Stencil RefMask", d3d12opts14.IndependentFrontAndBackStencilRefMaskSupported);
+            PRINTYESNO("Independent F/B Stencil RefMask", d3d12opts14.IndependentFrontAndBackStencilRefMaskSupported);
             PRINTYESNO("Triangle fan primitives", d3d12opts15.TriangleFanSupported);
-            PRINTYESNO("Dynamic IB strip-cut", d3d12opts15.DynamicIndexBufferStripCutSupported);
+            PRINTYESNO("Dynamic IB strip-cut support", d3d12opts15.DynamicIndexBufferStripCutSupported);
 #endif
         }
 
@@ -4840,7 +4840,7 @@ namespace
             if (d3d12opts6.VariableShadingRateTier != D3D12_VARIABLE_SHADING_RATE_TIER_NOT_SUPPORTED)
             {
                 LVYESNO("VRS: Additional shading rates", d3d12opts6.AdditionalShadingRatesSupported);
-                LVYESNO("VRS: PP SV_ViewportIndex", d3d12opts6.PerPrimitiveShadingRateSupportedWithViewportIndexing);
+                LVYESNO("VRS: Per-primitive SV_ViewportIndex", d3d12opts6.PerPrimitiveShadingRateSupportedWithViewportIndexing);
                 LVLINE("VRS: Screen-space tile size", vrs_tile_size);
 
                 if (vrssum)
@@ -4920,7 +4920,7 @@ namespace
             if (d3d12opts6.VariableShadingRateTier != D3D12_VARIABLE_SHADING_RATE_TIER_NOT_SUPPORTED)
             {
                 PRINTYESNO("VRS: Additional shading rates", d3d12opts6.AdditionalShadingRatesSupported);
-                PRINTYESNO("VRS: PP SV_ViewportIndex", d3d12opts6.PerPrimitiveShadingRateSupportedWithViewportIndexing);
+                PRINTYESNO("VRS: Per-primitive SV_ViewportIndex", d3d12opts6.PerPrimitiveShadingRateSupportedWithViewportIndexing);
                 PRINTLINE("VRS: Screen-space tile size", vrs_tile_size);
 
                 if (vrssum)

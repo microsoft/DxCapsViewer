@@ -20,11 +20,10 @@
 #define D3DSHADER_VERSION_MINOR(_Version) (((_Version)>>0)&0xFF)
 
 constexpr size_t c_maxPasteBuffer = 200;
-constexpr size_t c_maxPrintLine = 80;
-constexpr int c_tabStopA = 32;
-constexpr int c_tabStopB = 50;
+constexpr size_t c_maxPrintLine = 128;
+constexpr int c_tabStop = 52;
 
-static_assert(c_tabStopA >= c_DefNameLength, "print stop should be at least as long as the default name");
+static_assert(c_tabStop >= c_DefNameLength, "print stop should be at least as long as the default name");
 
 HINSTANCE   g_hInstance = nullptr;
 HWND        g_hwndMain = nullptr;
@@ -130,7 +129,7 @@ HRESULT PrintStringValueLine(const char * szText, const char * szText2, PRINTCBI
 {
     // Calculate Name and Value column x offsets
     int xName   = (lpInfo->dwCurrIndent * DEF_TAB_SIZE * lpInfo->dwCharWidth);
-    int xVal    = xName + (c_tabStopA * lpInfo->dwCharWidth);
+    int xVal    = xName + (c_tabStop * lpInfo->dwCharWidth);
     int yLine   = (lpInfo->dwCurrLine * lpInfo->dwLineHeight);
 
     // Print name
@@ -691,7 +690,7 @@ HRESULT PrintCapsToDC(CAPDEF* pcd, LPVOID pv, PRINTCBINFO* lpInfo)
 
     // Calculate Name and Value column x offsets
     int xName = (lpInfo->dwCurrIndent * DEF_TAB_SIZE * lpInfo->dwCharWidth);
-    int xVal = xName + (c_tabStopB * lpInfo->dwCharWidth);
+    int xVal = xName + (c_tabStop * lpInfo->dwCharWidth);
 
     while (pcd->strName && *pcd->strName)
     {
