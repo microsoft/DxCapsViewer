@@ -47,6 +47,11 @@ enum FLMASK : uint32_t
 #pragma warning(disable : 4063 4702)
 #endif
 
+#if !defined(NTDDI_WIN10_CU) && !defined(USING_D3D12_AGILITY_SDK)
+#define D3D_SHADER_MODEL_6_8 static_cast<D3D_SHADER_MODEL>(0x68)
+#pragma warning(disable : 4063 4702)
+#endif
+
 //-----------------------------------------------------------------------------
 namespace
 {
@@ -293,7 +298,7 @@ namespace
             return D3D_SHADER_MODEL_5_1;
 
         D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
-        shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_6_7;
+        shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_6_8;
         HRESULT hr = device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
         while (hr == E_INVALIDARG && shaderModelOpt.HighestShaderModel > D3D_SHADER_MODEL_6_0)
         {
@@ -1249,6 +1254,10 @@ namespace
             {
                 switch (GetD3D12ShaderModel(pD3D12))
                 {
+                case D3D_SHADER_MODEL_6_8:
+                    shaderModel = "6.8 (Optional)";
+                    computeShader = "Yes (CS 6.8)";
+                    break;
                 case D3D_SHADER_MODEL_6_7:
                     shaderModel = "6.7 (Optional)";
                     computeShader = "Yes (CS 6.7)";
@@ -1274,6 +1283,10 @@ namespace
             {
                 switch (GetD3D12ShaderModel(pD3D12))
                 {
+                case D3D_SHADER_MODEL_6_8:
+                    shaderModel = "6.8 (Optional)";
+                    computeShader = "Yes (CS 6.8)";
+                    break;
                 case D3D_SHADER_MODEL_6_7:
                     shaderModel = "6.7 (Optional)";
                     computeShader = "Yes (CS 6.7)";
@@ -4348,6 +4361,7 @@ namespace
         const char* shaderModel = "Unknown";
         switch (GetD3D12ShaderModel(pDevice))
         {
+        case D3D_SHADER_MODEL_6_8: shaderModel = "6.8"; break;
         case D3D_SHADER_MODEL_6_7: shaderModel = "6.7"; break;
         case D3D_SHADER_MODEL_6_6: shaderModel = "6.6"; break;
         case D3D_SHADER_MODEL_6_5: shaderModel = "6.5"; break;
@@ -4456,6 +4470,11 @@ namespace
         }
 #endif
 
+#if defined(NTDDI_WIN10_CU) || defined(USING_D3D12_AGILITY_SDK)
+        auto d3d12opts14 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS14, D3D12_FEATURE_DATA_D3D12_OPTIONS14>(pDevice);
+        auto d3d12opts15 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS15, D3D12_FEATURE_DATA_D3D12_OPTIONS15>(pDevice);
+#endif
+
         if (!pPrintInfo)
         {
             LVLINE("Feature Level", FLName(fl));
@@ -4502,6 +4521,12 @@ namespace
             LVYESNO("Copy textures any dimension", d3d12opts13.TextureCopyBetweenDimensionsSupported);
             LVLINE("Inverted viewport flips support", vp_flips)
 #endif
+
+#if defined(NTDDI_WIN10_CU) || defined(USING_D3D12_AGILITY_SDK)
+            LVYESNO("Ind. F/B Stencil RefMask", d3d12opts14.IndependentFrontAndBackStencilRefMaskSupported);
+            LVYESNO("Triangle fans primitives", d3d12opts15.TriangleFanSupported);
+            LVYESNO("Dynamic IB strip-cut", d3d12opts15.DynamicIndexBufferStripCutSupported);
+#endif
         }
         else
         {
@@ -4547,7 +4572,13 @@ namespace
             PRINTYESNO("Unalign buffer/texture cpy pitch", d3d12opts13.UnrestrictedBufferTextureCopyPitchSupported);
             PRINTYESNO("Unalign vertex alignment", d3d12opts13.UnrestrictedVertexElementAlignmentSupported);
             PRINTYESNO("Copy textures any dimension", d3d12opts13.TextureCopyBetweenDimensionsSupported);
-            PRINTLINE("Inverted viewport flips support", vp_flips)
+            PRINTLINE("Inverted viewport flips support", vp_flips);
+#endif
+
+#if defined(NTDDI_WIN10_CU) || defined(USING_D3D12_AGILITY_SDK)
+            PRINTYESNO("Ind. F/B Stencil RefMask", d3d12opts14.IndependentFrontAndBackStencilRefMaskSupported);
+            PRINTYESNO("Triangle fan primitives", d3d12opts15.TriangleFanSupported);
+            PRINTYESNO("Dynamic IB strip-cut", d3d12opts15.DynamicIndexBufferStripCutSupported);
 #endif
         }
 
@@ -4762,10 +4793,18 @@ namespace
         }
 #endif // CO
 
-        const char* msstatsculled = nullptr;
+        const char* ms_stats_culled = nullptr;
 #if defined(NTDDI_WIN10_NI) || defined(USING_D3D12_AGILITY_SDK)
         auto d3d12opts12 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS12, D3D12_FEATURE_DATA_D3D12_OPTIONS12>(pDevice);
-        msstatsculled = d3d12opts12.MSPrimitivesPipelineStatisticIncludesCulledPrimitives ? c_szYes : c_szNo;
+        ms_stats_culled = d3d12opts12.MSPrimitivesPipelineStatisticIncludesCulledPrimitives ? c_szYes : c_szNo;
+#endif
+
+        const char* adv_texture_ops = nullptr;
+        const char* writeable_msaa_txt = nullptr;
+#if defined(NTDDI_WIN10_CU) || defined(USING_D3D12_AGILITY_SDK)
+        auto d3d12opts14 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS14, D3D12_FEATURE_DATA_D3D12_OPTIONS14>(pDevice);
+        adv_texture_ops = d3d12opts14.AdvancedTextureOpsSupported ? c_szYes : c_szNo;
+        writeable_msaa_txt = d3d12opts14.WriteableMSAATexturesSupported ? c_szYes : c_szNo;
 #endif
 
         if (!pPrintInfo)
@@ -4828,15 +4867,25 @@ namespace
                     LVLINE("MS: RT Array Index Support", msrtarrayindex);
                 }
 
-                if (msstatsculled)
+                if (ms_stats_culled)
                 {
-                    LVLINE("MS: Stats incl culled prims", msstatsculled);
+                    LVLINE("MS: Stats incl culled prims", ms_stats_culled);
                 }
             }
 
             LVLINE("Sampler Feedback", feedbackTier);
 
             LVLINE("Shader Cache", shaderCache);
+
+            if (adv_texture_ops)
+            {
+                LVLINE("Advanced texture ops", adv_texture_ops);
+            }
+
+            if (writeable_msaa_txt)
+            {
+                LVLINE("Writeable MSAA textures", writeable_msaa_txt);
+            }
         }
         else
         {
@@ -4898,15 +4947,25 @@ namespace
                     PRINTLINE("MS: RT Array Index Support", msrtarrayindex);
                 }
 
-                if (msstatsculled)
+                if (ms_stats_culled)
                 {
-                    PRINTLINE("MS: Stats incl culled prims", msstatsculled);
+                    PRINTLINE("MS: Stats incl culled prims", ms_stats_culled);
                 }
             }
 
             PRINTLINE("Sampler Feedback", feedbackTier);
 
             PRINTLINE("Shader Cache", shaderCache);
+
+            if (adv_texture_ops)
+            {
+                PRINTLINE("Advanced texture ops", adv_texture_ops);
+            }
+
+            if (writeable_msaa_txt)
+            {
+                PRINTLINE("Writeable MSAA textures", writeable_msaa_txt);
+            }
         }
 
         return S_OK;
