@@ -807,7 +807,7 @@ namespace
         if (!pPrintInfo)
         {
             LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
-            LVAddColumn(g_hwndLV, 1, "Value", 30);
+            LVAddColumn(g_hwndLV, 1, "Value", 40);
         }
 
         DXGI_OUTPUT_DESC desc;
@@ -849,7 +849,7 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Resolution", 12);
+            LVAddColumn(g_hwndLV, 0, "Resolution", 14);
             LVAddColumn(g_hwndLV, 1, "Pixel Format", 40);
             LVAddColumn(g_hwndLV, 2, "Refresh Rate", 10);
         }
@@ -3919,7 +3919,7 @@ namespace
 
                 LVYESNO("Map DEFAULT Textures", d3d11opts2.MapOnDefaultTextures);
                 LVYESNO("Standard Swizzle", d3d11opts2.StandardSwizzle);
-                LVYESNO("UMA", d3d11opts2.UnifiedMemoryArchitecture);
+                LVYESNO("Unified Memory Architecture (UMA)", d3d11opts2.UnifiedMemoryArchitecture);
                 LVYESNO("Extended formats TypedUAVLoad", d3d11opts2.TypedUAVLoadAdditionalFormats);
 
                 LVLINE("Conservative Rasterization", consrv_rast);
@@ -3927,7 +3927,7 @@ namespace
                 LVYESNO("PS-Specified Stencil Ref", d3d11opts2.PSSpecifiedStencilRefSupported);
                 LVYESNO("Rasterizer Ordered Views", d3d11opts2.ROVsSupported);
 
-                LVYESNO("VP/RT f/ Rast-feeding Shader", d3d11opts3.VPAndRTArrayIndexFromAnyShaderFeedingRasterizer);
+                LVYESNO("VP/RT from Rast-feeding Shader", d3d11opts3.VPAndRTArrayIndexFromAnyShaderFeedingRasterizer);
 
                 if (lParam3 != 0)
                 {
@@ -3948,7 +3948,7 @@ namespace
 
                 PRINTYESNO("Map DEFAULT Textures", d3d11opts2.MapOnDefaultTextures);
                 PRINTYESNO("Standard Swizzle", d3d11opts2.StandardSwizzle);
-                PRINTYESNO("UMA", d3d11opts2.UnifiedMemoryArchitecture);
+                PRINTYESNO("Unified Memory Architecture (UMA)", d3d11opts2.UnifiedMemoryArchitecture);
                 PRINTYESNO("Extended formats TypedUAVLoad", d3d11opts2.TypedUAVLoadAdditionalFormats);
 
                 PRINTLINE("Conservative Rasterization", consrv_rast);
@@ -3956,7 +3956,7 @@ namespace
                 PRINTYESNO("PS-Specified Stencil Ref", d3d11opts2.PSSpecifiedStencilRefSupported);
                 PRINTYESNO("Rasterizer Ordered Views", d3d11opts2.ROVsSupported);
 
-                PRINTYESNO("VP/RT f/ Rast-feeding Shader", d3d11opts3.VPAndRTArrayIndexFromAnyShaderFeedingRasterizer);
+                PRINTYESNO("VP/RT from Rast-feeding Shader", d3d11opts3.VPAndRTArrayIndexFromAnyShaderFeedingRasterizer);
 
                 if (lParam3 != 0)
                 {
@@ -4500,7 +4500,7 @@ namespace
             LVYESNO("Casting fully typed formats", d3d12opts3.CastingFullyTypedFormatSupported);
             LVYESNO("Copy queue timestamp queries", d3d12opts3.CopyQueueTimestampQueriesSupported);
 
-            LVYESNO("Create heaps f/ existing system memory", d3d12eheaps.Supported);
+            LVYESNO("Create heaps from existing system memory", d3d12eheaps.Supported);
 
             LVYESNO("64KB aligned MSAA textures", d3d12opts4.MSAA64KBAlignedTextureSupported);
 
@@ -4523,7 +4523,7 @@ namespace
 #endif
 
 #if defined(NTDDI_WIN10_CU) || defined(USING_D3D12_AGILITY_SDK)
-            LVYESNO("Independent F/B Stencil RefMask", d3d12opts14.IndependentFrontAndBackStencilRefMaskSupported);
+            LVYESNO("Independent front/back stencil refmask", d3d12opts14.IndependentFrontAndBackStencilRefMaskSupported);
             LVYESNO("Triangle fans primitives", d3d12opts15.TriangleFanSupported);
             LVYESNO("Dynamic IB strip-cut support", d3d12opts15.DynamicIndexBufferStripCutSupported);
 #endif
@@ -4553,7 +4553,7 @@ namespace
             PRINTYESNO("Casting fully typed formats", d3d12opts3.CastingFullyTypedFormatSupported);
             PRINTYESNO("Copy queue timestamp queries", d3d12opts3.CopyQueueTimestampQueriesSupported);
 
-            PRINTYESNO("Create heaps f/ existing system memory", d3d12eheaps.Supported);
+            PRINTYESNO("Create heaps from existing system memory", d3d12eheaps.Supported);
 
             PRINTYESNO("64KB aligned MSAA textures", d3d12opts4.MSAA64KBAlignedTextureSupported);
 
@@ -4576,7 +4576,7 @@ namespace
 #endif
 
 #if defined(NTDDI_WIN10_CU) || defined(USING_D3D12_AGILITY_SDK)
-            PRINTYESNO("Independent F/B Stencil RefMask", d3d12opts14.IndependentFrontAndBackStencilRefMaskSupported);
+            PRINTYESNO("Independent front/back stencil refmask", d3d12opts14.IndependentFrontAndBackStencilRefMaskSupported);
             PRINTYESNO("Triangle fan primitives", d3d12opts15.TriangleFanSupported);
             PRINTYESNO("Dynamic IB strip-cut support", d3d12opts15.DynamicIndexBufferStripCutSupported);
 #endif
@@ -4618,7 +4618,7 @@ namespace
         if (!pPrintInfo)
         {
             LVYESNO("Tile-based Renderer", d3d12arch.TileBasedRenderer);
-            LVYESNO("UMA", d3d12arch.UMA);
+            LVYESNO("Unified Memory Architecture (UMA)", d3d12arch.UMA);
             LVYESNO("Cache Coherent UMA", d3d12arch.CacheCoherentUMA);
             if (usearch1)
             {
@@ -4631,7 +4631,7 @@ namespace
         else
         {
             PRINTYESNO("Tile-based Renderer", d3d12arch.TileBasedRenderer);
-            PRINTYESNO("UMA", d3d12arch.UMA);
+            PRINTYESNO("Unified Memory Architecture (UMA)", d3d12arch.UMA);
             PRINTYESNO("Cache Coherent UMA", d3d12arch.CacheCoherentUMA);
             if (usearch1)
             {
@@ -5011,7 +5011,7 @@ namespace
         if (!pPrintInfo)
         {
             LVLINE("Cross-node Sharing", sharing);
-            LVYESNO("Cross-adapter RM Texture", d3d12opts.CrossAdapterRowMajorTextureSupported);
+            LVYESNO("Cross-adapter Row-Major Texture", d3d12opts.CrossAdapterRowMajorTextureSupported);
 
             LVLINE("Shared Resource Tier", sharedResTier);
             LVYESNO("Atomic Shader Instructions", d3d12xnode.AtomicShaderInstructions);
@@ -5019,7 +5019,7 @@ namespace
         else
         {
             PRINTLINE("Cross-node Sharing", sharing);
-            PRINTYESNO("Cross-adapter RM Texture", d3d12opts.CrossAdapterRowMajorTextureSupported);
+            PRINTYESNO("Cross-adapter Row-Major Texture", d3d12opts.CrossAdapterRowMajorTextureSupported);
 
             PRINTLINE("Shared Resource Tier", sharedResTier);
             PRINTYESNO("Atomic Shader Instructions", d3d12xnode.AtomicShaderInstructions);
