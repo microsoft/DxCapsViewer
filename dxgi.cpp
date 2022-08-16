@@ -4451,6 +4451,10 @@ namespace
         default: heapSerial = c_szYes; break;
         }
 
+#if defined(NTDDI_WIN10_FE) || defined(USING_D3D12_AGILITY_SDK)
+        auto d3d12opts8 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS8, D3D12_FEATURE_DATA_D3D12_OPTIONS8>(pDevice);
+#endif
+
 #if defined(NTDDI_WIN10_NI) || defined(USING_D3D12_AGILITY_SDK)
         auto d3d12opts12 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS12, D3D12_FEATURE_DATA_D3D12_OPTIONS12>(pDevice);
         auto d3d12opts13 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS13, D3D12_FEATURE_DATA_D3D12_OPTIONS13>(pDevice);
@@ -4512,6 +4516,10 @@ namespace
 
             LVYESNO("Background processing supported", d3d12opts6.BackgroundProcessingSupported);
 
+#if defined(NTDDI_WIN10_FE) || defined(USING_D3D12_AGILITY_SDK)
+            LVYESNO("Unaligned BC texture (not a multiple of 4)", d3d12opts8.UnalignedBlockTexturesSupported);
+#endif
+
 #if defined(NTDDI_WIN10_NI) || defined(USING_D3D12_AGILITY_SDK)
             LVYESNO("Enhanced Barriers", d3d12opts12.EnhancedBarriersSupported);
             LVYESNO("Relaxed format casting", d3d12opts12.RelaxedFormatCastingSupported);
@@ -4564,6 +4572,10 @@ namespace
             PRINTLINE("DirectX Raytracing", dxr);
 
             PRINTYESNO("Background processing supported", d3d12opts6.BackgroundProcessingSupported);
+
+#if defined(NTDDI_WIN10_FE) || defined(USING_D3D12_AGILITY_SDK)
+            PRINTYESNO("Unaligned BC texture (not a multiple of 4)", d3d12opts8.UnalignedBlockTexturesSupported);
+#endif
 
 #if defined(NTDDI_WIN10_NI) || defined(USING_D3D12_AGILITY_SDK)
             PRINTYESNO("Enhanced Barriers", d3d12opts12.EnhancedBarriersSupported);
