@@ -71,8 +71,7 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
         "-Wno-language-extension-token" "-Wno-switch"
         "-Wno-missing-field-initializers")
     target_compile_options(${PROJECT_NAME} PRIVATE ${WarningsEXE})
-endif()
-if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
+elseif ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
     target_compile_options(${PROJECT_NAME} PRIVATE /sdl /permissive- /JMC- /Zc:__cplusplus)
 
     if(ENABLE_CODE_ANALYSIS)
