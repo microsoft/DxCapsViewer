@@ -14,7 +14,7 @@ Visit the [DirectX Landing Page](https://devblogs.microsoft.com/directx/landing-
 
 This project is set up to use CMake with the Ninja generation via VS 2019's CMake integration. It is currently set up to require the Windows 10 SDK (19041) headers, but will run on Windows 7 SP1 or later.
 
-# Documentation
+## Documentation
 
 Documentation is available on the [GitHub wiki](https://github.com/microsoft/DxCapsViewer/wiki).
 

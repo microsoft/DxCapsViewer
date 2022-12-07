@@ -313,6 +313,27 @@ namespace
         return shaderModelOpt.HighestShaderModel;
     }
 
+    D3D_ROOT_SIGNATURE_VERSION GetD3D12RootSignature(_In_opt_ ID3D12Device* device)
+    {
+        if (!device)
+            return D3D_ROOT_SIGNATURE_VERSION_1_0;
+
+        D3D12_FEATURE_DATA_ROOT_SIGNATURE rootSigOpt = {};
+        rootSigOpt.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
+        HRESULT hr = device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &rootSigOpt, sizeof(rootSigOpt));
+        while (hr == E_INVALIDARG && rootSigOpt.HighestVersion > D3D_ROOT_SIGNATURE_VERSION_1_0)
+        {
+            rootSigOpt.HighestVersion = static_cast<D3D_ROOT_SIGNATURE_VERSION>(static_cast<int>(rootSigOpt.HighestVersion) - 1);
+            hr = device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &rootSigOpt, sizeof(rootSigOpt));
+        }
+        if (FAILED(hr))
+        {
+            rootSigOpt.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
+        }
+
+        return rootSigOpt.HighestVersion;
+    }
+
     const char* D3D12DXRSupported(_In_ ID3D12Device* device)
     {
         D3D12_FEATURE_DATA_D3D12_OPTIONS5 d3d12opts = {};
@@ -4340,14 +4361,6 @@ namespace
             LVAddColumn(g_hwndLV, 1, "Value", 60);
         }
 
-        D3D12_FEATURE_DATA_ROOT_SIGNATURE rootSigOpt = {};
-        rootSigOpt.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
-        HRESULT hr = pDevice->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &rootSigOpt, sizeof(rootSigOpt));
-        if (FAILED(hr))
-        {
-            rootSigOpt.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
-        }
-
         auto d3d12opts = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS, D3D12_FEATURE_DATA_D3D12_OPTIONS>(pDevice);
         auto d3d12opts2 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS2, D3D12_FEATURE_DATA_D3D12_OPTIONS2>(pDevice);
         auto d3d12opts3 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS3, D3D12_FEATURE_DATA_D3D12_OPTIONS3>(pDevice);
@@ -4374,7 +4387,7 @@ namespace
         }
 
         const char* rootSig = "Unknown";
-        switch (rootSigOpt.HighestVersion)
+        switch (GetD3D12RootSignature(pDevice))
         {
         case D3D_ROOT_SIGNATURE_VERSION_1_0: rootSig = "1.0"; break;
         case D3D_ROOT_SIGNATURE_VERSION_1_1: rootSig = "1.1"; break;
@@ -4477,6 +4490,7 @@ namespace
 #if defined(NTDDI_WIN10_CU) || defined(USING_D3D12_AGILITY_SDK)
         auto d3d12opts14 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS14, D3D12_FEATURE_DATA_D3D12_OPTIONS14>(pDevice);
         auto d3d12opts15 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS15, D3D12_FEATURE_DATA_D3D12_OPTIONS15>(pDevice);
+        auto d3d12opts16 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS16, D3D12_FEATURE_DATA_D3D12_OPTIONS16>(pDevice);
 #endif
 
         if (!pPrintInfo)
@@ -4534,6 +4548,7 @@ namespace
             LVYESNO("Independent front/back stencil refmask", d3d12opts14.IndependentFrontAndBackStencilRefMaskSupported);
             LVYESNO("Triangle fans primitives", d3d12opts15.TriangleFanSupported);
             LVYESNO("Dynamic IB strip-cut support", d3d12opts15.DynamicIndexBufferStripCutSupported);
+            LVYESNO("Dynamic depth bias support", d3d12opts16.DynamicDepthBiasSupported);
 #endif
         }
         else
@@ -4591,6 +4606,7 @@ namespace
             PRINTYESNO("Independent front/back stencil refmask", d3d12opts14.IndependentFrontAndBackStencilRefMaskSupported);
             PRINTYESNO("Triangle fan primitives", d3d12opts15.TriangleFanSupported);
             PRINTYESNO("Dynamic IB strip-cut support", d3d12opts15.DynamicIndexBufferStripCutSupported);
+            PRINTYESNO("Dynamic depth bias support", d3d12opts16.DynamicDepthBiasSupported);
 #endif
         }
 
