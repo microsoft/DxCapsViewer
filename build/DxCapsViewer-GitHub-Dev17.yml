@@ -12,20 +12,14 @@ schedules:
     include:
     - main
 
+trigger: none
+pr: none
+
 resources:
   repositories:
   - repository: self
     type: git
     ref: refs/heads/main
-    trigger:
-      branches:
-        include:
-        - main
-      paths:
-        exclude:
-        - README.md
-        - HISTORY.md
-        - SECURITY.md
 
 variables:
   VS_GENERATOR: 'Visual Studio 17 2022'
