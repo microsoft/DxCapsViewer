@@ -52,6 +52,11 @@ enum FLMASK : uint32_t
 #pragma warning(disable : 4063 4702)
 #endif
 
+#if !defined(NTDDI_WIN10_CU)
+#define D3D_ROOT_SIGNATURE_VERSION_1_2 static_cast<D3D_ROOT_SIGNATURE_VERSION>(0x3)
+#pragma warning(disable : 4063 4702)
+#endif
+
 //-----------------------------------------------------------------------------
 namespace
 {
@@ -319,7 +324,7 @@ namespace
             return D3D_ROOT_SIGNATURE_VERSION_1_0;
 
         D3D12_FEATURE_DATA_ROOT_SIGNATURE rootSigOpt = {};
-        rootSigOpt.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
+        rootSigOpt.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_2;
         HRESULT hr = device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &rootSigOpt, sizeof(rootSigOpt));
         while (hr == E_INVALIDARG && rootSigOpt.HighestVersion > D3D_ROOT_SIGNATURE_VERSION_1_0)
         {
@@ -4391,6 +4396,7 @@ namespace
         {
         case D3D_ROOT_SIGNATURE_VERSION_1_0: rootSig = "1.0"; break;
         case D3D_ROOT_SIGNATURE_VERSION_1_1: rootSig = "1.1"; break;
+        case D3D_ROOT_SIGNATURE_VERSION_1_2: rootSig = "1.2"; break;
         }
 
         char heap[16];
@@ -4550,6 +4556,10 @@ namespace
             LVYESNO("Dynamic IB strip-cut support", d3d12opts15.DynamicIndexBufferStripCutSupported);
             LVYESNO("Dynamic depth bias support", d3d12opts16.DynamicDepthBiasSupported);
 #endif
+
+#if defined(NTDDI_WIN10_CU)
+            LVYESNO("GPU upload heap support", d3d12opts16.GPUUploadHeapSupported);
+#endif
         }
         else
         {
@@ -4607,6 +4617,10 @@ namespace
             PRINTYESNO("Triangle fan primitives", d3d12opts15.TriangleFanSupported);
             PRINTYESNO("Dynamic IB strip-cut support", d3d12opts15.DynamicIndexBufferStripCutSupported);
             PRINTYESNO("Dynamic depth bias support", d3d12opts16.DynamicDepthBiasSupported);
+#endif
+
+#if defined(NTDDI_WIN10_CU)
+            PRINTYESNO("GPU upload heap support", d3d12opts16.GPUUploadHeapSupported);
 #endif
         }
 
@@ -4835,6 +4849,12 @@ namespace
         writeable_msaa_txt = d3d12opts14.WriteableMSAATexturesSupported ? c_szYes : c_szNo;
 #endif
 
+        const char* nonNormalizedCoords = nullptr;
+#if defined(NTDDI_WIN10_CU)
+        auto d3d12opts17 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS17, D3D12_FEATURE_DATA_D3D12_OPTIONS17>(pDevice);
+        nonNormalizedCoords = d3d12opts17.NonNormalizedCoordinateSamplersSupported ? c_szYes : c_szNo;
+#endif
+
         if (!pPrintInfo)
         {
             LVYESNO("Double-precision Shaders", d3d12opts.DoublePrecisionFloatShaderOps);
@@ -4913,6 +4933,11 @@ namespace
             if (writeable_msaa_txt)
             {
                 LVLINE("Writeable MSAA textures", writeable_msaa_txt);
+            }
+
+            if (nonNormalizedCoords)
+            {
+                LVLINE("Non-normalized sampler coordinates", nonNormalizedCoords);
             }
         }
         else
@@ -4993,6 +5018,11 @@ namespace
             if (writeable_msaa_txt)
             {
                 PRINTLINE("Writeable MSAA textures", writeable_msaa_txt);
+            }
+
+            if (nonNormalizedCoords)
+            {
+                PRINTLINE("Non-normalized sampler coordinates", nonNormalizedCoords);
             }
         }
 
