@@ -20,34 +20,32 @@ jobs:
 
       matrix:
         os: [windows-2019, windows-2022]
-        build_type: [x64-Debug, x64-Release, x64-Debug-Clang, x64-Release-Clang, x86-Debug, x86-Release, x86-Debug-Clang, x86-Release-Clang, arm64-Debug, arm64-Release, arm64ec-Debug, arm64ec-Release]
-        arch: [amd64, amd64_arm64]
-        exclude:
-          - build_type: x64-Debug
-            arch: amd64_arm64
-          - build_type: x64-Release
-            arch: amd64_arm64
-          - build_type: x64-Debug-Clang
-            arch: amd64_arm64
-          - build_type: x64-Release-Clang
-            arch: amd64_arm64
-          - build_type: x86-Debug
-            arch: amd64_arm64
-          - build_type: x86-Release
-            arch: amd64_arm64
-          - build_type: x86-Debug-Clang
-            arch: amd64_arm64
-          - build_type: x86-Release-Clang
-            arch: amd64_arm64
-          - build_type: arm64-Debug
-            arch: amd64
-          - build_type: arm64-Release
-            arch: amd64
-          - build_type: arm64ec-Debug
-            arch: amd64
-          - build_type: arm64ec-Release
-            arch: amd64
+        build_type: [x64-Debug, x64-Release, x64-Debug-Clang, x64-Release-Clang, x86-Debug, x86-Release]
+        arch: [amd64]
+        include:
           - os: windows-2019
+            build_type: x86-Debug-Clang
+            arch: amd64_x86
+          - os: windows-2019
+            build_type: x86-Release-Clang
+            arch: amd64_x86
+          - os: windows-2022
+            build_type: x86-Debug-Clang
+            arch: amd64_x86
+          - os: windows-2022
+            build_type: x86-Release-Clang
+            arch: amd64_x86
+          - os: windows-2022
+            build_type: arm64-Debug
+            arch: amd64_arm64
+          - os: windows-2022
+            build_type: arm64-Release
+            arch: amd64_arm64
+          - os: windows-2022
+            build_type: arm64ec-Debug
+            arch: amd64_arm64
+          - os: windows-2022
+            build_type: arm64ec-Release
             arch: amd64_arm64
 
     steps:
