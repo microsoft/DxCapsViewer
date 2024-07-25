@@ -39,13 +39,17 @@ jobs:
             arch: amd64_arm64
           - build_type: x86-Release-Clang
             arch: amd64_arm64
-          - build_type: arm64-Debug
+          - os: windows-2019
+            build_type: arm64-Debug
             arch: amd64
-          - build_type: arm64-Release
+          - os: windows-2019
+            build_type: arm64-Release
             arch: amd64
-          - build_type: arm64ec-Debug
+          - os: windows-2019
+            build_type: arm64ec-Debug
             arch: amd64
-          - build_type: arm64ec-Release
+          - os: windows-2019
+            build_type: arm64ec-Release
             arch: amd64
 
     steps:
