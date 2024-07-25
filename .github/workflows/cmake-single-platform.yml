@@ -25,6 +25,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: 'Install Ninja'
+      run: choco install ninja
+
     - name: 'Configure CMake'
       working-directory: ${{env.GITHUB_WORKSPACE}}    
       run: cmake --preset=${{ matrix.build_type }}
