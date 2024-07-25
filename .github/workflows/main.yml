@@ -10,6 +10,10 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - '*.md'
+      - LICENSE
+      - build/*
 
 jobs:
   build:
@@ -71,7 +75,7 @@ jobs:
         arch: ${{ matrix.arch }}
 
     - name: 'Configure CMake'
-      working-directory: ${{env.GITHUB_WORKSPACE}}    
+      working-directory: ${{env.GITHUB_WORKSPACE}}
       run: cmake --preset=${{ matrix.build_type }}
 
     - name: 'Build'
