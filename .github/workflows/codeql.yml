@@ -30,8 +30,6 @@ jobs:
       run: choco install ninja
 
     - uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: ${{ matrix.arch }}
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
