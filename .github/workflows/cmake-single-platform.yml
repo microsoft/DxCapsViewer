@@ -1,0 +1,34 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+#
+# https://go.microsoft.com/fwlink/?linkid=2136896
+
+name: 'CMake (Windows)'
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os: [windows-2019, windows-2022]
+        build_type: [x64-Debug, x64-Release, x64-Debug-Clang, x64-Release-Clang, x86-Debug, x86-Release, x86-Debug-Clang, x86-Release-Clang]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: 'Configure CMake'
+      working-directory: ${{env.GITHUB_WORKSPACE}}    
+      run: cmake --preset=${{ matrix.build_type }}
+
+    - name: 'Build'
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: cmake --build out\build\${{ matrix.build_type }}
