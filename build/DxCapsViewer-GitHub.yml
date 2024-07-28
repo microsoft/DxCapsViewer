@@ -12,26 +12,15 @@ schedules:
     include:
     - main
 
-trigger:
-  branches:
-    include:
-    - main
-  paths:
-    exclude:
-    - '*.md'
-    - LICENSE
-    - '.github/*'
-
+# GitHub Actions handles CI/PR
+trigger: none
 pr:
   branches:
     include:
     - main
   paths:
-    exclude:
-    - '*.md'
-    - LICENSE
-    - '.github/*'
-  drafts: false
+    include:
+    - build/DxCapsViewer-GitHub.yml
 
 resources:
   repositories:
