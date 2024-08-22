@@ -52,8 +52,14 @@ enum FLMASK : uint32_t
 #pragma warning(disable : 4063 4702)
 #endif
 
-#if !defined(NTDDI_WIN10_CU)
+#if !defined(NTDDI_WIN10_CU) && !defined(USING_D3D12_AGILITY_SDK)
 #define D3D_ROOT_SIGNATURE_VERSION_1_2 static_cast<D3D_ROOT_SIGNATURE_VERSION>(0x3)
+#pragma warning(disable : 4063 4702)
+#endif
+
+#if !defined(NTDDI_WIN11_GE) && !defined(USING_D3D12_AGILITY_SDK)
+#define D3D_SHADER_MODEL_6_9 static_cast<D3D_SHADER_MODEL>(0x69)
+#define D3D_HIGHEST_SHADER_MODEL static_cast<D3D_SHADER_MODEL>(0x69)
 #pragma warning(disable : 4063 4702)
 #endif
 
@@ -303,7 +309,7 @@ namespace
             return D3D_SHADER_MODEL_5_1;
 
         D3D12_FEATURE_DATA_SHADER_MODEL shaderModelOpt = {};
-        shaderModelOpt.HighestShaderModel = D3D_SHADER_MODEL_6_8;
+        shaderModelOpt.HighestShaderModel = D3D_HIGHEST_SHADER_MODEL;
         HRESULT hr = device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModelOpt, sizeof(shaderModelOpt));
         while (hr == E_INVALIDARG && shaderModelOpt.HighestShaderModel > D3D_SHADER_MODEL_6_0)
         {
@@ -1280,6 +1286,10 @@ namespace
             {
                 switch (GetD3D12ShaderModel(pD3D12))
                 {
+                case D3D_SHADER_MODEL_6_9:
+                    shaderModel = "6.9 (Optional)";
+                    computeShader = "Yes (CS 6.9)";
+                    break;
                 case D3D_SHADER_MODEL_6_8:
                     shaderModel = "6.8 (Optional)";
                     computeShader = "Yes (CS 6.8)";
@@ -1309,6 +1319,10 @@ namespace
             {
                 switch (GetD3D12ShaderModel(pD3D12))
                 {
+                case D3D_SHADER_MODEL_6_9:
+                    shaderModel = "6.9 (Optional)";
+                    computeShader = "Yes (CS 6.9)";
+                    break;
                 case D3D_SHADER_MODEL_6_8:
                     shaderModel = "6.8 (Optional)";
                     computeShader = "Yes (CS 6.8)";
@@ -4379,6 +4393,7 @@ namespace
         const char* shaderModel = "Unknown";
         switch (GetD3D12ShaderModel(pDevice))
         {
+        case D3D_SHADER_MODEL_6_9: shaderModel = "6.9"; break;
         case D3D_SHADER_MODEL_6_8: shaderModel = "6.8"; break;
         case D3D_SHADER_MODEL_6_7: shaderModel = "6.7"; break;
         case D3D_SHADER_MODEL_6_6: shaderModel = "6.6"; break;
