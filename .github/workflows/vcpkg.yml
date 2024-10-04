@@ -81,7 +81,7 @@ jobs:
       with:
         runVcpkgInstall: true
         vcpkgJsonGlob: '**/build/vcpkg.json'
-        vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
+        vcpkgGitCommitId: '${{ env.VCPKG_COMMIT_ID }}'
 
     - name: 'Configure CMake'
       working-directory: ${{ github.workspace }}
