@@ -4523,6 +4523,17 @@ namespace
         auto d3d12opts16 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS16, D3D12_FEATURE_DATA_D3D12_OPTIONS16>(pDevice);
 #endif
 
+#if defined(NTDDI_WIN10_GE) || defined(USING_D3D12_AGILITY_SDK)
+        auto d3d12opts17 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS14, D3D12_FEATURE_DATA_D3D12_OPTIONS17>(pDevice);
+        auto d3d12opts18 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS15, D3D12_FEATURE_DATA_D3D12_OPTIONS18>(pDevice);
+        auto d3d12opts19 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS16, D3D12_FEATURE_DATA_D3D12_OPTIONS19>(pDevice);
+        auto d3d12opts20 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS16, D3D12_FEATURE_DATA_D3D12_OPTIONS20>(pDevice);        
+#endif
+
+#if defined(USING_D3D12_AGILITY_SDK)
+        auto d3d12opts21 = GetD3D12Options<D3D12_FEATURE_D3D12_OPTIONS16, D3D12_FEATURE_DATA_D3D12_OPTIONS21>(pDevice);        
+#endif
+
         if (!pPrintInfo)
         {
             LVLINE("Feature Level", FLName(fl));
@@ -4579,10 +4590,12 @@ namespace
             LVYESNO("Triangle fans primitives", d3d12opts15.TriangleFanSupported);
             LVYESNO("Dynamic IB strip-cut support", d3d12opts15.DynamicIndexBufferStripCutSupported);
             LVYESNO("Dynamic depth bias support", d3d12opts16.DynamicDepthBiasSupported);
+            LVYESNO("GPU upload heap support", d3d12opts16.GPUUploadHeapSupported);
 #endif
 
-#if defined(NTDDI_WIN10_CU)
-            LVYESNO("GPU upload heap support", d3d12opts16.GPUUploadHeapSupported);
+#if defined(NTDDI_WIN10_GE) || defined(USING_D3D12_AGILITY_SDK)
+            LVYESNO("Non-normalized coordinate samplers", d3d12opts17.NonNormalizedCoordinateSamplersSupported);
+            LVYESNO("Manual write tracking res", d3d12opts17.ManualWriteTrackingResourceSupported);
 #endif
         }
         else
@@ -4641,10 +4654,12 @@ namespace
             PRINTYESNO("Triangle fan primitives", d3d12opts15.TriangleFanSupported);
             PRINTYESNO("Dynamic IB strip-cut support", d3d12opts15.DynamicIndexBufferStripCutSupported);
             PRINTYESNO("Dynamic depth bias support", d3d12opts16.DynamicDepthBiasSupported);
+            PRINTYESNO("GPU upload heap support", d3d12opts16.GPUUploadHeapSupported);
 #endif
 
-#if defined(NTDDI_WIN10_CU)
-            PRINTYESNO("GPU upload heap support", d3d12opts16.GPUUploadHeapSupported);
+#if defined(NTDDI_WIN10_GE) || defined(USING_D3D12_AGILITY_SDK)
+            PRINTYESNO("Non-normalized coordinate samplers", d3d12opts17.NonNormalizedCoordinateSamplersSupported);
+            PRINTYESNO("Manual write tracking res", d3d12opts17.ManualWriteTrackingResourceSupported);
 #endif
         }
 
