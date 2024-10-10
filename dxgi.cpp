@@ -25,6 +25,15 @@
 // Define for some debug output
 //#define EXTRA_DEBUG
 
+#ifdef USING_D3D12_AGILITY_SDK
+extern "C"
+{
+    // Used to enable the "Agility SDK" components
+    __declspec(dllexport) extern const UINT D3D12SDKVersion = D3D12_SDK_VERSION;
+    __declspec(dllexport) extern const char* D3D12SDKPath = u8".\\D3D12\\";
+}
+#endif
+
 //-----------------------------------------------------------------------------
 
 // This mask is only needed for Direct3D 10.x/11 where some devices had 'holes' in the feature support.
