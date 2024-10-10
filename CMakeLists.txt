@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-cmake_minimum_required (VERSION 3.20)
+cmake_minimum_required (VERSION 3.21)
 
 project (dxcapsviewer
   DESCRIPTION "DirectX Capabilities Viewer"
@@ -9,6 +9,12 @@ project (dxcapsviewer
   LANGUAGES CXX)
 
 option(ENABLE_CODE_ANALYSIS "Use Static Code Analysis on build" OFF)
+
+option(BUILD_WITH_NEW_WARP "Use the WARP package on NuGet" OFF)
+set(DIRECTX_WARP_VERSION 1.0.13)
+
+option(BUILD_WITH_NEW_DX12 "Use the DirectX 12 Agility SDK Binaries" OFF)
+set(DIRECTX_DX12_VERSION 1.614.1)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -59,7 +65,7 @@ find_package(directx-headers CONFIG QUIET)
 if(directx-headers_FOUND)
     message(STATUS "Using DirectX-Headers package")
     target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DirectX-Headers)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE USING_DIRECTX_HEADERS USING_D3D12_AGILITY_SDK)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE USING_DIRECTX_HEADERS)
 endif()
 
 if(MSVC)
@@ -141,3 +147,58 @@ endif()
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+
+if(WIN32)
+    if(${DIRECTX_ARCH} STREQUAL "x86")
+        set(NUGET_ARCH win32)
+    else()
+        set(NUGET_ARCH ${DIRECTX_ARCH})
+    endif()
+
+    if(BUILD_WITH_NEW_WARP)
+        message(STATUS "Downloading Microsoft.Direct3D.WARP...")
+        set(DIRECTX_WARP_ARCHIVE "${CMAKE_BINARY_DIR}/Microsoft.Direct3D.WARP.${DIRECTX_WARP_VERSION}.zip")
+        file(DOWNLOAD "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.WARP/${DIRECTX_WARP_VERSION}/"
+            ${DIRECTX_WARP_ARCHIVE}
+            EXPECTED_HASH SHA512=9f5e480947cbdd433f46ffd1a00805db5b8545938867c4a2becf1b49d85dd58234914c45caf3b84686dfd642e9d655f1df56d05a065f5ddc551bf6f1aed58162
+            )
+
+        file(ARCHIVE_EXTRACT INPUT ${DIRECTX_WARP_ARCHIVE} DESTINATION "${CMAKE_BINARY_DIR}/temp" PATTERNS *${NUGET_ARCH}*dll *${NUGET_ARCH}*pdb)
+
+        file(GLOB_RECURSE DXBINS "${CMAKE_BINARY_DIR}/temp/*.dll" $<IF:$<CONFIG:DEBUG>,"${CMAKE_BINARY_DIR}/temp/*.pdb">)
+
+        file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+
+        foreach(FILE ${DXBINS})
+            get_filename_component(FILENAME ${FILE} NAME)
+            file(COPY_FILE ${FILE} "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${FILENAME}")
+        endforeach(FILE)
+
+        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/temp")
+    endif()
+
+    if (BUILD_WITH_NEW_DX12)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE USING_D3D12_AGILITY_SDK)
+
+        message(STATUS "Downloading Microsoft.Direct3D.D3D12...")
+        set(DIRECTX_DX12_ARCHIVE "${CMAKE_BINARY_DIR}/Microsoft.Direct3D.D3D12.${DIRECTX_DX12_VERSION}.zip")
+        file(DOWNLOAD "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/${DIRECTX_DX12_VERSION}/"
+            ${DIRECTX_DX12_ARCHIVE}
+            EXPECTED_HASH SHA512=05baa55231684ab10a3e905c9b85ce78f04ade9360f7de84a06bbae3bfc3123bcccaa563647a25e151cc759106bc19e37740ef78563592d28e3a723fd744b42f
+            )
+
+        file(ARCHIVE_EXTRACT INPUT ${DIRECTX_DX12_ARCHIVE} DESTINATION "${CMAKE_BINARY_DIR}/temp" PATTERNS *${NUGET_ARCH}*dll *${NUGET_ARCH}*exe *${NUGET_ARCH}*pdb)
+
+        file(GLOB_RECURSE DXBINS "${CMAKE_BINARY_DIR}/temp/*.dll" "${CMAKE_BINARY_DIR}/temp/*.exe" $<IF:$<CONFIG:DEBUG>,"${CMAKE_BINARY_DIR}/temp/*.pdb">)
+
+        file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/D3D12")
+
+        foreach(FILE ${DXBINS})
+            get_filename_component(FILENAME ${FILE} NAME)
+            file(COPY_FILE ${FILE} "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/D3D12//${FILENAME}")
+        endforeach(FILE)
+
+        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/temp")
+    endif()
+endif()
