@@ -10,6 +10,8 @@ project (dxcapsviewer
 
 option(ENABLE_CODE_ANALYSIS "Use Static Code Analysis on build" OFF)
 
+option(BUILD_WITH_NEW_WARP "Use the latest WARP package on NuGet" OFF)
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -141,3 +143,42 @@ endif()
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+if(WIN32 AND BUILD_WITH_NEW_WARP)
+    set(DIRECTX_WARP_VERSION 1.0.13)
+
+    message(STATUS "Downloading Microsoft.Direct3D.WARP...")
+    set(DIRECTX_WARP_ARCHIVE "${CMAKE_BINARY_DIR}/Microsoft.Direct3D.WARP.${DIRECTX_WARP_VERSION}.zip")
+    file(DOWNLOAD "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.WARP/${DIRECTX_WARP_VERSION}/"
+        ${DIRECTX_WARP_ARCHIVE}
+        EXPECTED_HASH SHA512=9f5e480947cbdd433f46ffd1a00805db5b8545938867c4a2becf1b49d85dd58234914c45caf3b84686dfd642e9d655f1df56d05a065f5ddc551bf6f1aed58162
+        )
+
+    message(STATUS "Extracting binaries...")
+
+    if(${DIRECTX_ARCH} STREQUAL "x86")
+        set(WARP_ARCH win32)
+    else()
+        set(WARP_ARCH ${DIRECTX_ARCH})
+    endif()
+
+    file(ARCHIVE_EXTRACT INPUT ${DIRECTX_WARP_ARCHIVE} DESTINATION "${CMAKE_BINARY_DIR}/temp" PATTERNS *${WARP_ARCH}*dll *${WARP_ARCH}*pdb)
+
+    file(GLOB_RECURSE DXBINS "${CMAKE_BINARY_DIR}/temp/*.dll" "${CMAKE_BINARY_DIR}/temp/*.pdb")
+
+    file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+
+    foreach(FILE ${DXBINS})
+    get_filename_component(FILENAME ${FILE} NAME)
+    if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.21")
+        file(COPY_FILE ${FILE} "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${FILENAME}")
+    else()
+        execute_process(
+                COMMAND ${CMAKE_COMMAND} -E copy
+                    ${FILE}
+                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${FILENAME})
+    endif()
+    endforeach(FILE)
+
+    file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/temp")
+endif()
