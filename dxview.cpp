@@ -226,7 +226,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*
     wc.cbWndExtra = 0;                       // No per-window extra data.
     wc.hInstance = hInstance;               // Owner of this class
     wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_DIRECTX)); // Icon name from .RC
-    wc.hCursor = LoadCursor(hInstance, MAKEINTRESOURCE(IDC_SPLIT));// Cursor
+    wc.hCursor = LoadCursor(NULL, IDC_SIZEWE);// Cursor
     wc.hbrBackground = (HBRUSH)(COLOR_3DFACE + 1); // Default color
     wc.lpszMenuName = "Menu";                   // Menu name from .RC
     wc.lpszClassName = g_strClassName;            // Name to register as
