@@ -6,7 +6,6 @@
 #define IDS_PRINT_WARNING               1
 #define IDS_PRINT_NEEDSELECT            2
 #define IDS_PRINT_NOROOT                3
-#define IDC_SPLIT                       100
 #define IDI_DIRECTX                     100
 #define IDI_CAPS                        101
 #define IDI_CAPSOPEN                    102
