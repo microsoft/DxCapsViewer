@@ -1,5 +1,5 @@
 ﻿{
-  "version": 2,
+  "version": 3,
   "configurePresets": [
     {
       "name": "base",
@@ -8,7 +8,7 @@
       "generator": "Ninja",
       "hidden": true,
       "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "cacheVariables": { "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}" }
+      "installDir": "${sourceDir}/out/install/${presetName}"
     },
 
     {
@@ -103,20 +103,17 @@
     },
 
     {
-      "name": "NuGet",
+      "name": "WARP",
       "cacheVariables": {
-        "BUILD_WITH_NEW_WARP": true,
-        "BUILD_WITH_NEW_DX12": true
+        "BUILD_WITH_NEW_WARP": true
       },
       "hidden": true
     },
     {
       "name": "VCPKG",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": {
-          "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-          "type": "FILEPATH"
-        }
+        "BUILD_WITH_NEW_DX12": true
       },
       "hidden": true
     },
@@ -130,11 +127,11 @@
     { "name": "arm64ec-Debug"  , "description": "MSVC for ARM64EC (Debug)", "inherits": [ "base", "ARM64EC", "Debug", "MSVC" ] },
     { "name": "arm64ec-Release", "description": "MSVC for ARM64EC (Release)", "inherits": [ "base", "ARM64EC", "Release", "MSVC" ] },
 
-    { "name": "x64-Debug-VCPKG"    , "description": "MSVC for x64 (Debug)", "inherits": [ "base", "x64", "Debug", "MSVC", "VCPKG", "NuGet" ] },
-    { "name": "x64-Release-VCPKG"  , "description": "MSVC for x64 (Release)", "inherits": [ "base", "x64", "Release", "MSVC", "VCPKG", "NuGet" ] },
-    { "name": "x86-Debug-VCPKG"    , "description": "MSVC for x86 (Debug)", "inherits": [ "base", "x86", "Debug", "MSVC", "VCPKG", "NuGet" ] },
-    { "name": "x86-Release-VCPKG"  , "description": "MSVC for x86 (Release)", "inherits": [ "base", "x86", "Release", "MSVC", "VCPKG", "NuGet" ] },
-    { "name": "arm64-Debug-VCPKG"  , "description": "MSVC for ARM64 (Debug)", "inherits": [ "base", "ARM64", "Debug", "MSVC", "VCPKG", "NuGet" ] },
+    { "name": "x64-Debug-VCPKG"    , "description": "MSVC for x64 (Debug)", "inherits": [ "base", "x64", "Debug", "MSVC", "VCPKG", "WARP" ] },
+    { "name": "x64-Release-VCPKG"  , "description": "MSVC for x64 (Release)", "inherits": [ "base", "x64", "Release", "MSVC", "VCPKG", "WARP" ] },
+    { "name": "x86-Debug-VCPKG"    , "description": "MSVC for x86 (Debug)", "inherits": [ "base", "x86", "Debug", "MSVC", "VCPKG", "WARP" ] },
+    { "name": "x86-Release-VCPKG"  , "description": "MSVC for x86 (Release)", "inherits": [ "base", "x86", "Release", "MSVC", "VCPKG", "WARP" ] },
+    { "name": "arm64-Debug-VCPKG"  , "description": "MSVC for ARM64 (Debug)", "inherits": [ "base", "ARM64", "Debug", "MSVC", "VCPKG", "WARP" ] },
     { "name": "arm64-Release-VCPKG", "description": "MSVC for ARM64 (Release)", "inherits": [ "base", "ARM64", "Release", "MSVC", "VCPKG" ] },
     { "name": "arm64ec-Debug-VCPKG"  , "description": "MSVC for ARM64EC (Debug)", "inherits": [ "base", "ARM64EC", "Debug", "MSVC", "VCPKG" ], "cacheVariables": { "VCPKG_TARGET_TRIPLET": "arm64ec-windows" } },
     { "name": "arm64ec-Release-VCPKG", "description": "MSVC for ARM64EC (Release)", "inherits": [ "base", "ARM64EC", "Release", "MSVC", "VCPKG" ], "cacheVariables": { "VCPKG_TARGET_TRIPLET": "arm64ec-windows" } },

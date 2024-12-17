@@ -14,7 +14,6 @@ option(BUILD_WITH_NEW_WARP "Use the WARP package on NuGet" OFF)
 set(DIRECTX_WARP_VERSION 1.0.13)
 
 option(BUILD_WITH_NEW_DX12 "Use the DirectX 12 Agility SDK Binaries" OFF)
-set(DIRECTX_DX12_VERSION 1.614.1)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -66,6 +65,12 @@ if(directx-headers_FOUND)
     message(STATUS "Using DirectX-Headers package")
     target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DirectX-Headers)
     target_compile_definitions(${PROJECT_NAME} PRIVATE USING_DIRECTX_HEADERS)
+endif()
+
+if(BUILD_WITH_NEW_DX12)
+    message(STATUS "Using DirectX 12 Agility SDK")
+    find_package(directx12-agility CONFIG REQUIRED)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE USING_D3D12_AGILITY_SDK)
 endif()
 
 if(MSVC)
@@ -177,28 +182,21 @@ if(WIN32)
 
         file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/temp")
     endif()
+endif()
 
-    if (BUILD_WITH_NEW_DX12)
-        target_compile_definitions(${PROJECT_NAME} PRIVATE USING_D3D12_AGILITY_SDK)
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E $<IF:$<BOOL:$<TARGET_RUNTIME_DLLS:${PROJECT_NAME}>>,copy,true>
+    $<TARGET_RUNTIME_DLLS:${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    COMMAND_EXPAND_LISTS
+    )
 
-        message(STATUS "Downloading Microsoft.Direct3D.D3D12...")
-        set(DIRECTX_DX12_ARCHIVE "${CMAKE_BINARY_DIR}/Microsoft.Direct3D.D3D12.${DIRECTX_DX12_VERSION}.zip")
-        file(DOWNLOAD "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/${DIRECTX_DX12_VERSION}/"
-            ${DIRECTX_DX12_ARCHIVE}
-            EXPECTED_HASH SHA512=05baa55231684ab10a3e905c9b85ce78f04ade9360f7de84a06bbae3bfc3123bcccaa563647a25e151cc759106bc19e37740ef78563592d28e3a723fd744b42f
-            )
-
-        file(ARCHIVE_EXTRACT INPUT ${DIRECTX_DX12_ARCHIVE} DESTINATION "${CMAKE_BINARY_DIR}/temp" PATTERNS *${NUGET_ARCH}*dll *${NUGET_ARCH}*exe *${NUGET_ARCH}*pdb)
-
-        file(GLOB_RECURSE DXBINS "${CMAKE_BINARY_DIR}/temp/*.dll" "${CMAKE_BINARY_DIR}/temp/*.exe" $<IF:$<CONFIG:DEBUG>,"${CMAKE_BINARY_DIR}/temp/*.pdb">)
-
-        file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/D3D12")
-
-        foreach(FILE ${DXBINS})
-            get_filename_component(FILENAME ${FILE} NAME)
-            file(COPY_FILE ${FILE} "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/D3D12//${FILENAME}")
-        endforeach(FILE)
-
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/temp")
-    endif()
+if(TARGET Microsoft::DirectX12-Agility)
+   file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/D3D12")
+   add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PROPERTY:Microsoft::DirectX12-Core,IMPORTED_LOCATION_RELEASE> $<TARGET_FILE_DIR:${PROJECT_NAME}>/D3D12
+      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PROPERTY:Microsoft::DirectX12-Layers,IMPORTED_LOCATION_DEBUG> $<TARGET_FILE_DIR:${PROJECT_NAME}>/D3D12
+      COMMAND ${CMAKE_COMMAND} -E rm -f $<TARGET_FILE_DIR:${PROJECT_NAME}>/D3D12Core.dll
+      COMMAND ${CMAKE_COMMAND} -E rm -f $<TARGET_FILE_DIR:${PROJECT_NAME}>/d3d12SDKLayers.dll
+      COMMAND_EXPAND_LISTS
+      )
 endif()
