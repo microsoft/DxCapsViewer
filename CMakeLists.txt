@@ -14,7 +14,6 @@ option(BUILD_WITH_NEW_WARP "Use the WARP package on NuGet" OFF)
 set(DIRECTX_WARP_VERSION 1.0.13)
 
 option(BUILD_WITH_NEW_DX12 "Use the DirectX 12 Agility SDK Binaries" OFF)
-set(DIRECTX_DX12_VERSION 1.614.1)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -24,29 +23,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-if(DEFINED VCPKG_TARGET_ARCHITECTURE)
-    set(DIRECTX_ARCH ${VCPKG_TARGET_ARCHITECTURE})
-elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Ww][Ii][Nn]32$")
-    set(DIRECTX_ARCH x86)
-elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Xx]64$")
-    set(DIRECTX_ARCH x64)
-elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Aa][Rr][Mm]$")
-    set(DIRECTX_ARCH arm)
-elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Aa][Rr][Mm]64$")
-    set(DIRECTX_ARCH arm64)
-elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Aa][Rr][Mm]64EC$")
-    set(DIRECTX_ARCH arm64ec)
-elseif(CMAKE_VS_PLATFORM_NAME_DEFAULT MATCHES "^[Ww][Ii][Nn]32$")
-    set(DIRECTX_ARCH x86)
-elseif(CMAKE_VS_PLATFORM_NAME_DEFAULT MATCHES "^[Xx]64$")
-    set(DIRECTX_ARCH x64)
-elseif(CMAKE_VS_PLATFORM_NAME_DEFAULT MATCHES "^[Aa][Rr][Mm]$")
-    set(DIRECTX_ARCH arm)
-elseif(CMAKE_VS_PLATFORM_NAME_DEFAULT MATCHES "^[Aa][Rr][Mm]64$")
-    set(DIRECTX_ARCH arm64)
-elseif(CMAKE_VS_PLATFORM_NAME_DEFAULT MATCHES "^[Aa][Rr][Mm]64EC$")
-    set(DIRECTX_ARCH arm64ec)
-endif()
+include(build/CompilerAndLinker.cmake)
 
 add_executable(${PROJECT_NAME} WIN32
     ddraw.cpp
@@ -68,40 +45,22 @@ if(directx-headers_FOUND)
     target_compile_definitions(${PROJECT_NAME} PRIVATE USING_DIRECTX_HEADERS)
 endif()
 
+if(BUILD_WITH_NEW_DX12)
+    message(STATUS "Using DirectX 12 Agility SDK")
+    find_package(directx12-agility CONFIG REQUIRED)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE USING_D3D12_AGILITY_SDK)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DirectX12-Agility)
+endif()
+
 if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /GR- "$<$<NOT:$<CONFIG:DEBUG>>:/guard:cf>")
-    target_link_options(${PROJECT_NAME} PRIVATE /DYNAMICBASE /NXCOMPAT /INCREMENTAL:NO)
-
-    if((CMAKE_SIZEOF_VOID_P EQUAL 4) AND (NOT ${DIRECTX_ARCH} MATCHES "^arm"))
-        target_link_options(${PROJECT_NAME} PRIVATE /SAFESEH)
-    endif()
-
-    if((MSVC_VERSION GREATER_EQUAL 1924)
-       AND ((NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) OR (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 16.0)))
-      target_compile_options(${PROJECT_NAME} PRIVATE /ZH:SHA_256)
-    endif()
-
-    if((MSVC_VERSION GREATER_EQUAL 1928)
-       AND (CMAKE_SIZEOF_VOID_P EQUAL 8)
-       AND ((NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) OR (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0)))
-        target_compile_options(${PROJECT_NAME} PRIVATE "$<$<NOT:$<CONFIG:DEBUG>>:/guard:ehcont>")
-        target_link_options(${PROJECT_NAME} PRIVATE "$<$<NOT:$<CONFIG:DEBUG>>:/guard:ehcont>")
-    endif()
-else()
-    target_compile_definitions(${PROJECT_NAME} PRIVATE $<IF:$<CONFIG:DEBUG>,_DEBUG,NDEBUG>)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /GR-)
 endif()
 
-if(NOT ${DIRECTX_ARCH} MATCHES "^arm")
-    if(${CMAKE_SIZEOF_VOID_P} EQUAL "4")
-        set(ARCH_SSE2 $<$<CXX_COMPILER_ID:MSVC>:/arch:SSE2> $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-msse2>)
-    else()
-        set(ARCH_SSE2 $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-msse2>)
-    endif()
+target_compile_definitions(${PROJECT_NAME} PRIVATE ${COMPILER_DEFINES})
+target_compile_options(${PROJECT_NAME} PRIVATE ${COMPILER_SWITCHES})
+target_link_options(${PROJECT_NAME} PRIVATE ${LINKER_SWITCHES})
 
-    target_compile_options(${PROJECT_NAME} PRIVATE ${ARCH_SSE2})
-endif()
-
-if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
+if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang|IntelLLVM" )
     target_compile_options(${PROJECT_NAME} PRIVATE
         "-Wpedantic" "-Wextra"
         "-Wno-c++98-compat" "-Wno-c++98-compat-pedantic"
@@ -109,26 +68,8 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
         "-Wno-missing-field-initializers")
     target_compile_options(${PROJECT_NAME} PRIVATE ${WarningsEXE})
 elseif ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-    target_compile_options(${PROJECT_NAME} PRIVATE /sdl /permissive- /JMC- /Zc:__cplusplus /Zc:inline)
-
     if(ENABLE_CODE_ANALYSIS)
-      target_compile_options(${PROJECT_NAME} PRIVATE /analyze)
-    endif()
-
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.26)
-        target_compile_options(${PROJECT_NAME} PRIVATE /Zc:preprocessor /wd5105)
-    endif()
-
-    if((CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.27) AND (NOT (${DIRECTX_ARCH} MATCHES "^arm")))
-        target_link_options(${PROJECT_NAME} PRIVATE /CETCOMPAT)
-    endif()
-
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.28)
-        target_compile_options(${PROJECT_NAME} PRIVATE /Zc:lambda)
-    endif()
-
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.35)
-        target_compile_options(${PROJECT_NAME} PRIVATE /Zc:checkGwOdr $<$<VERSION_GREATER_EQUAL:${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION},10.0.22000>:/Zc:templateScope>)
+      target_compile_options(${PROJECT_NAME} PRIVATE /analyze /WX)
     endif()
 endif()
 
@@ -141,13 +82,12 @@ if(WIN32)
         set(WINVER 0x0601)
     endif()
 
-    target_compile_definitions(${PROJECT_NAME} PRIVATE _MBCS _WIN32_WINNT=${WINVER})
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _WIN32_WINNT=${WINVER})
 endif()
 
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-
 
 if(WIN32)
     if(${DIRECTX_ARCH} STREQUAL "x86")
@@ -177,28 +117,21 @@ if(WIN32)
 
         file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/temp")
     endif()
+endif()
 
-    if (BUILD_WITH_NEW_DX12)
-        target_compile_definitions(${PROJECT_NAME} PRIVATE USING_D3D12_AGILITY_SDK)
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E $<IF:$<BOOL:$<TARGET_RUNTIME_DLLS:${PROJECT_NAME}>>,copy,true>
+    $<TARGET_RUNTIME_DLLS:${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    COMMAND_EXPAND_LISTS
+    )
 
-        message(STATUS "Downloading Microsoft.Direct3D.D3D12...")
-        set(DIRECTX_DX12_ARCHIVE "${CMAKE_BINARY_DIR}/Microsoft.Direct3D.D3D12.${DIRECTX_DX12_VERSION}.zip")
-        file(DOWNLOAD "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/${DIRECTX_DX12_VERSION}/"
-            ${DIRECTX_DX12_ARCHIVE}
-            EXPECTED_HASH SHA512=05baa55231684ab10a3e905c9b85ce78f04ade9360f7de84a06bbae3bfc3123bcccaa563647a25e151cc759106bc19e37740ef78563592d28e3a723fd744b42f
-            )
-
-        file(ARCHIVE_EXTRACT INPUT ${DIRECTX_DX12_ARCHIVE} DESTINATION "${CMAKE_BINARY_DIR}/temp" PATTERNS *${NUGET_ARCH}*dll *${NUGET_ARCH}*exe *${NUGET_ARCH}*pdb)
-
-        file(GLOB_RECURSE DXBINS "${CMAKE_BINARY_DIR}/temp/*.dll" "${CMAKE_BINARY_DIR}/temp/*.exe" $<IF:$<CONFIG:DEBUG>,"${CMAKE_BINARY_DIR}/temp/*.pdb">)
-
-        file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/D3D12")
-
-        foreach(FILE ${DXBINS})
-            get_filename_component(FILENAME ${FILE} NAME)
-            file(COPY_FILE ${FILE} "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/D3D12//${FILENAME}")
-        endforeach(FILE)
-
-        file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/temp")
-    endif()
+if(TARGET Microsoft::DirectX12-Agility)
+   file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/D3D12")
+   add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PROPERTY:Microsoft::DirectX12-Core,IMPORTED_LOCATION_RELEASE> $<TARGET_FILE_DIR:${PROJECT_NAME}>/D3D12
+      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PROPERTY:Microsoft::DirectX12-Layers,IMPORTED_LOCATION_DEBUG> $<TARGET_FILE_DIR:${PROJECT_NAME}>/D3D12
+      COMMAND ${CMAKE_COMMAND} -E rm -f $<TARGET_FILE_DIR:${PROJECT_NAME}>/D3D12Core.dll
+      COMMAND ${CMAKE_COMMAND} -E rm -f $<TARGET_FILE_DIR:${PROJECT_NAME}>/d3d12SDKLayers.dll
+      COMMAND_EXPAND_LISTS
+      )
 endif()
