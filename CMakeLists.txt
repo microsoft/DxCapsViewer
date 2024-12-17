@@ -71,6 +71,7 @@ if(BUILD_WITH_NEW_DX12)
     message(STATUS "Using DirectX 12 Agility SDK")
     find_package(directx12-agility CONFIG REQUIRED)
     target_compile_definitions(${PROJECT_NAME} PRIVATE USING_D3D12_AGILITY_SDK)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DirectX12-Agility)
 endif()
 
 if(MSVC)
