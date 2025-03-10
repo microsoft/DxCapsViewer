@@ -75,20 +75,20 @@ enum FLMASK : uint32_t
 //-----------------------------------------------------------------------------
 namespace
 {
-    const char* D3D10_NOTE = "Most Direct3D 10 features are required. Tool only shows optional features.";
-    const char* D3D10_NOTE1 = "Most Direct3D 10.1 features are required. Tool only shows optional features.";
-    const char* D3D11_NOTE = "Most Direct3D 11 features are required. Tool only shows optional features.";
-    const char* D3D11_NOTE1 = "Most Direct3D 11.1 features are required. Tool only shows optional features.";
-    const char* D3D11_NOTE2 = "Most Direct3D 11.2 features are required. Tool only shows optional features.";
-    const char* D3D11_NOTE3 = "Most Direct3D 11.3 features are required. Tool only shows optional features.";
-    const char* D3D11_NOTE4 = "Most Direct3D 11.x features are required. Tool only shows optional features.";
-    const char* _10L9_NOTE = "Most 10level9 features are required. Tool only shows optional features.";
-    const char* SEE_D3D10 = "See Direct3D 10 node for device details.";
-    const char* SEE_D3D10_1 = "See Direct3D 10.1 node for device details.";
-    const char* SEE_D3D11 = "See Direct3D 11 node for device details.";
-    const char* SEE_D3D11_1 = "See Direct3D 11.1 node for device details.";
+    const char D3D10_NOTE[] = "Most Direct3D 10 features are required. Tool only shows optional features.";
+    const char D3D10_NOTE1[] = "Most Direct3D 10.1 features are required. Tool only shows optional features.";
+    const char D3D11_NOTE[] = "Most Direct3D 11 features are required. Tool only shows optional features.";
+    const char D3D11_NOTE1[] = "Most Direct3D 11.1 features are required. Tool only shows optional features.";
+    const char D3D11_NOTE2[] = "Most Direct3D 11.2 features are required. Tool only shows optional features.";
+    const char D3D11_NOTE3[] = "Most Direct3D 11.3 features are required. Tool only shows optional features.";
+    const char D3D11_NOTE4[] = "Most Direct3D 11.x features are required. Tool only shows optional features.";
+    const char _10L9_NOTE[] = "Most 10level9 features are required. Tool only shows optional features.";
+    const char SEE_D3D10[] = "See Direct3D 10 node for device details.";
+    const char SEE_D3D10_1[] = "See Direct3D 10.1 node for device details.";
+    const char SEE_D3D11[] = "See Direct3D 11 node for device details.";
+    const char SEE_D3D11_1[] = "See Direct3D 11.1 node for device details.";
 
-    const char* FL_NOTE = "This feature summary is derived from hardware feature level";
+    const char FL_NOTE[] = "This feature summary is derived from hardware feature level";
 
     static_assert(sizeof(D3D10_NOTE) < 80, "String too long");
     static_assert(sizeof(D3D10_NOTE1) < 80, "String too long");
