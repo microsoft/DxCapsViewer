@@ -6,7 +6,7 @@
 # Builds the tool using CMake.
 
 schedules:
-- cron: "30 5 * * *"
+- cron: "0 5 * * *"
   displayName: 'Nightly build'
   branches:
     include:
@@ -20,7 +20,7 @@ pr:
     - main
   paths:
     include:
-    - build/DxCapsViewer-GitHub-Dev17.yml
+    - '.azuredevops/pipelines/DxCapsViewer-GitHub.yml'
 
 resources:
   repositories:
@@ -29,11 +29,12 @@ resources:
     ref: refs/heads/main
 
 variables:
-  VS_GENERATOR: 'Visual Studio 17 2022'
+  VS_GENERATOR: 'Visual Studio 16 2019'
+  WIN10_SDK: '10.0.19041.0'
   WIN11_SDK: '10.0.22000.0'
 
 pool:
-  vmImage: windows-2022
+  vmImage: windows-2019
 
 jobs:
 - job: CMAKE_BUILD
@@ -46,7 +47,7 @@ jobs:
     displayName: 'CMake (MSVC): Config x64'
     inputs:
       cwd: '$(Build.SourcesDirectory)'
-      cmakeArgs: '-G "$(VS_GENERATOR)" -A x64 -B out -DCMAKE_SYSTEM_VERSION=$(WIN11_SDK)'
+      cmakeArgs: '-G "$(VS_GENERATOR)" -A x64 -B out -DCMAKE_SYSTEM_VERSION=$(WIN10_SDK)'
   - task: CMake@1
     displayName: 'CMake (MSVC): Build x64 Debug'
     inputs:
@@ -61,7 +62,7 @@ jobs:
     displayName: 'CMake (MSVC): Config x86'
     inputs:
       cwd: '$(Build.SourcesDirectory)'
-      cmakeArgs: '-G "$(VS_GENERATOR)" -A Win32 -B out2 -DCMAKE_SYSTEM_VERSION=$(WIN11_SDK)'
+      cmakeArgs: '-G "$(VS_GENERATOR)" -A Win32 -B out2 -DCMAKE_SYSTEM_VERSION=$(WIN10_SDK)'
   - task: CMake@1
     displayName: 'CMake (MSVC): Build x86 Debug'
     inputs:
@@ -76,7 +77,7 @@ jobs:
     displayName: 'CMake (MSVC): Config ARM64'
     inputs:
       cwd: '$(Build.SourcesDirectory)'
-      cmakeArgs: '-G "$(VS_GENERATOR)" -A ARM64 -B out3 -DCMAKE_SYSTEM_VERSION=$(WIN11_SDK)'
+      cmakeArgs: '-G "$(VS_GENERATOR)" -A ARM64 -B out3 -DCMAKE_SYSTEM_VERSION=$(WIN10_SDK)'
   - task: CMake@1
     displayName: 'CMake (MSVC): Build ARM64 Debug'
     inputs:
@@ -91,7 +92,7 @@ jobs:
     displayName: 'CMake (ClangCl): Config x64'
     inputs:
       cwd: '$(Build.SourcesDirectory)'
-      cmakeArgs: '-G "$(VS_GENERATOR)" -A x64 -T clangcl -B out4 -DCMAKE_SYSTEM_VERSION=$(WIN11_SDK)'
+      cmakeArgs: '-G "$(VS_GENERATOR)" -A x64 -T clangcl -B out4 -DCMAKE_SYSTEM_VERSION=$(WIN10_SDK)'
   - task: CMake@1
     displayName: 'CMake (ClangCl): Build x64 Debug'
     inputs:
