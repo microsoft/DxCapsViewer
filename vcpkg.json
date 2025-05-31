@@ -1,5 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "builtin-baseline": "a9eee3b18df395dbb8be71a31bd78ea441056e42",
   "dependencies": [
     "directx-headers",
     "directx12-agility"
