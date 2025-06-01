@@ -112,7 +112,7 @@ HRESULT Int2Str( _Out_z_cap_(nDestLen) LPTSTR strDest, UINT nDestLen, DWORD i )
     char * pstrDec = strrchr( strOut, strDec[0] );
     if( pstrDec)
         *pstrDec = '\0';
-    
+
     if( strcpy_s( strDest, nDestLen, strOut ) != 0)
     {
         *strDest = 0;
@@ -1081,7 +1081,7 @@ LRESULT CALLBACK About(HWND hDlg, UINT msg, WPARAM wParam, LPARAM /*lParam*/)
             }
         }
 
-        // Note: The warning text is static, but it must be set via code, 
+        // Note: The warning text is static, but it must be set via code,
         // not in the .rc file, because it is > 256 characters (warning RC4206).
         {
             const TCHAR* pstrWarning = TEXT("Warning:  This computer program is protected by copyright law and international treaties.  Unauthorized reproduction or distribution of this program, or any portion of it, may result in severe civil and criminal penalties, and will be prosecuted to the maximum extent possible under the law.");
