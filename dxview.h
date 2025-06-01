@@ -111,11 +111,11 @@ struct LOCALAPP
 VOID    LVAddColumn( HWND hwndLV, int i, const CHAR* strName, int width );
 int     LVAddText( HWND hwndLV, int col, const CHAR* str, ... );
 VOID    LVDeleteAllItems( HWND hwndLV );
-HTREEITEM TVAddNode( HTREEITEM hParent, LPCSTR strText, BOOL bKids, int iImage,
-                     DISPLAYCALLBACK Callback, LPARAM lParam1, LPARAM lParam2 );
-HTREEITEM TVAddNodeEx( HTREEITEM hParent, LPCSTR strText, BOOL bKids, int iImage,
-                     DISPLAYCALLBACKEX Callback, LPARAM lParam1, LPARAM lParam2,
-                     LPARAM lParam3 );
+HTREEITEM TVAddNode(HTREEITEM hParent, LPCSTR strText, BOOL bKids, int iImage,
+                    DISPLAYCALLBACK Callback, LPARAM lParam1, LPARAM lParam2 );
+HTREEITEM TVAddNodeEx(HTREEITEM hParent, LPCSTR strText, BOOL bKids, int iImage,
+                        DISPLAYCALLBACKEX Callback, LPARAM lParam1, LPARAM lParam2,
+                        LPARAM lParam3 );
 VOID    AddCapsToTV( HTREEITEM hParent, CAPDEFS *pcds, LPARAM lParam1 );
 VOID    AddColsToLV();
 VOID    AddCapsToLV( CAPDEF* pcd, VOID* pv );

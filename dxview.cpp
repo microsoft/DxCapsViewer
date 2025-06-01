@@ -151,7 +151,7 @@ HRESULT PrintStringValueLine(const char * szText, const char * szText2, PRINTCBI
     if( FAILED( PrintNextLine(lpInfo) ) )
         return E_FAIL;
 
-   return S_OK;
+    return S_OK;
 }
 
 
@@ -195,7 +195,7 @@ HRESULT PrintStringLine(const char * szText, PRINTCBINFO *lpInfo)
     if( FAILED( PrintNextLine(lpInfo) ) )
         return E_FAIL;
 
-   return S_OK;
+    return S_OK;
 }
 
 
