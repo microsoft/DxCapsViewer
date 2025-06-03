@@ -120,7 +120,7 @@ namespace
     DDCAPDEF("DDCAPS_CANCLIP",                   dwCaps, DDCAPS_CANCLIP),              \
     DDCAPDEF("DDCAPS_CANCLIPSTRETCHED",          dwCaps, DDCAPS_CANCLIPSTRETCHED),     \
     DDCAPDEF("DDCAPS_CANBLTSYSMEM",              dwCaps, DDCAPS_CANBLTSYSMEM),         \
-    DDCAPDEF("DDCAPS_ZBLTS",                     dwCaps, DDCAPS_ZBLTS),                
+    DDCAPDEF("DDCAPS_ZBLTS",                     dwCaps, DDCAPS_ZBLTS),
 
 
 #define GEN_BLTCAPS2(dwCaps2)                                                   \
@@ -826,7 +826,7 @@ namespace
 
         return S_OK;
     }
-    
+
 
     //-----------------------------------------------------------------------------
     HRESULT CALLBACK EnumDisplayModesCallback(DDSURFACEDESC2* pddsd, VOID*)
