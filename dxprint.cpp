@@ -159,6 +159,70 @@ namespace
         MessageBox(nullptr, strMsg, strTitle, MB_OK);
     }
 
+    //-----------------------------------------------------------------------------
+    // Name: ConvertEncoding()
+    // Desc: Convert output file encoding
+    //-----------------------------------------------------------------------------
+    VOID ConvertEncoding(HANDLE hFile, UINT CodePage)
+    {
+        LARGE_INTEGER pos;
+        LARGE_INTEGER srcSize;
+        DWORD dwRead;
+        DWORD dwWrite;
+        WCHAR* srcStr = NULL;
+        int srcLen = 0;
+        char* dstStr = NULL;
+        int dstLen = 0;
+
+        if (hFile == NULL || hFile == INVALID_HANDLE_VALUE)
+            goto lblCLEANUP;
+
+        pos.QuadPart = 0;
+        if (!SetFilePointerEx(hFile, pos, &srcSize, FILE_CURRENT))
+            goto lblCLEANUP;
+        if (srcSize.QuadPart == 0)
+            return; // no content
+
+        srcStr = (WCHAR*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, srcSize.LowPart);
+        if (srcStr == NULL)
+            goto lblCLEANUP;
+
+        pos.QuadPart = 0;
+        if (!SetFilePointerEx(hFile, pos, NULL, FILE_BEGIN))
+            goto lblCLEANUP;
+
+        if (!ReadFile(hFile, srcStr, srcSize.LowPart, &dwRead, NULL))
+            goto lblCLEANUP;
+        srcLen = (int)(dwRead / sizeof(WCHAR));
+
+        dstLen = WideCharToMultiByte(CodePage, 0, srcStr, srcLen, NULL, 0, NULL, NULL);
+        if (dstLen <= 0)
+            goto lblCLEANUP;
+
+        dstStr = (char*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, dstLen * sizeof(char));
+        if (dstStr == NULL)
+            goto lblCLEANUP;
+
+        if (WideCharToMultiByte(CodePage, 0, srcStr, srcLen, dstStr, dstLen, NULL, NULL) != dstLen)
+            goto lblCLEANUP;
+
+        pos.QuadPart = 0;
+        if (!SetFilePointerEx(hFile, pos, NULL, FILE_BEGIN))
+            goto lblCLEANUP;
+
+        if (!WriteFile(hFile, dstStr, dstLen * sizeof(char), &dwWrite, NULL))
+            goto lblCLEANUP;
+        if (dwWrite != dstLen * sizeof(char))
+            goto lblCLEANUP;
+
+        SetEndOfFile(hFile); // new file end
+
+    lblCLEANUP:
+        if (srcStr != NULL)
+            HeapFree(GetProcessHeap(), 0, srcStr);
+        if (dstStr != NULL)
+            HeapFree(GetProcessHeap(), 0, dstStr);
+    }
 
     //-----------------------------------------------------------------------------
     // Name: PrintStats()
@@ -337,7 +401,7 @@ namespace
                 else
                     pstrFile = L"dxview.log";
             }
-            g_FileHandle = CreateFile(pstrFile, GENERIC_WRITE, 0, nullptr,
+            g_FileHandle = CreateFile(pstrFile, GENERIC_READ | GENERIC_WRITE, 0, nullptr,
                 CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
         }
         else
@@ -519,6 +583,7 @@ namespace
         {
             if (g_PrintToFile)
             {
+                ConvertEncoding(g_FileHandle, CP_ACP);
                 CloseHandle(g_FileHandle);
             }
             else
