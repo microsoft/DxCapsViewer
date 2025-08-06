@@ -250,7 +250,7 @@ namespace
         pstrBuff = (LPTSTR)HeapAlloc(hHeap, HEAP_NO_SERIALIZE, buffSize);
         if (!pstrBuff)
         {
-            // Error, not enough memory 
+            // Error, not enough memory
             goto lblCLEANUP;
         }
 
@@ -286,7 +286,7 @@ namespace
             pstrTitle = (LPTSTR)HeapAlloc(hHeap, HEAP_NO_SERIALIZE, cbSize);
             if (!pstrTitle)
             {
-                // Error, not enough memory 
+                // Error, not enough memory
                 goto lblCLEANUP;
             }
 
@@ -302,7 +302,7 @@ namespace
             pstrTitle = (LPTSTR)HeapAlloc(hHeap, HEAP_NO_SERIALIZE, cbSize);
             if (!pstrTitle)
             {
-                // Error, not enough memory 
+                // Error, not enough memory
                 goto lblCLEANUP;
             }
 
@@ -370,7 +370,7 @@ namespace
                 }
 
                 //
-                // Get Current Item in Tree 
+                // Get Current Item in Tree
                 // and print it's text info and associated Node caps
                 //
 
@@ -400,7 +400,7 @@ namespace
                             goto lblCLEANUP;
                         }
 
-                        // Check if there is any additional node info 
+                        // Check if there is any additional node info
                         // that needs to be printed
                         if (tvi.lParam != 0)
                         {
@@ -437,7 +437,7 @@ namespace
 
 
 
-                // 
+                //
                 // Get Next Item in tree
                 //
 
@@ -494,7 +494,7 @@ namespace
                         // Decrease Indentation
                         pci.dwCurrIndent--;
 
-                        // Since we have already processed the parent 
+                        // Since we have already processed the parent
                         // we want to get the uncle/aunt node
                         hTempTree = TreeView_GetNextSibling(hTreeWnd, pci.hCurrTree);
                         if (hTempTree)

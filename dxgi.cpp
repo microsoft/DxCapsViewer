@@ -288,16 +288,16 @@ namespace
 
     const D3D_FEATURE_LEVEL g_featureLevels[] =
     {
-          D3D_FEATURE_LEVEL_12_2,
-          D3D_FEATURE_LEVEL_12_1,
-          D3D_FEATURE_LEVEL_12_0,
-          D3D_FEATURE_LEVEL_11_1,
-          D3D_FEATURE_LEVEL_11_0,
-          D3D_FEATURE_LEVEL_10_1,
-          D3D_FEATURE_LEVEL_10_0,
-          D3D_FEATURE_LEVEL_9_3,
-          D3D_FEATURE_LEVEL_9_2,
-          D3D_FEATURE_LEVEL_9_1
+        D3D_FEATURE_LEVEL_12_2,
+        D3D_FEATURE_LEVEL_12_1,
+        D3D_FEATURE_LEVEL_12_0,
+        D3D_FEATURE_LEVEL_11_1,
+        D3D_FEATURE_LEVEL_11_0,
+        D3D_FEATURE_LEVEL_10_1,
+        D3D_FEATURE_LEVEL_10_0,
+        D3D_FEATURE_LEVEL_9_3,
+        D3D_FEATURE_LEVEL_9_2,
+        D3D_FEATURE_LEVEL_9_1
     };
 
     D3D_FEATURE_LEVEL GetD3D12FeatureLevel(_In_ ID3D12Device* device)
