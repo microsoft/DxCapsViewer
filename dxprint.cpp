@@ -15,7 +15,7 @@
 #include <shlobj.h>
 
 BOOL   g_PrintToFile = FALSE; // Don't print to printer print to dxview.log
-TCHAR  g_PrintToFilePath[MAX_PATH]; // "Print" to this file instead of dxview.log
+WCHAR  g_PrintToFilePath[MAX_PATH]; // "Print" to this file instead of dxview.log
 
 namespace
 {
@@ -151,8 +151,8 @@ namespace
     //-----------------------------------------------------------------------------
     VOID DoMessage(DWORD dwTitle, DWORD dwMsg)
     {
-        TCHAR strTitle[MAX_TITLE];
-        TCHAR strMsg[MAX_MESSAGE];
+        WCHAR strTitle[MAX_TITLE];
+        WCHAR strMsg[MAX_MESSAGE];
 
         LoadString(GetModuleHandle(nullptr), dwTitle, strTitle, MAX_TITLE);
         LoadString(GetModuleHandle(nullptr), dwMsg, strMsg, MAX_MESSAGE);
@@ -184,10 +184,11 @@ namespace
         BOOL        fResult = FALSE;
         BOOL        fStartDoc = FALSE;
         BOOL        fDisableWindow = FALSE;
-        LPTSTR      pstrTitle = nullptr;
-        LPTSTR      pstrBuff = nullptr;
+        LPWSTR      pstrTitle = nullptr;
+        LPWSTR      pstrBuff = nullptr;
         DWORD       dwCurrCopy;
         HANDLE      hHeap = nullptr;
+        DWORD       buffCnt;
         DWORD       buffSize;
         DWORD       cchLen;
         TV_ITEM     tvi;
@@ -246,8 +247,9 @@ namespace
         }
 
         // Create line buffer
-        buffSize = (pci.dwCharsPerLine + 1) * sizeof(TCHAR);
-        pstrBuff = (LPTSTR)HeapAlloc(hHeap, HEAP_NO_SERIALIZE, buffSize);
+        buffCnt = (pci.dwCharsPerLine + 1);
+        buffSize = buffCnt * sizeof(WCHAR);
+        pstrBuff = (LPWSTR)HeapAlloc(hHeap, HEAP_NO_SERIALIZE, buffSize);
         if (!pstrBuff)
         {
             // Error, not enough memory
@@ -281,32 +283,32 @@ namespace
         {
             SetWindowText(g_hAbortPrintDlg, pstrBuff);
             SetAbortProc(pd.hDC, AbortProc);
-            cchLen = static_cast<DWORD>(_tcsclen(pstrBuff));
-            DWORD cbSize = (cchLen + 1) * sizeof(TCHAR);
-            pstrTitle = (LPTSTR)HeapAlloc(hHeap, HEAP_NO_SERIALIZE, cbSize);
+            cchLen = static_cast<DWORD>(wcslen(pstrBuff));
+            DWORD cbSize = (cchLen + 1) * sizeof(WCHAR);
+            pstrTitle = (LPWSTR)HeapAlloc(hHeap, HEAP_NO_SERIALIZE, cbSize);
             if (!pstrTitle)
             {
                 // Error, not enough memory
                 goto lblCLEANUP;
             }
 
-            strcpy_s(pstrTitle, cbSize, pstrBuff);
+            wcscpy_s(pstrTitle, cchLen + 1, pstrBuff);
             pstrTitle[cchLen] = 0;
         }
         else
         {
-            SetWindowText(g_hAbortPrintDlg, TEXT("Unknown"));
+            SetWindowText(g_hAbortPrintDlg, L"Unknown");
             SetAbortProc(pd.hDC, AbortProc);
-            cchLen = static_cast<DWORD>(_tcsclen(TEXT("Unknown")));
-            DWORD cbSize = (cchLen + 1) * sizeof(TCHAR);
-            pstrTitle = (LPTSTR)HeapAlloc(hHeap, HEAP_NO_SERIALIZE, cbSize);
+            cchLen = static_cast<DWORD>(wcslen(L"Unknown"));
+            DWORD cbSize = (cchLen + 1) * sizeof(WCHAR);
+            pstrTitle = (LPWSTR)HeapAlloc(hHeap, HEAP_NO_SERIALIZE, cbSize);
             if (!pstrTitle)
             {
                 // Error, not enough memory
                 goto lblCLEANUP;
             }
 
-            strcpy_s(pstrTitle, cbSize, TEXT("Unknown"));
+            wcscpy_s(pstrTitle, cchLen + 1, L"Unknown");
             pstrTitle[cchLen] = 0;
         }
 
@@ -320,20 +322,20 @@ namespace
         // Start document
         if (g_PrintToFile)
         {
-            const TCHAR* pstrFile;
-            TCHAR buff[MAX_PATH];
-            if (strlen(g_PrintToFilePath) > 0)
+            const WCHAR* pstrFile;
+            WCHAR buff[MAX_PATH];
+            if (wcslen(g_PrintToFilePath) > 0)
                 pstrFile = g_PrintToFilePath;
             else
             {
                 HRESULT hr = SHGetFolderPath(nullptr, CSIDL_DESKTOP, nullptr, SHGFP_TYPE_CURRENT, buff);
                 if (SUCCEEDED(hr))
                 {
-                    strcat_s(buff, MAX_PATH, TEXT("\\dxview.log"));
+                    wcscat_s(buff, MAX_PATH, L"\\dxview.log");
                     pstrFile = buff;
                 }
                 else
-                    pstrFile = TEXT("dxview.log");
+                    pstrFile = L"dxview.log";
             }
             g_FileHandle = CreateFile(pstrFile, GENERIC_WRITE, 0, nullptr,
                 CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -381,8 +383,8 @@ namespace
                 tvi.cchTextMax = pci.dwCharsPerLine;
                 if (TreeView_GetItem(hTreeWnd, &tvi))
                 {
-                    cchLen = static_cast<DWORD>(_tcslen(pstrBuff));
-                    cchLen = __min(cchLen, buffSize);
+                    cchLen = static_cast<DWORD>(wcslen(pstrBuff));
+                    cchLen = __min(cchLen, buffCnt);
                     if (cchLen > 0)
                     {
                         int xOffset = (int)(pci.dwCurrIndent * DEF_TAB_SIZE * pci.dwCharWidth);
@@ -643,7 +645,7 @@ BOOL DXView_OnFile(HWND hWnd, HWND hTreeWnd, BOOL bPrintAll)
 // Desc: Prints text to page at specified location
 //-----------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT PrintLine(int xOffset, int yOffset, LPCTSTR pszBuff, size_t cchBuff,
+HRESULT PrintLine(int xOffset, int yOffset, LPCWSTR pszBuff, size_t cchBuff,
     PRINTCBINFO* pci)
 {
     if (!pci)
@@ -661,19 +663,19 @@ HRESULT PrintLine(int xOffset, int yOffset, LPCTSTR pszBuff, size_t cchBuff,
     if (g_PrintToFile)
     {
         DWORD dwDummy;
-        TCHAR Temp[80];
+        WCHAR Temp[80];
 
         int offset = (xOffset - iLastXPos) / pci->dwCharWidth;
 
         if (offset < 0 || offset >= 80)
             return S_OK;
 
-        memset(Temp, ' ', sizeof(TCHAR) * 79);
+        for (auto& c : Temp) c = L' ';
         Temp[offset] = 0;
-        WriteFile(g_FileHandle, Temp, (xOffset - iLastXPos) / pci->dwCharWidth, &dwDummy, nullptr);
+        WriteFile(g_FileHandle, Temp, (xOffset - iLastXPos) * sizeof(WCHAR) / pci->dwCharWidth, &dwDummy, nullptr);
         iLastXPos = (xOffset - iLastXPos) + (pci->dwCharWidth * static_cast<DWORD>(cchBuff));
 
-        WriteFile(g_FileHandle, pszBuff, static_cast<DWORD>(cchBuff), &dwDummy, nullptr);
+        WriteFile(g_FileHandle, pszBuff, static_cast<DWORD>(cchBuff) * sizeof(WCHAR), &dwDummy, nullptr);
     }
     else
     {
@@ -695,7 +697,7 @@ HRESULT PrintNextLine(PRINTCBINFO* pci)
     {
         DWORD dwDummy;
 
-        WriteFile(g_FileHandle, "\r\n", 2, &dwDummy, nullptr);
+        WriteFile(g_FileHandle, L"\r\n", 4, &dwDummy, nullptr);
         iLastXPos = 0;
         return S_OK;
     }
