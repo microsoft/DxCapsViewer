@@ -27,14 +27,14 @@ static_assert(c_tabStop >= c_DefNameLength, "print stop should be at least as lo
 
 HINSTANCE   g_hInstance = nullptr;
 HWND        g_hwndMain = nullptr;
-CHAR        g_strAppName[]  = "DXView";
-CHAR        g_strClassName[] = "DXView";
-CHAR        g_strTitle[]     = "DirectX Caps Viewer";
+WCHAR       g_strAppName[]  = L"DXView";
+WCHAR       g_strClassName[] = L"DXView";
+WCHAR       g_strTitle[]     = L"DirectX Caps Viewer";
 
-extern const char c_szYes[] = "Yes";
-extern const char c_szNo[] = "No";
-extern const char c_szCurrentMode[] = "Current Mode";
-extern const char c_szNA[] = "n/a";
+extern const WCHAR c_szYes[] = L"Yes";
+extern const WCHAR c_szNo[] = L"No";
+extern const WCHAR c_szCurrentMode[] = L"Current Mode";
+extern const WCHAR c_szNA[] = L"n/a";
 
 HWND        g_hwndLV = nullptr; // List view
 HWND        g_hwndTV = nullptr; // Tree view
@@ -47,9 +47,9 @@ DWORD       g_dwViewState;
 DWORD       g_dwView9Ex;
 DWORD       g_tmAveCharWidth;
 extern BOOL g_PrintToFile;
-extern TCHAR  g_PrintToFilePath[MAX_PATH];
-CHAR        g_szClip[c_maxPasteBuffer];
-TCHAR       g_helpPath[MAX_PATH] = {};
+extern WCHAR  g_PrintToFilePath[MAX_PATH];
+WCHAR       g_szClip[c_maxPasteBuffer];
+WCHAR       g_helpPath[MAX_PATH] = {};
 
 //-----------------------------------------------------------------------------
 // Local function prototypes
@@ -93,27 +93,27 @@ BOOL DXG_Is9Ex();
 // Name: Int2Str()
 // Desc: Get number as a string
 //-----------------------------------------------------------------------------
-HRESULT Int2Str( _Out_z_cap_(nDestLen) LPTSTR strDest, UINT nDestLen, DWORD i )
+HRESULT Int2Str( _Out_z_cap_(nDestLen) LPWSTR strDest, UINT nDestLen, DWORD i )
 {
     *strDest = 0;
 
-    char  strDec[2];
+    WCHAR strDec[2];
     GetLocaleInfo( LOCALE_USER_DEFAULT, LOCALE_SDECIMAL, strDec, 2 );
-    char  strIn[32];
-    sprintf_s( strIn, sizeof(strIn), "%u",i );
+    WCHAR strIn[32];
+    swprintf_s( strIn, 32, L"%u", i );
 
-    char  strOut[32];
+    WCHAR strOut[32];
     if( 0 == GetNumberFormat( LOCALE_USER_DEFAULT, 0, strIn, nullptr, strOut, 32 ) )
     {
-        strcpy_s( strDest, nDestLen, strIn );
+        wcscpy_s( strDest, nDestLen, strIn );
         return E_FAIL;
     }
 
-    char * pstrDec = strrchr( strOut, strDec[0] );
+    WCHAR * pstrDec = wcschr( strOut, strDec[0] );
     if( pstrDec)
         *pstrDec = '\0';
 
-    if( strcpy_s( strDest, nDestLen, strOut ) != 0)
+    if( wcscpy_s( strDest, nDestLen, strOut ) != 0)
     {
         *strDest = 0;
         return E_FAIL;
@@ -125,7 +125,7 @@ HRESULT Int2Str( _Out_z_cap_(nDestLen) LPTSTR strDest, UINT nDestLen, DWORD i )
 
 //-----------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT PrintStringValueLine(const char * szText, const char * szText2, PRINTCBINFO *lpInfo)
+HRESULT PrintStringValueLine(const WCHAR * szText, const WCHAR * szText2, PRINTCBINFO *lpInfo)
 {
     // Calculate Name and Value column x offsets
     int xName   = (lpInfo->dwCurrIndent * DEF_TAB_SIZE * lpInfo->dwCharWidth);
@@ -133,17 +133,17 @@ HRESULT PrintStringValueLine(const char * szText, const char * szText2, PRINTCBI
     int yLine   = (lpInfo->dwCurrLine * lpInfo->dwLineHeight);
 
     // Print name
-    char  szBuff[c_maxPrintLine];
-    strcpy_s(szBuff, sizeof(szBuff), szText);
-    szBuff[c_maxPrintLine - 1] = '\0';
-    auto cchLen = static_cast<DWORD>(_tcslen(szText));
+    WCHAR szBuff[c_maxPrintLine];
+    wcscpy_s(szBuff, c_maxPrintLine, szText);
+    szBuff[c_maxPrintLine - 1] = L'\0';
+    auto cchLen = static_cast<DWORD>(wcslen(szText));
     if( FAILED( PrintLine (xName, yLine, szBuff, cchLen, lpInfo) ) )
         return E_FAIL;
 
     // Print value
-    strcpy_s(szBuff, sizeof(szBuff), szText2);
-    szBuff[c_maxPrintLine - 1] = '\0';
-    cchLen = static_cast<DWORD>(_tcslen(szText2));
+    wcscpy_s(szBuff, c_maxPrintLine, szText2);
+    szBuff[c_maxPrintLine - 1] = L'\0';
+    cchLen = static_cast<DWORD>(wcslen(szText2));
     if( FAILED( PrintLine (xVal, yLine, szBuff, cchLen, lpInfo) ) )
         return E_FAIL;
 
@@ -157,9 +157,9 @@ HRESULT PrintStringValueLine(const char * szText, const char * szText2, PRINTCBI
 
 //-----------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT PrintValueLine(const char * szText, DWORD dwValue, PRINTCBINFO *lpInfo)
+HRESULT PrintValueLine(const WCHAR * szText, DWORD dwValue, PRINTCBINFO *lpInfo)
 {
-    char  szBuff[c_maxPrintLine];
+    WCHAR szBuff[c_maxPrintLine];
     Int2Str(szBuff, c_maxPrintLine, dwValue);
     return PrintStringValueLine( szText, szBuff, lpInfo );
 }
@@ -167,27 +167,27 @@ HRESULT PrintValueLine(const char * szText, DWORD dwValue, PRINTCBINFO *lpInfo)
 
 //-----------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT PrintHexValueLine(const char * szText, DWORD dwValue, PRINTCBINFO *lpInfo)
+HRESULT PrintHexValueLine(const WCHAR * szText, DWORD dwValue, PRINTCBINFO *lpInfo)
 {
-    char  szBuff[c_maxPrintLine];
-    sprintf_s( szBuff, sizeof(szBuff), "0x%08x", dwValue );
+    WCHAR szBuff[c_maxPrintLine];
+    swprintf_s( szBuff, c_maxPrintLine, L"0x%08x", dwValue );
     return PrintStringValueLine( szText, szBuff, lpInfo );
 }
 
 
 //-----------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT PrintStringLine(const char * szText, PRINTCBINFO *lpInfo)
+HRESULT PrintStringLine(const WCHAR* szText, PRINTCBINFO *lpInfo)
 {
     // Calculate Name and Value column x offsets
     int xName   = (lpInfo->dwCurrIndent * DEF_TAB_SIZE * lpInfo->dwCharWidth);
     int yLine   = (lpInfo->dwCurrLine * lpInfo->dwLineHeight);
 
     // Print name
-    char  szBuff[c_maxPrintLine];
-    strcpy_s(szBuff, sizeof(szBuff), szText);
-    szBuff[c_maxPrintLine - 1] = '\0';
-    auto cchLen = static_cast<DWORD>(_tcslen(szText));
+    WCHAR szBuff[c_maxPrintLine];
+    wcscpy_s(szBuff, c_maxPrintLine, szText);
+    szBuff[c_maxPrintLine - 1] = L'\0';
+    auto cchLen = static_cast<DWORD>(wcslen(szText));
     if( FAILED( PrintLine (xName, yLine, szBuff, cchLen, lpInfo) ) )
         return E_FAIL;
 
@@ -202,11 +202,11 @@ HRESULT PrintStringLine(const char * szText, PRINTCBINFO *lpInfo)
 //-----------------------------------------------------------------------------
 // Name: WinMain
 //-----------------------------------------------------------------------------
-int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/,
-    _In_ LPSTR /*strCmdLine*/, _In_ int /*nCmdShow*/)
+int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/,
+    _In_ LPWSTR /*strCmdLine*/, _In_ int /*nCmdShow*/)
 {
     g_hInstance = hInstance; // Store instance handle in our global variable
-    g_PrintToFilePath[0] = TEXT('\0');
+    g_PrintToFilePath[0] = L'\0';
 
     // Initialize COM
     HRESULT hr = CoInitializeEx(nullptr, COINITBASE_MULTITHREADED);
@@ -228,7 +228,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*
     wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_DIRECTX)); // Icon name from .RC
     wc.hCursor = LoadCursor(NULL, IDC_SIZEWE);// Cursor
     wc.hbrBackground = (HBRUSH)(COLOR_3DFACE + 1); // Default color
-    wc.lpszMenuName = "Menu";                   // Menu name from .RC
+    wc.lpszMenuName = L"Menu";                   // Menu name from .RC
     wc.lpszClassName = g_strClassName;            // Name to register as
     RegisterClass(&wc);
 
@@ -244,50 +244,50 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*
         return -1;
     }
 
-    TCHAR* pszCmdLine = GetCommandLine();
+    WCHAR* pszCmdLine = GetCommandLine();
     // Skip past program name (first token in command line).
-    if (*pszCmdLine == TEXT('"'))  // Check for and handle quoted program name
+    if (*pszCmdLine == L'"')  // Check for and handle quoted program name
     {
         pszCmdLine++;
         // Scan, and skip over, subsequent characters until  another
         // double-quote or a null is encountered
-        while (*pszCmdLine && (*pszCmdLine != TEXT('"')))
+        while (*pszCmdLine && (*pszCmdLine != L'"'))
             pszCmdLine++;
         // If we stopped on a double-quote (usual case), skip over it.
-        if (*pszCmdLine == TEXT('"'))
+        if (*pszCmdLine == L'"')
             pszCmdLine++;
     }
     else    // First token wasn't a quote
     {
-        while (*pszCmdLine > TEXT(' '))
+        while (*pszCmdLine > L' ')
             pszCmdLine++;
     }
 
     // Skip past any white space preceeding the next token.
-    while (*pszCmdLine && (*pszCmdLine <= TEXT(' ')))
+    while (*pszCmdLine && (*pszCmdLine <= L' '))
         pszCmdLine++;
 
     // Treat the rest of the command line as a filename to save the whole tree to
-    TCHAR* pstrSave = g_PrintToFilePath;
-    if (*pszCmdLine == TEXT('"'))  // Check for and handle quoted program name
+    WCHAR* pstrSave = g_PrintToFilePath;
+    if (*pszCmdLine == L'"')  // Check for and handle quoted program name
     {
         pszCmdLine++;
         // Scan, and copy, subsequent characters until  another
         // double-quote or a null is encountered
-        while (*pszCmdLine && (*pszCmdLine != TEXT('"')))
+        while (*pszCmdLine && (*pszCmdLine != L'"'))
             *pstrSave++ = *pszCmdLine++;
         // If we stopped on a double-quote (usual case), skip over it.
-        if (*pszCmdLine == TEXT('"'))
+        if (*pszCmdLine == L'"')
             pszCmdLine++;
     }
     else    // First token wasn't a quote
     {
-        while (*pszCmdLine > TEXT(' '))
+        while (*pszCmdLine > L' ')
             *pstrSave++ = *pszCmdLine++;
     }
-    *pstrSave = TEXT('\0');
+    *pstrSave = L'\0';
 
-    if (strlen(g_PrintToFilePath) > 0)
+    if (wcslen(g_PrintToFilePath) > 0)
     {
         PostMessage(g_hwndMain, WM_COMMAND, IDM_PRINTWHOLETREETOFILE, 0);
         PostMessage(g_hwndMain, WM_CLOSE, 0, 0);
@@ -438,7 +438,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 //-----------------------------------------------------------------------------
 VOID CreateCopyMenu(VOID)
 {
-    HMENU hPopupMenu = LoadMenu(nullptr, "POPUP");
+    HMENU hPopupMenu = LoadMenu(nullptr, L"POPUP");
     if (!hPopupMenu)
         return;
     HMENU hMenu = GetSubMenu(hPopupMenu, 0);
@@ -447,11 +447,11 @@ VOID CreateCopyMenu(VOID)
         DestroyMenu(hPopupMenu);
         return;
     }
-    TCHAR szMenu[c_maxPasteBuffer];
+    WCHAR szMenu[c_maxPasteBuffer];
     GetMenuString(hMenu, IDM_COPY, szMenu, c_maxPasteBuffer, MF_BYCOMMAND);
 
-    TCHAR szMenuNew[c_maxPasteBuffer];
-    sprintf_s(szMenuNew, sizeof(szMenuNew), szMenu, g_szClip);
+    WCHAR szMenuNew[c_maxPasteBuffer];
+    swprintf_s(szMenuNew, c_maxPasteBuffer, szMenu, g_szClip);
 
     MENUITEMINFO mii = {};
     mii.cbSize = sizeof(mii);
@@ -499,13 +499,13 @@ BOOL DXView_OnCreate(HWND hWnd)
     CheckMenuItem(GetMenu(hWnd), g_dwViewState, MF_BYCOMMAND | MF_CHECKED);
 
     // Create the list view window.
-    g_hwndLV = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, "",
+    g_hwndLV = CreateWindowEx(WS_EX_CLIENTEDGE, WC_LISTVIEW, L"",
         WS_VISIBLE | WS_CHILD | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SINGLESEL,
         0, 0, 0, 0, hWnd, (HMENU)IDC_LV, g_hInstance, nullptr);
     ListView_SetExtendedListViewStyleEx(g_hwndLV, LVS_EX_FULLROWSELECT, LVS_EX_FULLROWSELECT);
 
     // create the tree view window.
-    g_hwndTV = CreateWindowEx(WS_EX_CLIENTEDGE, WC_TREEVIEW, "",
+    g_hwndTV = CreateWindowEx(WS_EX_CLIENTEDGE, WC_TREEVIEW, L"",
         WS_VISIBLE | WS_CHILD | TVS_HASLINES |
         TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS,
         0, 0, 0, 0, hWnd, (HMENU)IDC_TV, g_hInstance, nullptr);
@@ -534,10 +534,10 @@ void AddCapsToTV(HTREEITEM hRoot, CAPDEFS* pcds, LPARAM lParam1)
     hParent[0] = hRoot;
 
     int   level = 0;
-    const char* name;
+    const WCHAR* name;
     while ((name = pcds->strName) != nullptr)
     {
-        if (name[0] == '-')
+        if (name[0] == L'-')
         {
             level--;
             if (level < 0)
@@ -545,7 +545,7 @@ void AddCapsToTV(HTREEITEM hRoot, CAPDEFS* pcds, LPARAM lParam1)
             name++;
         }
 
-        if (name[0] == '+')
+        if (name[0] == L'+')
         {
             bRoot = TRUE;
             name++;
@@ -577,7 +577,7 @@ void AddCapsToTV(HTREEITEM hRoot, CAPDEFS* pcds, LPARAM lParam1)
 // column headers like AddCapsToLV does.
 void AddMoreCapsToLV(CAPDEF* pcd, LPVOID pv)
 {
-    TCHAR szBuff[64];
+    WCHAR szBuff[64];
 
     while (pcd->strName && *pcd->strName)
     {
@@ -592,46 +592,46 @@ void AddMoreCapsToLV(CAPDEF* pcd, LPVOID pv)
         switch (pcd->dwFlag)
         {
         case 0:
-            LVAddText(g_hwndLV, 0, "%s", pcd->strName);
+            LVAddText(g_hwndLV, 0, L"%s", pcd->strName);
             Int2Str(szBuff, 64, dwValue);
-            LVAddText(g_hwndLV, 1, "%s", szBuff);
+            LVAddText(g_hwndLV, 1, L"%s", szBuff);
             break;
         case 0xFFFFFFFF:	// Hex
-            LVAddText(g_hwndLV, 0, "%s", pcd->strName);
-            LVAddText(g_hwndLV, 1, "0x%08X", dwValue);
+            LVAddText(g_hwndLV, 0, L"%s", pcd->strName);
+            LVAddText(g_hwndLV, 1, L"0x%08X", dwValue);
             break;
         case 0xEFFFFFFF:	// Shader Version
-            LVAddText(g_hwndLV, 0, "%s", pcd->strName);
-            LVAddText(g_hwndLV, 1, "%d.%0d", D3DSHADER_VERSION_MAJOR(dwValue), D3DSHADER_VERSION_MINOR(dwValue));
+            LVAddText(g_hwndLV, 0, L"%s", pcd->strName);
+            LVAddText(g_hwndLV, 1, L"%d.%0d", D3DSHADER_VERSION_MAJOR(dwValue), D3DSHADER_VERSION_MINOR(dwValue));
             break;
         case 0xBFFFFFFF:	// FLOAT Support for new DX6 "D3DVALUE" values in D3DDeviceDesc
         {
-            LVAddText(g_hwndLV, 0, "%s", pcd->strName);
+            LVAddText(g_hwndLV, 0, L"%s", pcd->strName);
             auto fValue = *reinterpret_cast<float*>(static_cast<BYTE*>(pv) + pcd->dwOffset);
-            LVAddText(g_hwndLV, 1, "%G", fValue);
+            LVAddText(g_hwndLV, 1, L"%G", fValue);
             break;
         }
         case 0x7FFFFFFF:	// HEX Support for new DX6 "WORD" values in D3DDeviceDesc
-            LVAddText(g_hwndLV, 0, "%s", pcd->strName);
+            LVAddText(g_hwndLV, 0, L"%s", pcd->strName);
             dwValue = *reinterpret_cast<WORD*>(static_cast<BYTE*>(pv) + pcd->dwOffset);
-            LVAddText(g_hwndLV, 1, "0x%04X", dwValue);
+            LVAddText(g_hwndLV, 1, L"0x%04X", dwValue);
             break;
         case 0x3FFFFFFF:	// VAL Support for new DX6 "WORD" values in D3DDeviceDesc
-            LVAddText(g_hwndLV, 0, "%s", pcd->strName);
+            LVAddText(g_hwndLV, 0, L"%s", pcd->strName);
             dwValue = *reinterpret_cast<WORD*>(static_cast<BYTE*>(pv) + pcd->dwOffset);
             Int2Str(szBuff, 64, dwValue);
-            LVAddText(g_hwndLV, 1, "%s", szBuff);
+            LVAddText(g_hwndLV, 1, L"%s", szBuff);
             break;
         case 0x1FFFFFFF:	// "-1 == unlimited"
-            LVAddText(g_hwndLV, 0, "%s", pcd->strName);
+            LVAddText(g_hwndLV, 0, L"%s", pcd->strName);
             if (dwValue == 0xFFFFFFFF)
             {
-                LVAddText(g_hwndLV, 1, "Unlimited");
+                LVAddText(g_hwndLV, 1, L"Unlimited");
             }
             else
             {
                 Int2Str(szBuff, 64, dwValue);
-                LVAddText(g_hwndLV, 1, "%s", szBuff);
+                LVAddText(g_hwndLV, 1, L"%s", szBuff);
             }
             break;
         case 0x0fffffff:    // Mask with 0xffff
@@ -639,7 +639,7 @@ void AddMoreCapsToLV(CAPDEF* pcd, LPVOID pv)
             LVAddText(g_hwndLV, 0, pcd->strName);
             dwValue = (*reinterpret_cast<DWORD*>(static_cast<BYTE*>(pv) + pcd->dwOffset)) & 0xffff;
             Int2Str(szBuff, 64, dwValue);
-            LVAddText(g_hwndLV, 1, "%s", szBuff);
+            LVAddText(g_hwndLV, 1, L"%s", szBuff);
         }
         break;
         default:
@@ -664,8 +664,8 @@ void AddMoreCapsToLV(CAPDEF* pcd, LPVOID pv)
 // AddColsToLV adds the column headers but no data.
 void AddColsToLV(void)
 {
-    LVAddColumn(g_hwndLV, 0, "Name", c_DefNameLength);
-    LVAddColumn(g_hwndLV, 1, "Value", 10);
+    LVAddColumn(g_hwndLV, 0, L"Name", c_DefNameLength);
+    LVAddColumn(g_hwndLV, 1, L"Value", 10);
 }
 
 
@@ -682,7 +682,8 @@ _Use_decl_annotations_
 HRESULT PrintCapsToDC(CAPDEF* pcd, LPVOID pv, PRINTCBINFO* lpInfo)
 {
     DWORD cchLen;
-    TCHAR szValue[100];
+    const SIZE_T szValueLength = 100;
+    WCHAR szValue[szValueLength];
 
     // Check Parameters
     if ((!pcd) || (!lpInfo))
@@ -709,12 +710,12 @@ HRESULT PrintCapsToDC(CAPDEF* pcd, LPVOID pv, PRINTCBINFO* lpInfo)
             {
             case 0xFFFFFFFF:	// Hex
                 // Print name
-                cchLen = static_cast<DWORD>(_tcslen(pcd->strName));
+                cchLen = static_cast<DWORD>(wcslen(pcd->strName));
                 if (FAILED(PrintLine(xName, yLine, pcd->strName, cchLen, lpInfo)))
                     return E_FAIL;
                 // Print value in hex
-                sprintf_s(szValue, sizeof(szValue), "0x%08X", dwValue);
-                if (FAILED(PrintLine(xVal, yLine, szValue, strlen(szValue), lpInfo)))
+                swprintf_s(szValue, szValueLength, L"0x%08X", dwValue);
+                if (FAILED(PrintLine(xVal, yLine, szValue, wcslen(szValue), lpInfo)))
                     return E_FAIL;
                 // Advance to next line on page
                 if (FAILED(PrintNextLine(lpInfo)))
@@ -723,12 +724,12 @@ HRESULT PrintCapsToDC(CAPDEF* pcd, LPVOID pv, PRINTCBINFO* lpInfo)
 
             case 0xEFFFFFFF:	// Shader Version
                 // Print name
-                cchLen = static_cast<DWORD>(_tcslen(pcd->strName));
+                cchLen = static_cast<DWORD>(wcslen(pcd->strName));
                 if (FAILED(PrintLine(xName, yLine, pcd->strName, cchLen, lpInfo)))
                     return E_FAIL;
                 // Print version
-                sprintf_s(szValue, sizeof(szValue), "%u.%0u", D3DSHADER_VERSION_MAJOR(dwValue), D3DSHADER_VERSION_MINOR(dwValue));
-                if (FAILED(PrintLine(xVal, yLine, szValue, strlen(szValue), lpInfo)))
+                swprintf_s(szValue, szValueLength, L"%u.%0u", D3DSHADER_VERSION_MAJOR(dwValue), D3DSHADER_VERSION_MINOR(dwValue));
+                if (FAILED(PrintLine(xVal, yLine, szValue, wcslen(szValue), lpInfo)))
                     return E_FAIL;
                 // Advance to next line on page
                 if (FAILED(PrintNextLine(lpInfo)))
@@ -738,13 +739,13 @@ HRESULT PrintCapsToDC(CAPDEF* pcd, LPVOID pv, PRINTCBINFO* lpInfo)
             case 0xBFFFFFFF:	// FLOAT Support for new DX6 "D3DVALUE" values in D3DDeviceDesc
             {
                 // Print name
-                cchLen = static_cast<DWORD>(_tcslen(pcd->strName));
+                cchLen = static_cast<DWORD>(wcslen(pcd->strName));
                 if (FAILED(PrintLine(xName, yLine, pcd->strName, cchLen, lpInfo)))
                     return E_FAIL;
                 // Print value
                 auto fValue = *reinterpret_cast<float*>(static_cast<BYTE*>(pv) + pcd->dwOffset);
-                sprintf_s(szValue, sizeof(szValue), "%G", fValue);
-                if (FAILED(PrintLine(xVal, yLine, szValue, strlen(szValue), lpInfo)))
+                swprintf_s(szValue, szValueLength, L"%G", fValue);
+                if (FAILED(PrintLine(xVal, yLine, szValue, wcslen(szValue), lpInfo)))
                     return E_FAIL;
                 // Advance to next line on page
                 if (FAILED(PrintNextLine(lpInfo)))
@@ -754,13 +755,13 @@ HRESULT PrintCapsToDC(CAPDEF* pcd, LPVOID pv, PRINTCBINFO* lpInfo)
 
             case 0x7FFFFFFF:	// HEX Support for new DX6 "WORD" values in D3DDeviceDesc
                 // Print name
-                cchLen = static_cast<DWORD>(_tcslen(pcd->strName));
+                cchLen = static_cast<DWORD>(wcslen(pcd->strName));
                 if (FAILED(PrintLine(xName, yLine, pcd->strName, cchLen, lpInfo)))
                     return E_FAIL;
                 // Print value
                 dwValue = *reinterpret_cast<WORD*>(static_cast<BYTE*>(pv) + pcd->dwOffset);
-                sprintf_s(szValue, sizeof(szValue), "0x%04X", dwValue);
-                if (FAILED(PrintLine(xVal, yLine, szValue, strlen(szValue), lpInfo)))
+                swprintf_s(szValue, szValueLength, L"0x%04X", dwValue);
+                if (FAILED(PrintLine(xVal, yLine, szValue, wcslen(szValue), lpInfo)))
                     return E_FAIL;
                 // Advance to next line on page
                 if (FAILED(PrintNextLine(lpInfo)))
@@ -769,14 +770,14 @@ HRESULT PrintCapsToDC(CAPDEF* pcd, LPVOID pv, PRINTCBINFO* lpInfo)
 
             case 0x3FFFFFFF:	// VAL Support for new DX6 "WORD" values in D3DDeviceDesc
                 // Print name
-                cchLen = static_cast<DWORD>(_tcslen(pcd->strName));
+                cchLen = static_cast<DWORD>(wcslen(pcd->strName));
                 if (FAILED(PrintLine(xName, yLine, pcd->strName, cchLen, lpInfo)))
                     return E_FAIL;
                 // Print value
                 dwValue = *reinterpret_cast<WORD*>(static_cast<BYTE*>(pv) + pcd->dwOffset);
                 *szValue = 0;
                 Int2Str(szValue, 100, dwValue);
-                if (FAILED(PrintLine(xVal, yLine, szValue, strlen(szValue), lpInfo)))
+                if (FAILED(PrintLine(xVal, yLine, szValue, wcslen(szValue), lpInfo)))
                     return E_FAIL;
                 // Advance to next line on page
                 if (FAILED(PrintNextLine(lpInfo)))
@@ -785,16 +786,16 @@ HRESULT PrintCapsToDC(CAPDEF* pcd, LPVOID pv, PRINTCBINFO* lpInfo)
 
             case 0x1FFFFFFF:	// "-1 == unlimited"
                 // Print name
-                cchLen = static_cast<DWORD>(_tcslen(pcd->strName));
+                cchLen = static_cast<DWORD>(wcslen(pcd->strName));
                 if (FAILED(PrintLine(xName, yLine, pcd->strName, cchLen, lpInfo)))
                     return E_FAIL;
                 // Print value
                 *szValue = 0;
                 if (dwValue == 0xFFFFFFFF)
-                    strcpy_s(szValue, sizeof(szValue), "Unlimited");
+                    wcscpy_s(szValue, szValueLength, L"Unlimited");
                 else
                     Int2Str(szValue, 100, dwValue);
-                if (FAILED(PrintLine(xVal, yLine, szValue, strlen(szValue), lpInfo)))
+                if (FAILED(PrintLine(xVal, yLine, szValue, wcslen(szValue), lpInfo)))
                     return E_FAIL;
                 // Advance to next line on page
                 if (FAILED(PrintNextLine(lpInfo)))
@@ -805,12 +806,12 @@ HRESULT PrintCapsToDC(CAPDEF* pcd, LPVOID pv, PRINTCBINFO* lpInfo)
                 if (pcd->dwFlag & dwValue)
                 {
                     // Print Name
-                    cchLen = static_cast<DWORD>(_tcslen(pcd->strName));
+                    cchLen = static_cast<DWORD>(wcslen(pcd->strName));
                     if (FAILED(PrintLine(xName, yLine, pcd->strName, cchLen, lpInfo)))
                         return E_FAIL;
 
                     // Print Yes in value column
-                    cchLen = static_cast<DWORD>(_tcslen(c_szYes));
+                    cchLen = static_cast<DWORD>(wcslen(c_szYes));
                     if (FAILED(PrintLine(xVal, yLine, c_szYes, cchLen, lpInfo)))
                         return E_FAIL;
 
@@ -821,12 +822,12 @@ HRESULT PrintCapsToDC(CAPDEF* pcd, LPVOID pv, PRINTCBINFO* lpInfo)
                 else if (g_dwViewState == IDM_VIEWALL)
                 {
                     // Print name
-                    cchLen = static_cast<DWORD>(_tcslen(pcd->strName));
+                    cchLen = static_cast<DWORD>(wcslen(pcd->strName));
                     if (FAILED(PrintLine(xName, yLine, pcd->strName, cchLen, lpInfo)))
                         return E_FAIL;
 
                     // Print No in value column
-                    cchLen = static_cast<DWORD>(_tcslen(c_szNo));
+                    cchLen = static_cast<DWORD>(wcslen(c_szNo));
                     if (FAILED(PrintLine(xVal, yLine, c_szNo, cchLen, lpInfo)))
                         return E_FAIL;
 
@@ -839,17 +840,17 @@ HRESULT PrintCapsToDC(CAPDEF* pcd, LPVOID pv, PRINTCBINFO* lpInfo)
         }
         else
         {
-            char    szBuff[c_maxPrintLine];
+            WCHAR   szBuff[c_maxPrintLine];
 
             // Print name
-            sprintf_s(szBuff, sizeof(szBuff), pcd->strName, "test");
-            cchLen = static_cast<DWORD>(_tcslen(pcd->strName));
+            swprintf_s(szBuff, c_maxPrintLine, pcd->strName, L"test");
+            cchLen = static_cast<DWORD>(wcslen(pcd->strName));
             if (FAILED(PrintLine(xName, yLine, szBuff, cchLen, lpInfo)))
                 return E_FAIL;
 
             // Print value
             Int2Str(szBuff, c_maxPrintLine, dwValue);
-            cchLen = static_cast<DWORD>(_tcslen(szBuff));
+            cchLen = static_cast<DWORD>(wcslen(szBuff));
             if (FAILED(PrintLine(xVal, yLine, szBuff, cchLen, lpInfo)))
                 return E_FAIL;
 
@@ -870,7 +871,7 @@ void DXView_OnTreeSelect(HWND /*hwndTV*/, NM_TREEVIEW* ptv)
 {
     SendMessage(g_hwndLV, WM_SETREDRAW, FALSE, 0);
     LVDeleteAllItems(g_hwndLV);
-    LVAddColumn(g_hwndLV, 0, "", 0);
+    LVAddColumn(g_hwndLV, 0, L"", 0);
 
     NODEINFO* pni = nullptr;
     if (!ptv)
@@ -958,18 +959,18 @@ void DXView_OnCommand(HWND hWnd, WPARAM wParam)
     case IDM_COPY:
     {
         // Put g_szClip into the clipboard
-        UINT GlobalSize = static_cast<UINT>(strlen(g_szClip) + 1);
-        HGLOBAL hGlobal = GlobalAlloc(GHND | GMEM_SHARE, GlobalSize);
+        UINT GlobalSize = static_cast<UINT>(wcslen(g_szClip) + 1);
+        HGLOBAL hGlobal = GlobalAlloc(GHND | GMEM_SHARE, GlobalSize * sizeof(WCHAR));
         if (hGlobal)
         {
             VOID* pGlobal = GlobalLock(hGlobal);
             if (pGlobal)
             {
-                strcpy_s((CHAR*)pGlobal, GlobalSize, g_szClip);
+                wcscpy_s((WCHAR*)pGlobal, GlobalSize, g_szClip);
                 GlobalUnlock(hGlobal);
                 OpenClipboard(g_hwndMain);
                 EmptyClipboard();
-                SetClipboardData(CF_TEXT, hGlobal);
+                SetClipboardData(CF_UNICODETEXT, hGlobal);
                 CloseClipboard();
             }
         }
@@ -977,7 +978,7 @@ void DXView_OnCommand(HWND hWnd, WPARAM wParam)
     break;
 
     case IDM_ABOUT:
-        DialogBox(g_hInstance, "About", hWnd, (DLGPROC)About);
+        DialogBox(g_hInstance, L"About", hWnd, (DLGPROC)About);
         break;
 
     case IDM_EXIT:
@@ -1045,10 +1046,10 @@ LRESULT CALLBACK About(HWND hDlg, UINT msg, WPARAM wParam, LPARAM /*lParam*/)
     case WM_INITDIALOG:
     {
         VS_FIXEDFILEINFO* pVersion = nullptr;
-        TCHAR strFmt[500];
+        WCHAR strFmt[500];
         GetWindowText(GetDlgItem(hDlg, IDC_VERSION), strFmt, 500);
 
-        TCHAR szFile[MAX_PATH];
+        WCHAR szFile[MAX_PATH];
         *szFile = 0;
         GetModuleFileName(nullptr, szFile, MAX_PATH);
 
@@ -1064,18 +1065,18 @@ LRESULT CALLBACK About(HWND hDlg, UINT msg, WPARAM wParam, LPARAM /*lParam*/)
             if (GetFileVersionInfo(szFile, 0, cb, FileVersionBuffer))
             {
                 pVersion = nullptr;
-                if (VerQueryValue(FileVersionBuffer, "\\", (VOID**)&pVersion, &cb)
+                if (VerQueryValue(FileVersionBuffer, L"\\", (VOID**)&pVersion, &cb)
                     && pVersion != nullptr)
                 {
-                    TCHAR strVersion[100];
-                    sprintf_s(strVersion, sizeof(strVersion), "%u.%02u.%02u.%04u",
+                    WCHAR strVersion[100];
+                    swprintf_s(strVersion, 100, L"%u.%02u.%02u.%04u",
                         HIWORD(pVersion->dwFileVersionMS),
                         LOWORD(pVersion->dwFileVersionMS),
                         HIWORD(pVersion->dwFileVersionLS),
                         LOWORD(pVersion->dwFileVersionLS));
 
-                    TCHAR str[500];
-                    sprintf_s(str, sizeof(str), strFmt, strVersion);
+                    WCHAR str[500];
+                    swprintf_s(str, 500, strFmt, strVersion);
                     SetWindowText(GetDlgItem(hDlg, IDC_VERSION), str);
                 }
             }
@@ -1084,7 +1085,7 @@ LRESULT CALLBACK About(HWND hDlg, UINT msg, WPARAM wParam, LPARAM /*lParam*/)
         // Note: The warning text is static, but it must be set via code,
         // not in the .rc file, because it is > 256 characters (warning RC4206).
         {
-            const TCHAR* pstrWarning = TEXT("Warning:  This computer program is protected by copyright law and international treaties.  Unauthorized reproduction or distribution of this program, or any portion of it, may result in severe civil and criminal penalties, and will be prosecuted to the maximum extent possible under the law.");
+            const WCHAR* pstrWarning = L"Warning:  This computer program is protected by copyright law and international treaties.  Unauthorized reproduction or distribution of this program, or any portion of it, may result in severe civil and criminal penalties, and will be prosecuted to the maximum extent possible under the law.";
             SetWindowText(GetDlgItem(hDlg, IDC_WARNING), pstrWarning);
         }
         return TRUE;
@@ -1147,7 +1148,7 @@ VOID DXView_OnSize(HWND hWnd)
 
 
 //-----------------------------------------------------------------------------
-void LVAddColumn(HWND hwndLV, int i, const char* name, int width)
+void LVAddColumn(HWND hwndLV, int i, const WCHAR* name, int width)
 {
     if (i == 0)
     {
@@ -1158,21 +1159,21 @@ void LVAddColumn(HWND hwndLV, int i, const char* name, int width)
     LV_COLUMN col = {};
     col.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT;
     col.fmt = LVCFMT_LEFT;
-    col.pszText = (char*)name;
+    col.pszText = (WCHAR*)name;
     col.cx = width * g_tmAveCharWidth;
     ListView_InsertColumn(hwndLV, i, &col);
 }
 
 
 //-----------------------------------------------------------------------------
-int LVAddText(HWND hwndLV, int col, const char* sz, ...)
+int LVAddText(HWND hwndLV, int col, const WCHAR* sz, ...)
 {
     va_list vl;
     va_start(vl, sz);
 
-    char    ach[c_maxPrintLine];
-    vsprintf_s(ach, sizeof(ach), sz, vl);
-    ach[c_maxPrintLine - 1] = '\0';
+    WCHAR ach[c_maxPrintLine];
+    vswprintf_s(ach, c_maxPrintLine, sz, vl);
+    ach[c_maxPrintLine - 1] = L'\0';
 
     LV_ITEM lvi = {};
     lvi.mask = LVIF_TEXT;
@@ -1203,7 +1204,7 @@ void LVDeleteAllItems(HWND hwndLV)
 
 
 //-----------------------------------------------------------------------------
-HTREEITEM TVAddNode(HTREEITEM hParent, LPCSTR strText, BOOL fKids,
+HTREEITEM TVAddNode(HTREEITEM hParent, LPCWSTR strText, BOOL fKids,
     int iImage, DISPLAYCALLBACK fnDisplayCallback, LPARAM lParam1,
     LPARAM lParam2)
 {
@@ -1227,14 +1228,14 @@ HTREEITEM TVAddNode(HTREEITEM hParent, LPCSTR strText, BOOL fKids,
     tvi.item.iSelectedImage = iImage - IDI_FIRSTIMAGE;
     tvi.item.lParam = (LPARAM)pni;
     tvi.item.cChildren = fKids;
-    tvi.item.pszText = (LPSTR)strText;
+    tvi.item.pszText = (LPWSTR)strText;
 
     return TreeView_InsertItem(g_hwndTV, &tvi);
 }
 
 
 //-----------------------------------------------------------------------------
-HTREEITEM TVAddNodeEx(HTREEITEM hParent, LPCSTR strText, BOOL fKids,
+HTREEITEM TVAddNodeEx(HTREEITEM hParent, LPCWSTR strText, BOOL fKids,
     int iImage, DISPLAYCALLBACKEX fnDisplayCallback, LPARAM lParam1,
     LPARAM lParam2, LPARAM lParam3)
 {
@@ -1258,7 +1259,7 @@ HTREEITEM TVAddNodeEx(HTREEITEM hParent, LPCSTR strText, BOOL fKids,
     tvi.item.iSelectedImage = iImage - IDI_FIRSTIMAGE;
     tvi.item.lParam = (LPARAM)pni;
     tvi.item.cChildren = fKids;
-    tvi.item.pszText = (LPSTR)strText;
+    tvi.item.pszText = (LPWSTR)strText;
 
     return TreeView_InsertItem(g_hwndTV, &tvi);
 }
