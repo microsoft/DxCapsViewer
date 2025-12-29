@@ -43,4 +43,3 @@ jobs:
           VALIDATE_MARKDOWN: true
           VALIDATE_GITLEAKS: true
           VALIDATE_YAML: true
-
