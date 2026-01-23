@@ -14,6 +14,7 @@ on:
       - '*.md'
       - LICENSE
       - build/*
+  workflow_dispatch: {}
 
 permissions:
   contents: read
