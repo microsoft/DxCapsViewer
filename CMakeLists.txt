@@ -35,6 +35,8 @@ add_executable(${PROJECT_NAME} WIN32
     resource.h
     dxview.rc)
 
+target_compile_options(${PROJECT_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
+target_compile_definitions(${PROJECT_NAME} PRIVATE _UNICODE UNICODE)
 target_link_libraries(${PROJECT_NAME} PRIVATE dxguid.lib comctl32.lib version.lib)
 
 find_package(directx-headers CONFIG QUIET)
