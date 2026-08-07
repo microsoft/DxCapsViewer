@@ -13,7 +13,7 @@
 #include <ddraw.h>
 #include <stdio.h>
 
-extern HRESULT Int2Str(_Out_writes_bytes_(nDestLen) LPTSTR pszDest, UINT nDestLen, DWORD i);
+extern HRESULT Int2Str(_Out_writes_bytes_(nDestLen) LPWSTR pszDest, UINT nDestLen, DWORD i);
 
 namespace
 {
@@ -43,63 +43,63 @@ namespace
     //-----------------------------------------------------------------------------
     CAPDEF OtherInfoDefs[] =
     {
-        DDVALDEF("dwVidMemTotal",                   dwVidMemTotal),
-        DDVALDEF("dwVidMemFree",                    dwVidMemFree),
-        DDHEXDEF("dwAlphaBltConstBitDepths",        dwAlphaBltConstBitDepths),
-        DDCAPDEF("  DDBD_8",                           dwAlphaBltConstBitDepths, DDBD_8),
-        DDCAPDEF("  DDBD_16",                          dwAlphaBltConstBitDepths, DDBD_16),
-        DDCAPDEF("  DDBD_24",                          dwAlphaBltConstBitDepths, DDBD_24),
-        DDCAPDEF("  DDBD_32",                          dwAlphaBltConstBitDepths, DDBD_32),
-        DDHEXDEF("dwAlphaBltPixelBitDepths",        dwAlphaBltPixelBitDepths),
-        DDCAPDEF("  DDBD_8",                           dwAlphaBltPixelBitDepths, DDBD_8),
-        DDCAPDEF("  DDBD_16",                          dwAlphaBltPixelBitDepths, DDBD_16),
-        DDCAPDEF("  DDBD_24",                          dwAlphaBltPixelBitDepths, DDBD_24),
-        DDCAPDEF("  DDBD_32",                          dwAlphaBltPixelBitDepths, DDBD_32),
-        DDHEXDEF("dwAlphaBltSurfaceBitDepths",      dwAlphaBltSurfaceBitDepths),
-        DDCAPDEF("  DDBD_8",                           dwAlphaBltSurfaceBitDepths, DDBD_8),
-        DDCAPDEF("  DDBD_16",                          dwAlphaBltSurfaceBitDepths, DDBD_16),
-        DDCAPDEF("  DDBD_24",                          dwAlphaBltSurfaceBitDepths, DDBD_24),
-        DDCAPDEF("  DDBD_32",                          dwAlphaBltSurfaceBitDepths, DDBD_32),
-        DDHEXDEF("dwAlphaOverlayConstBitDepths",    dwAlphaOverlayConstBitDepths),
-        DDCAPDEF("  DDBD_8",                           dwAlphaOverlayConstBitDepths, DDBD_8),
-        DDCAPDEF("  DDBD_16",                          dwAlphaOverlayConstBitDepths, DDBD_16),
-        DDCAPDEF("  DDBD_24",                          dwAlphaOverlayConstBitDepths, DDBD_24),
-        DDCAPDEF("  DDBD_32",                          dwAlphaOverlayConstBitDepths, DDBD_32),
-        DDHEXDEF("dwAlphaOverlayPixelBitDepths",    dwAlphaOverlayPixelBitDepths),
-        DDCAPDEF("  DDBD_8",                           dwAlphaOverlayPixelBitDepths, DDBD_8),
-        DDCAPDEF("  DDBD_16",                          dwAlphaOverlayPixelBitDepths, DDBD_16),
-        DDCAPDEF("  DDBD_24",                          dwAlphaOverlayPixelBitDepths, DDBD_24),
-        DDCAPDEF("  DDBD_32",                          dwAlphaOverlayPixelBitDepths, DDBD_32),
-        DDHEXDEF("dwAlphaOverlaySurfaceBitDepths",  dwAlphaOverlaySurfaceBitDepths),
-        DDCAPDEF("  DDBD_8",                           dwAlphaOverlaySurfaceBitDepths, DDBD_8),
-        DDCAPDEF("  DDBD_16",                          dwAlphaOverlaySurfaceBitDepths, DDBD_16),
-        DDCAPDEF("  DDBD_24",                          dwAlphaOverlaySurfaceBitDepths, DDBD_24),
-        DDCAPDEF("  DDBD_32",                          dwAlphaOverlaySurfaceBitDepths, DDBD_32),
-        DDHEXDEF("dwZBufferBitDepths",              dwZBufferBitDepths),
-        DDCAPDEF("  DDBD_8",                           dwZBufferBitDepths, DDBD_8),
-        DDCAPDEF("  DDBD_16",                          dwZBufferBitDepths, DDBD_16),
-        DDCAPDEF("  DDBD_24",                          dwZBufferBitDepths, DDBD_24),
-        DDCAPDEF("  DDBD_32",                          dwZBufferBitDepths, DDBD_32),
-        DDVALDEF("dwMaxVisibleOverlays",            dwMaxVisibleOverlays),
-        DDVALDEF("dwCurrVisibleOverlays",           dwCurrVisibleOverlays),
-        DDVALDEF("dwNumFourCCCodes",                dwNumFourCCCodes),
-        DDVALDEF("dwAlignBoundarySrc",              dwAlignBoundarySrc),
-        DDVALDEF("dwAlignSizeSrc",                  dwAlignSizeSrc),
-        DDVALDEF("dwAlignBoundaryDest",             dwAlignBoundaryDest),
-        DDVALDEF("dwAlignSizeDest",                 dwAlignSizeDest),
-        DDVALDEF("dwAlignStrideAlign",              dwAlignStrideAlign),
-        DDVALDEF("dwMinOverlayStretch",             dwMinOverlayStretch),
-        DDVALDEF("dwMaxOverlayStretch",             dwMaxOverlayStretch),
-        DDVALDEF("dwMinLiveVideoStretch",           dwMinLiveVideoStretch),
-        DDVALDEF("dwMaxLiveVideoStretch",           dwMaxLiveVideoStretch),
-        DDVALDEF("dwMinHwCodecStretch",             dwMinHwCodecStretch),
-        DDVALDEF("dwMaxHwCodecStretch",             dwMaxHwCodecStretch),
+        DDVALDEF(L"dwVidMemTotal",                   dwVidMemTotal),
+        DDVALDEF(L"dwVidMemFree",                    dwVidMemFree),
+        DDHEXDEF(L"dwAlphaBltConstBitDepths",        dwAlphaBltConstBitDepths),
+        DDCAPDEF(L"  DDBD_8",                           dwAlphaBltConstBitDepths, DDBD_8),
+        DDCAPDEF(L"  DDBD_16",                          dwAlphaBltConstBitDepths, DDBD_16),
+        DDCAPDEF(L"  DDBD_24",                          dwAlphaBltConstBitDepths, DDBD_24),
+        DDCAPDEF(L"  DDBD_32",                          dwAlphaBltConstBitDepths, DDBD_32),
+        DDHEXDEF(L"dwAlphaBltPixelBitDepths",        dwAlphaBltPixelBitDepths),
+        DDCAPDEF(L"  DDBD_8",                           dwAlphaBltPixelBitDepths, DDBD_8),
+        DDCAPDEF(L"  DDBD_16",                          dwAlphaBltPixelBitDepths, DDBD_16),
+        DDCAPDEF(L"  DDBD_24",                          dwAlphaBltPixelBitDepths, DDBD_24),
+        DDCAPDEF(L"  DDBD_32",                          dwAlphaBltPixelBitDepths, DDBD_32),
+        DDHEXDEF(L"dwAlphaBltSurfaceBitDepths",      dwAlphaBltSurfaceBitDepths),
+        DDCAPDEF(L"  DDBD_8",                           dwAlphaBltSurfaceBitDepths, DDBD_8),
+        DDCAPDEF(L"  DDBD_16",                          dwAlphaBltSurfaceBitDepths, DDBD_16),
+        DDCAPDEF(L"  DDBD_24",                          dwAlphaBltSurfaceBitDepths, DDBD_24),
+        DDCAPDEF(L"  DDBD_32",                          dwAlphaBltSurfaceBitDepths, DDBD_32),
+        DDHEXDEF(L"dwAlphaOverlayConstBitDepths",    dwAlphaOverlayConstBitDepths),
+        DDCAPDEF(L"  DDBD_8",                           dwAlphaOverlayConstBitDepths, DDBD_8),
+        DDCAPDEF(L"  DDBD_16",                          dwAlphaOverlayConstBitDepths, DDBD_16),
+        DDCAPDEF(L"  DDBD_24",                          dwAlphaOverlayConstBitDepths, DDBD_24),
+        DDCAPDEF(L"  DDBD_32",                          dwAlphaOverlayConstBitDepths, DDBD_32),
+        DDHEXDEF(L"dwAlphaOverlayPixelBitDepths",    dwAlphaOverlayPixelBitDepths),
+        DDCAPDEF(L"  DDBD_8",                           dwAlphaOverlayPixelBitDepths, DDBD_8),
+        DDCAPDEF(L"  DDBD_16",                          dwAlphaOverlayPixelBitDepths, DDBD_16),
+        DDCAPDEF(L"  DDBD_24",                          dwAlphaOverlayPixelBitDepths, DDBD_24),
+        DDCAPDEF(L"  DDBD_32",                          dwAlphaOverlayPixelBitDepths, DDBD_32),
+        DDHEXDEF(L"dwAlphaOverlaySurfaceBitDepths",  dwAlphaOverlaySurfaceBitDepths),
+        DDCAPDEF(L"  DDBD_8",                           dwAlphaOverlaySurfaceBitDepths, DDBD_8),
+        DDCAPDEF(L"  DDBD_16",                          dwAlphaOverlaySurfaceBitDepths, DDBD_16),
+        DDCAPDEF(L"  DDBD_24",                          dwAlphaOverlaySurfaceBitDepths, DDBD_24),
+        DDCAPDEF(L"  DDBD_32",                          dwAlphaOverlaySurfaceBitDepths, DDBD_32),
+        DDHEXDEF(L"dwZBufferBitDepths",              dwZBufferBitDepths),
+        DDCAPDEF(L"  DDBD_8",                           dwZBufferBitDepths, DDBD_8),
+        DDCAPDEF(L"  DDBD_16",                          dwZBufferBitDepths, DDBD_16),
+        DDCAPDEF(L"  DDBD_24",                          dwZBufferBitDepths, DDBD_24),
+        DDCAPDEF(L"  DDBD_32",                          dwZBufferBitDepths, DDBD_32),
+        DDVALDEF(L"dwMaxVisibleOverlays",            dwMaxVisibleOverlays),
+        DDVALDEF(L"dwCurrVisibleOverlays",           dwCurrVisibleOverlays),
+        DDVALDEF(L"dwNumFourCCCodes",                dwNumFourCCCodes),
+        DDVALDEF(L"dwAlignBoundarySrc",              dwAlignBoundarySrc),
+        DDVALDEF(L"dwAlignSizeSrc",                  dwAlignSizeSrc),
+        DDVALDEF(L"dwAlignBoundaryDest",             dwAlignBoundaryDest),
+        DDVALDEF(L"dwAlignSizeDest",                 dwAlignSizeDest),
+        DDVALDEF(L"dwAlignStrideAlign",              dwAlignStrideAlign),
+        DDVALDEF(L"dwMinOverlayStretch",             dwMinOverlayStretch),
+        DDVALDEF(L"dwMaxOverlayStretch",             dwMaxOverlayStretch),
+        DDVALDEF(L"dwMinLiveVideoStretch",           dwMinLiveVideoStretch),
+        DDVALDEF(L"dwMaxLiveVideoStretch",           dwMaxLiveVideoStretch),
+        DDVALDEF(L"dwMinHwCodecStretch",             dwMinHwCodecStretch),
+        DDVALDEF(L"dwMaxHwCodecStretch",             dwMaxHwCodecStretch),
 
         //DDHEXDEF("dwCaps",                      dwCaps),
-        DDVALDEF("dwMaxVideoPorts",               dwMaxVideoPorts),
-        DDVALDEF("dwCurrVideoPorts",               dwCurrVideoPorts),
+        DDVALDEF(L"dwMaxVideoPorts",               dwMaxVideoPorts),
+        DDVALDEF(L"dwCurrVideoPorts",               dwCurrVideoPorts),
         //DDVALDEF("dwSVBCaps2",                   dwSVBCaps2),
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
 
 
@@ -108,77 +108,77 @@ namespace
 
 
 #define GEN_BLTCAPS(dwCaps)                                                     \
-    DDCAPDEF("DDCAPS_BLT",                       dwCaps, DDCAPS_BLT),                  \
-    DDCAPDEF("DDCAPS_BLTCOLORFILL",              dwCaps, DDCAPS_BLTCOLORFILL),         \
-    DDCAPDEF("DDCAPS_BLTDEPTHFILL",              dwCaps, DDCAPS_BLTDEPTHFILL),         \
-    DDCAPDEF("DDCAPS_BLTFOURCC",                 dwCaps, DDCAPS_BLTFOURCC),            \
-    DDCAPDEF("DDCAPS_BLTSTRETCH",                dwCaps, DDCAPS_BLTSTRETCH),           \
-    DDCAPDEF("DDCAPS_BLTQUEUE",                  dwCaps, DDCAPS_BLTQUEUE),             \
-    DDCAPDEF("DDCAPS_COLORKEY",                  dwCaps, DDCAPS_COLORKEY),             \
-    DDCAPDEF("DDCAPS_ALPHA",                     dwCaps, DDCAPS_ALPHA),                \
-    DDCAPDEF("DDCAPS_CKEYHWASSIST",              dwCaps, DDCAPS_COLORKEYHWASSIST),     \
-    DDCAPDEF("DDCAPS_CANCLIP",                   dwCaps, DDCAPS_CANCLIP),              \
-    DDCAPDEF("DDCAPS_CANCLIPSTRETCHED",          dwCaps, DDCAPS_CANCLIPSTRETCHED),     \
-    DDCAPDEF("DDCAPS_CANBLTSYSMEM",              dwCaps, DDCAPS_CANBLTSYSMEM),         \
-    DDCAPDEF("DDCAPS_ZBLTS",                     dwCaps, DDCAPS_ZBLTS),
+    DDCAPDEF(L"DDCAPS_BLT",                       dwCaps, DDCAPS_BLT),                  \
+    DDCAPDEF(L"DDCAPS_BLTCOLORFILL",              dwCaps, DDCAPS_BLTCOLORFILL),         \
+    DDCAPDEF(L"DDCAPS_BLTDEPTHFILL",              dwCaps, DDCAPS_BLTDEPTHFILL),         \
+    DDCAPDEF(L"DDCAPS_BLTFOURCC",                 dwCaps, DDCAPS_BLTFOURCC),            \
+    DDCAPDEF(L"DDCAPS_BLTSTRETCH",                dwCaps, DDCAPS_BLTSTRETCH),           \
+    DDCAPDEF(L"DDCAPS_BLTQUEUE",                  dwCaps, DDCAPS_BLTQUEUE),             \
+    DDCAPDEF(L"DDCAPS_COLORKEY",                  dwCaps, DDCAPS_COLORKEY),             \
+    DDCAPDEF(L"DDCAPS_ALPHA",                     dwCaps, DDCAPS_ALPHA),                \
+    DDCAPDEF(L"DDCAPS_CKEYHWASSIST",              dwCaps, DDCAPS_COLORKEYHWASSIST),     \
+    DDCAPDEF(L"DDCAPS_CANCLIP",                   dwCaps, DDCAPS_CANCLIP),              \
+    DDCAPDEF(L"DDCAPS_CANCLIPSTRETCHED",          dwCaps, DDCAPS_CANCLIPSTRETCHED),     \
+    DDCAPDEF(L"DDCAPS_CANBLTSYSMEM",              dwCaps, DDCAPS_CANBLTSYSMEM),         \
+    DDCAPDEF(L"DDCAPS_ZBLTS",                     dwCaps, DDCAPS_ZBLTS),
 
 
 #define GEN_BLTCAPS2(dwCaps2)                                                   \
-    DDCAPDEF("DDCAPS2_CANDROPZ16BIT",             dwCaps2,DDCAPS2_CANDROPZ16BIT),       \
-    DDCAPDEF("DDCAPS2_NOPAGELOCKREQUIRED",        dwCaps2,DDCAPS2_NOPAGELOCKREQUIRED),  \
-    DDCAPDEF("DDCAPS2_CANFLIPODDEVEN",            dwCaps2,DDCAPS2_CANFLIPODDEVEN),      \
-    DDCAPDEF("DDCAPS2_CANBOBHARDWARE",            dwCaps2,DDCAPS2_CANBOBHARDWARE),      \
-    DDCAPDEF("DDCAPS2_WIDESURFACES",              dwCaps2,DDCAPS2_WIDESURFACES),
+    DDCAPDEF(L"DDCAPS2_CANDROPZ16BIT",             dwCaps2,DDCAPS2_CANDROPZ16BIT),       \
+    DDCAPDEF(L"DDCAPS2_NOPAGELOCKREQUIRED",        dwCaps2,DDCAPS2_NOPAGELOCKREQUIRED),  \
+    DDCAPDEF(L"DDCAPS2_CANFLIPODDEVEN",            dwCaps2,DDCAPS2_CANFLIPODDEVEN),      \
+    DDCAPDEF(L"DDCAPS2_CANBOBHARDWARE",            dwCaps2,DDCAPS2_CANBOBHARDWARE),      \
+    DDCAPDEF(L"DDCAPS2_WIDESURFACES",              dwCaps2,DDCAPS2_WIDESURFACES),
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
     CAPDEF GenCaps[] =
     {
         // GEN_CAPS(dwCaps)
-        DDCAPDEF("DDCAPS_3D",                        dwCaps, DDCAPS_3D),
-        DDCAPDEF("DDCAPS_ALIGNBOUNDARYDEST",         dwCaps, DDCAPS_ALIGNBOUNDARYDEST),
-        DDCAPDEF("DDCAPS_ALIGNSIZEDEST",             dwCaps, DDCAPS_ALIGNSIZEDEST),
-        DDCAPDEF("DDCAPS_ALIGNBOUNDARYSRC",          dwCaps, DDCAPS_ALIGNBOUNDARYSRC),
-        DDCAPDEF("DDCAPS_ALIGNSIZESRC",              dwCaps, DDCAPS_ALIGNSIZESRC),
-        DDCAPDEF("DDCAPS_ALIGNSTRIDE",               dwCaps, DDCAPS_ALIGNSTRIDE),
-        DDCAPDEF("DDCAPS_GDI",                       dwCaps, DDCAPS_GDI),
-        DDCAPDEF("DDCAPS_OVERLAY",                   dwCaps, DDCAPS_OVERLAY),
-        DDCAPDEF("DDCAPS_OVERLAYCANTCLIP",           dwCaps, DDCAPS_OVERLAYCANTCLIP),
-        DDCAPDEF("DDCAPS_OVERLAYFOURCC",             dwCaps, DDCAPS_OVERLAYFOURCC),
-        DDCAPDEF("DDCAPS_OVERLAYSTRETCH",            dwCaps, DDCAPS_OVERLAYSTRETCH),
-        DDCAPDEF("DDCAPS_PALETTE",                   dwCaps, DDCAPS_PALETTE),
-        DDCAPDEF("DDCAPS_PALETTEVSYNC",              dwCaps, DDCAPS_PALETTEVSYNC),
-        DDCAPDEF("DDCAPS_READSCANLINE",              dwCaps, DDCAPS_READSCANLINE),
-        DDCAPDEF("DDCAPS_VBI",                       dwCaps, DDCAPS_VBI),
-        DDCAPDEF("DDCAPS_ZOVERLAYS",                 dwCaps, DDCAPS_ZOVERLAYS),
-        DDCAPDEF("DDCAPS_NOHARDWARE",                dwCaps, DDCAPS_NOHARDWARE),
-        DDCAPDEF("DDCAPS_BANKSWITCHED",              dwCaps, DDCAPS_BANKSWITCHED),
+        DDCAPDEF(L"DDCAPS_3D",                        dwCaps, DDCAPS_3D),
+        DDCAPDEF(L"DDCAPS_ALIGNBOUNDARYDEST",         dwCaps, DDCAPS_ALIGNBOUNDARYDEST),
+        DDCAPDEF(L"DDCAPS_ALIGNSIZEDEST",             dwCaps, DDCAPS_ALIGNSIZEDEST),
+        DDCAPDEF(L"DDCAPS_ALIGNBOUNDARYSRC",          dwCaps, DDCAPS_ALIGNBOUNDARYSRC),
+        DDCAPDEF(L"DDCAPS_ALIGNSIZESRC",              dwCaps, DDCAPS_ALIGNSIZESRC),
+        DDCAPDEF(L"DDCAPS_ALIGNSTRIDE",               dwCaps, DDCAPS_ALIGNSTRIDE),
+        DDCAPDEF(L"DDCAPS_GDI",                       dwCaps, DDCAPS_GDI),
+        DDCAPDEF(L"DDCAPS_OVERLAY",                   dwCaps, DDCAPS_OVERLAY),
+        DDCAPDEF(L"DDCAPS_OVERLAYCANTCLIP",           dwCaps, DDCAPS_OVERLAYCANTCLIP),
+        DDCAPDEF(L"DDCAPS_OVERLAYFOURCC",             dwCaps, DDCAPS_OVERLAYFOURCC),
+        DDCAPDEF(L"DDCAPS_OVERLAYSTRETCH",            dwCaps, DDCAPS_OVERLAYSTRETCH),
+        DDCAPDEF(L"DDCAPS_PALETTE",                   dwCaps, DDCAPS_PALETTE),
+        DDCAPDEF(L"DDCAPS_PALETTEVSYNC",              dwCaps, DDCAPS_PALETTEVSYNC),
+        DDCAPDEF(L"DDCAPS_READSCANLINE",              dwCaps, DDCAPS_READSCANLINE),
+        DDCAPDEF(L"DDCAPS_VBI",                       dwCaps, DDCAPS_VBI),
+        DDCAPDEF(L"DDCAPS_ZOVERLAYS",                 dwCaps, DDCAPS_ZOVERLAYS),
+        DDCAPDEF(L"DDCAPS_NOHARDWARE",                dwCaps, DDCAPS_NOHARDWARE),
+        DDCAPDEF(L"DDCAPS_BANKSWITCHED",              dwCaps, DDCAPS_BANKSWITCHED),
 
         // GEN_CAPS2(dwCaps2)
-        DDCAPDEF("DDCAPS2_CERTIFIED",                 dwCaps2,DDCAPS2_CERTIFIED),
-        DDCAPDEF("DDCAPS2_NO2DDURING3DSCENE",         dwCaps2,DDCAPS2_NO2DDURING3DSCENE),
-        DDCAPDEF("DDCAPS2_VIDEOPORT",                 dwCaps2,DDCAPS2_VIDEOPORT),
-        DDCAPDEF("DDCAPS2_AUTOFLIPOVERLAY",           dwCaps2,DDCAPS2_AUTOFLIPOVERLAY),
-        DDCAPDEF("DDCAPS2_CANBOBINTERLEAVED",         dwCaps2,DDCAPS2_CANBOBINTERLEAVED),
-        DDCAPDEF("DDCAPS2_CANBOBNONINTERLEAVED",      dwCaps2,DDCAPS2_CANBOBNONINTERLEAVED),
-        DDCAPDEF("DDCAPS2_COLORCONTROLOVERLAY",       dwCaps2,DDCAPS2_COLORCONTROLOVERLAY),
-        DDCAPDEF("DDCAPS2_COLORCONTROLPRIMARY",       dwCaps2,DDCAPS2_COLORCONTROLPRIMARY),
-        DDCAPDEF("DDCAPS2_NONLOCALVIDMEM",            dwCaps2,DDCAPS2_NONLOCALVIDMEM),
-        DDCAPDEF("DDCAPS2_NONLOCALVIDMEMCAPS",        dwCaps2,DDCAPS2_NONLOCALVIDMEMCAPS),
-        DDCAPDEF("DDCAPS2_WIDESURFACES",              dwCaps2,DDCAPS2_WIDESURFACES),
-        DDCAPDEF("DDCAPS2_NOPAGELOCKREQUIRED",        dwCaps2,DDCAPS2_NOPAGELOCKREQUIRED),
-        DDCAPDEF("DDCAPS2_CANRENDERWINDOWED",         dwCaps2,DDCAPS2_CANRENDERWINDOWED),
-        DDCAPDEF("DDCAPS2_COPYFOURCC",                dwCaps2,DDCAPS2_COPYFOURCC),
-        DDCAPDEF("DDCAPS2_PRIMARYGAMMA",              dwCaps2,DDCAPS2_PRIMARYGAMMA),
-        DDCAPDEF("DDCAPS2_CANCALIBRATEGAMMA",         dwCaps2,DDCAPS2_CANCALIBRATEGAMMA),
-        DDCAPDEF("DDCAPS2_FLIPINTERVAL",              dwCaps2,DDCAPS2_FLIPINTERVAL),
-        DDCAPDEF("DDCAPS2_FLIPNOVSYNC",               dwCaps2,DDCAPS2_FLIPNOVSYNC),
-        DDCAPDEF("DDCAPS2_CANMANAGETEXTURE",          dwCaps2,DDCAPS2_CANMANAGETEXTURE),
-        DDCAPDEF("DDCAPS2_TEXMANINNONLOCALVIDMEM",    dwCaps2,DDCAPS2_TEXMANINNONLOCALVIDMEM),
-        DDCAPDEF("DDCAPS2_STEREO",                    dwCaps2,DDCAPS2_STEREO),
-        DDCAPDEFex("DDCAPS2_CANSHARERESOURCE",        dwCaps2,DDCAPS2_CANSHARERESOURCE),
+        DDCAPDEF(L"DDCAPS2_CERTIFIED",                 dwCaps2,DDCAPS2_CERTIFIED),
+        DDCAPDEF(L"DDCAPS2_NO2DDURING3DSCENE",         dwCaps2,DDCAPS2_NO2DDURING3DSCENE),
+        DDCAPDEF(L"DDCAPS2_VIDEOPORT",                 dwCaps2,DDCAPS2_VIDEOPORT),
+        DDCAPDEF(L"DDCAPS2_AUTOFLIPOVERLAY",           dwCaps2,DDCAPS2_AUTOFLIPOVERLAY),
+        DDCAPDEF(L"DDCAPS2_CANBOBINTERLEAVED",         dwCaps2,DDCAPS2_CANBOBINTERLEAVED),
+        DDCAPDEF(L"DDCAPS2_CANBOBNONINTERLEAVED",      dwCaps2,DDCAPS2_CANBOBNONINTERLEAVED),
+        DDCAPDEF(L"DDCAPS2_COLORCONTROLOVERLAY",       dwCaps2,DDCAPS2_COLORCONTROLOVERLAY),
+        DDCAPDEF(L"DDCAPS2_COLORCONTROLPRIMARY",       dwCaps2,DDCAPS2_COLORCONTROLPRIMARY),
+        DDCAPDEF(L"DDCAPS2_NONLOCALVIDMEM",            dwCaps2,DDCAPS2_NONLOCALVIDMEM),
+        DDCAPDEF(L"DDCAPS2_NONLOCALVIDMEMCAPS",        dwCaps2,DDCAPS2_NONLOCALVIDMEMCAPS),
+        DDCAPDEF(L"DDCAPS2_WIDESURFACES",              dwCaps2,DDCAPS2_WIDESURFACES),
+        DDCAPDEF(L"DDCAPS2_NOPAGELOCKREQUIRED",        dwCaps2,DDCAPS2_NOPAGELOCKREQUIRED),
+        DDCAPDEF(L"DDCAPS2_CANRENDERWINDOWED",         dwCaps2,DDCAPS2_CANRENDERWINDOWED),
+        DDCAPDEF(L"DDCAPS2_COPYFOURCC",                dwCaps2,DDCAPS2_COPYFOURCC),
+        DDCAPDEF(L"DDCAPS2_PRIMARYGAMMA",              dwCaps2,DDCAPS2_PRIMARYGAMMA),
+        DDCAPDEF(L"DDCAPS2_CANCALIBRATEGAMMA",         dwCaps2,DDCAPS2_CANCALIBRATEGAMMA),
+        DDCAPDEF(L"DDCAPS2_FLIPINTERVAL",              dwCaps2,DDCAPS2_FLIPINTERVAL),
+        DDCAPDEF(L"DDCAPS2_FLIPNOVSYNC",               dwCaps2,DDCAPS2_FLIPNOVSYNC),
+        DDCAPDEF(L"DDCAPS2_CANMANAGETEXTURE",          dwCaps2,DDCAPS2_CANMANAGETEXTURE),
+        DDCAPDEF(L"DDCAPS2_TEXMANINNONLOCALVIDMEM",    dwCaps2,DDCAPS2_TEXMANINNONLOCALVIDMEM),
+        DDCAPDEF(L"DDCAPS2_STEREO",                    dwCaps2,DDCAPS2_STEREO),
+        DDCAPDEFex(L"DDCAPS2_CANSHARERESOURCE",        dwCaps2,DDCAPS2_CANSHARERESOURCE),
 
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
 
 
@@ -191,152 +191,152 @@ namespace
     {
         GEN_BLTCAPS(dwCaps)
         GEN_BLTCAPS2(dwCaps2)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
     CAPDEF SVBCapsDefs[] =
     {
         GEN_BLTCAPS(dwSVBCaps)
         GEN_BLTCAPS2(dwSVBCaps2)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
     CAPDEF VSBCapsDefs[] =
     {
         GEN_BLTCAPS(dwVSBCaps)
         //  GEN_BLTCAPS2(dwVSBCaps2)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
     CAPDEF SSBCapsDefs[] =
     {
         GEN_BLTCAPS(dwSSBCaps)
         //  GEN_BLTCAPS2(dwSSBCaps2)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
     CAPDEF NLVBCapsDefs[] =
     {
         GEN_BLTCAPS(dwNLVBCaps)
         GEN_BLTCAPS2(dwNLVBCaps2)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
 
     //-----------------------------------------------------------------------------
     //-----------------------------------------------------------------------------
 #define GEN_CKCAPS(dwCKeyCaps)                                                              \
-    DDCAPDEF("DDCKEYCAPS_DESTBLT",                 dwCKeyCaps, DDCKEYCAPS_DESTBLT),                  \
-    DDCAPDEF("DDCKEYCAPS_DESTBLTCLRSPACE",         dwCKeyCaps, DDCKEYCAPS_DESTBLTCLRSPACE),          \
-    DDCAPDEF("DDCKEYCAPS_DESTBLTCLRSPACEYUV",      dwCKeyCaps, DDCKEYCAPS_DESTBLTCLRSPACEYUV),       \
-    DDCAPDEF("DDCKEYCAPS_DESTBLTYUV",              dwCKeyCaps, DDCKEYCAPS_DESTBLTYUV),               \
-    DDCAPDEF("DDCKEYCAPS_DESTOVERLAY",             dwCKeyCaps, DDCKEYCAPS_DESTOVERLAY),              \
-    DDCAPDEF("DDCKEYCAPS_DESTOVERLAYCLRSPACE",     dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYCLRSPACE),      \
-    DDCAPDEF("DDCKEYCAPS_DESTOVERLAYCLRSPACEYUV",  dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYCLRSPACEYUV),   \
-    DDCAPDEF("DDCKEYCAPS_DESTOVERLAYONEACTIVE",    dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYONEACTIVE),     \
-    DDCAPDEF("DDCKEYCAPS_DESTOVERLAYYUV",          dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYYUV),           \
-    DDCAPDEF("DDCKEYCAPS_NOCOSTOVERLAY",           dwCKeyCaps, DDCKEYCAPS_NOCOSTOVERLAY),            \
-    DDCAPDEF("DDCKEYCAPS_SRCBLT",                  dwCKeyCaps, DDCKEYCAPS_SRCBLT),                   \
-    DDCAPDEF("DDCKEYCAPS_SRCBLTCLRSPACE",          dwCKeyCaps, DDCKEYCAPS_SRCBLTCLRSPACE),           \
-    DDCAPDEF("DDCKEYCAPS_SRCBLTCLRSPACEYUV",       dwCKeyCaps, DDCKEYCAPS_SRCBLTCLRSPACEYUV),        \
-    DDCAPDEF("DDCKEYCAPS_SRCBLTYUV",               dwCKeyCaps, DDCKEYCAPS_SRCBLTYUV),                \
-    DDCAPDEF("DDCKEYCAPS_SRCOVERLAY",              dwCKeyCaps, DDCKEYCAPS_SRCOVERLAY),               \
-    DDCAPDEF("DDCKEYCAPS_SRCOVERLAYCLRSPACE",      dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYCLRSPACE),       \
-    DDCAPDEF("DDCKEYCAPS_SRCOVERLAYCLRSPACEYUV",   dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYCLRSPACEYUV),    \
-    DDCAPDEF("DDCKEYCAPS_SRCOVERLAYONEACTIVE",     dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYONEACTIVE),      \
-    DDCAPDEF("DDCKEYCAPS_SRCOVERLAYYUV",           dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYYUV),
+    DDCAPDEF(L"DDCKEYCAPS_DESTBLT",                 dwCKeyCaps, DDCKEYCAPS_DESTBLT),                  \
+    DDCAPDEF(L"DDCKEYCAPS_DESTBLTCLRSPACE",         dwCKeyCaps, DDCKEYCAPS_DESTBLTCLRSPACE),          \
+    DDCAPDEF(L"DDCKEYCAPS_DESTBLTCLRSPACEYUV",      dwCKeyCaps, DDCKEYCAPS_DESTBLTCLRSPACEYUV),       \
+    DDCAPDEF(L"DDCKEYCAPS_DESTBLTYUV",              dwCKeyCaps, DDCKEYCAPS_DESTBLTYUV),               \
+    DDCAPDEF(L"DDCKEYCAPS_DESTOVERLAY",             dwCKeyCaps, DDCKEYCAPS_DESTOVERLAY),              \
+    DDCAPDEF(L"DDCKEYCAPS_DESTOVERLAYCLRSPACE",     dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYCLRSPACE),      \
+    DDCAPDEF(L"DDCKEYCAPS_DESTOVERLAYCLRSPACEYUV",  dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYCLRSPACEYUV),   \
+    DDCAPDEF(L"DDCKEYCAPS_DESTOVERLAYONEACTIVE",    dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYONEACTIVE),     \
+    DDCAPDEF(L"DDCKEYCAPS_DESTOVERLAYYUV",          dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYYUV),           \
+    DDCAPDEF(L"DDCKEYCAPS_NOCOSTOVERLAY",           dwCKeyCaps, DDCKEYCAPS_NOCOSTOVERLAY),            \
+    DDCAPDEF(L"DDCKEYCAPS_SRCBLT",                  dwCKeyCaps, DDCKEYCAPS_SRCBLT),                   \
+    DDCAPDEF(L"DDCKEYCAPS_SRCBLTCLRSPACE",          dwCKeyCaps, DDCKEYCAPS_SRCBLTCLRSPACE),           \
+    DDCAPDEF(L"DDCKEYCAPS_SRCBLTCLRSPACEYUV",       dwCKeyCaps, DDCKEYCAPS_SRCBLTCLRSPACEYUV),        \
+    DDCAPDEF(L"DDCKEYCAPS_SRCBLTYUV",               dwCKeyCaps, DDCKEYCAPS_SRCBLTYUV),                \
+    DDCAPDEF(L"DDCKEYCAPS_SRCOVERLAY",              dwCKeyCaps, DDCKEYCAPS_SRCOVERLAY),               \
+    DDCAPDEF(L"DDCKEYCAPS_SRCOVERLAYCLRSPACE",      dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYCLRSPACE),       \
+    DDCAPDEF(L"DDCKEYCAPS_SRCOVERLAYCLRSPACEYUV",   dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYCLRSPACEYUV),    \
+    DDCAPDEF(L"DDCKEYCAPS_SRCOVERLAYONEACTIVE",     dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYONEACTIVE),      \
+    DDCAPDEF(L"DDCKEYCAPS_SRCOVERLAYYUV",           dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYYUV),
 
     CAPDEF CKeyCapsDefs[] =
     {
         GEN_CKCAPS(dwCKeyCaps)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
     CAPDEF SVBCKeyCapsDefs[] =
     {
         GEN_CKCAPS(dwSVBCKeyCaps)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
     CAPDEF SSBCKeyCapsDefs[] =
     {
         GEN_CKCAPS(dwSSBCKeyCaps)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
     CAPDEF NLVBCKeyCapsDefs[] =
     {
         GEN_CKCAPS(dwNLVBCKeyCaps)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
 
 
     //-----------------------------------------------------------------------------
     //-----------------------------------------------------------------------------
 #define GEN_FXCAPS(dwFXCaps)                                                            \
-    DDCAPDEF("DDFXCAPS_BLTALPHA",                  dwFXCaps, DDFXCAPS_BLTALPHA),                 \
-    DDCAPDEF("DDFXCAPS_BLTARITHSTRETCHY",          dwFXCaps, DDFXCAPS_BLTARITHSTRETCHY),         \
-    DDCAPDEF("DDFXCAPS_BLTARITHSTRETCHYN",         dwFXCaps, DDFXCAPS_BLTARITHSTRETCHYN),        \
-    DDCAPDEF("DDFXCAPS_BLTFILTER",                 dwFXCaps, DDFXCAPS_BLTFILTER),                \
-    DDCAPDEF("DDFXCAPS_BLTMIRRORLEFTRIGHT",        dwFXCaps, DDFXCAPS_BLTMIRRORLEFTRIGHT),       \
-    DDCAPDEF("DDFXCAPS_BLTMIRRORUPDOWN",           dwFXCaps, DDFXCAPS_BLTMIRRORUPDOWN),          \
-    DDCAPDEF("DDFXCAPS_BLTROTATION",               dwFXCaps, DDFXCAPS_BLTROTATION),              \
-    DDCAPDEF("DDFXCAPS_BLTROTATION90",             dwFXCaps, DDFXCAPS_BLTROTATION90),            \
-    DDCAPDEF("DDFXCAPS_BLTSHRINKX",                dwFXCaps, DDFXCAPS_BLTSHRINKX),               \
-    DDCAPDEF("DDFXCAPS_BLTSHRINKXN",               dwFXCaps, DDFXCAPS_BLTSHRINKXN),              \
-    DDCAPDEF("DDFXCAPS_BLTSHRINKY",                dwFXCaps, DDFXCAPS_BLTSHRINKY),               \
-    DDCAPDEF("DDFXCAPS_BLTSHRINKYN",               dwFXCaps, DDFXCAPS_BLTSHRINKYN),              \
-    DDCAPDEF("DDFXCAPS_BLTSTRETCHX",               dwFXCaps, DDFXCAPS_BLTSTRETCHX),              \
-    DDCAPDEF("DDFXCAPS_BLTSTRETCHXN",              dwFXCaps, DDFXCAPS_BLTSTRETCHXN),             \
-    DDCAPDEF("DDFXCAPS_BLTSTRETCHY",               dwFXCaps, DDFXCAPS_BLTSTRETCHY),              \
-    DDCAPDEF("DDFXCAPS_BLTSTRETCHYN",              dwFXCaps, DDFXCAPS_BLTSTRETCHYN),             \
-    DDCAPDEF("DDFXCAPS_OVERLAYALPHA",              dwFXCaps, DDFXCAPS_OVERLAYALPHA),             \
-    DDCAPDEF("DDFXCAPS_OVERLAYARITHSTRETCHY",      dwFXCaps, DDFXCAPS_OVERLAYARITHSTRETCHY),     \
-    DDCAPDEF("DDFXCAPS_OVERLAYARITHSTRETCHYN",     dwFXCaps, DDFXCAPS_OVERLAYARITHSTRETCHYN),    \
-    DDCAPDEF("DDFXCAPS_OVERLAYFILTER",             dwFXCaps, DDFXCAPS_OVERLAYFILTER),            \
-    DDCAPDEF("DDFXCAPS_OVERLAYMIRRORLEFTRIGHT",    dwFXCaps, DDFXCAPS_OVERLAYMIRRORLEFTRIGHT),   \
-    DDCAPDEF("DDFXCAPS_OVERLAYMIRRORUPDOWN",       dwFXCaps, DDFXCAPS_OVERLAYMIRRORUPDOWN),      \
-    DDCAPDEF("DDFXCAPS_OVERLAYSHRINKX",            dwFXCaps, DDFXCAPS_OVERLAYSHRINKX),           \
-    DDCAPDEF("DDFXCAPS_OVERLAYSHRINKXN",           dwFXCaps, DDFXCAPS_OVERLAYSHRINKXN),          \
-    DDCAPDEF("DDFXCAPS_OVERLAYSHRINKY",            dwFXCaps, DDFXCAPS_OVERLAYSHRINKY),           \
-    DDCAPDEF("DDFXCAPS_OVERLAYSHRINKYN",           dwFXCaps, DDFXCAPS_OVERLAYSHRINKYN),          \
-    DDCAPDEF("DDFXCAPS_OVERLAYSTRETCHX",           dwFXCaps, DDFXCAPS_OVERLAYSTRETCHX),          \
-    DDCAPDEF("DDFXCAPS_OVERLAYSTRETCHXN",          dwFXCaps, DDFXCAPS_OVERLAYSTRETCHXN),         \
-    DDCAPDEF("DDFXCAPS_OVERLAYSTRETCHY",           dwFXCaps, DDFXCAPS_OVERLAYSTRETCHY),          \
-    DDCAPDEF("DDFXCAPS_OVERLAYSTRETCHYN",          dwFXCaps, DDFXCAPS_OVERLAYSTRETCHYN),
+    DDCAPDEF(L"DDFXCAPS_BLTALPHA",                  dwFXCaps, DDFXCAPS_BLTALPHA),                 \
+    DDCAPDEF(L"DDFXCAPS_BLTARITHSTRETCHY",          dwFXCaps, DDFXCAPS_BLTARITHSTRETCHY),         \
+    DDCAPDEF(L"DDFXCAPS_BLTARITHSTRETCHYN",         dwFXCaps, DDFXCAPS_BLTARITHSTRETCHYN),        \
+    DDCAPDEF(L"DDFXCAPS_BLTFILTER",                 dwFXCaps, DDFXCAPS_BLTFILTER),                \
+    DDCAPDEF(L"DDFXCAPS_BLTMIRRORLEFTRIGHT",        dwFXCaps, DDFXCAPS_BLTMIRRORLEFTRIGHT),       \
+    DDCAPDEF(L"DDFXCAPS_BLTMIRRORUPDOWN",           dwFXCaps, DDFXCAPS_BLTMIRRORUPDOWN),          \
+    DDCAPDEF(L"DDFXCAPS_BLTROTATION",               dwFXCaps, DDFXCAPS_BLTROTATION),              \
+    DDCAPDEF(L"DDFXCAPS_BLTROTATION90",             dwFXCaps, DDFXCAPS_BLTROTATION90),            \
+    DDCAPDEF(L"DDFXCAPS_BLTSHRINKX",                dwFXCaps, DDFXCAPS_BLTSHRINKX),               \
+    DDCAPDEF(L"DDFXCAPS_BLTSHRINKXN",               dwFXCaps, DDFXCAPS_BLTSHRINKXN),              \
+    DDCAPDEF(L"DDFXCAPS_BLTSHRINKY",                dwFXCaps, DDFXCAPS_BLTSHRINKY),               \
+    DDCAPDEF(L"DDFXCAPS_BLTSHRINKYN",               dwFXCaps, DDFXCAPS_BLTSHRINKYN),              \
+    DDCAPDEF(L"DDFXCAPS_BLTSTRETCHX",               dwFXCaps, DDFXCAPS_BLTSTRETCHX),              \
+    DDCAPDEF(L"DDFXCAPS_BLTSTRETCHXN",              dwFXCaps, DDFXCAPS_BLTSTRETCHXN),             \
+    DDCAPDEF(L"DDFXCAPS_BLTSTRETCHY",               dwFXCaps, DDFXCAPS_BLTSTRETCHY),              \
+    DDCAPDEF(L"DDFXCAPS_BLTSTRETCHYN",              dwFXCaps, DDFXCAPS_BLTSTRETCHYN),             \
+    DDCAPDEF(L"DDFXCAPS_OVERLAYALPHA",              dwFXCaps, DDFXCAPS_OVERLAYALPHA),             \
+    DDCAPDEF(L"DDFXCAPS_OVERLAYARITHSTRETCHY",      dwFXCaps, DDFXCAPS_OVERLAYARITHSTRETCHY),     \
+    DDCAPDEF(L"DDFXCAPS_OVERLAYARITHSTRETCHYN",     dwFXCaps, DDFXCAPS_OVERLAYARITHSTRETCHYN),    \
+    DDCAPDEF(L"DDFXCAPS_OVERLAYFILTER",             dwFXCaps, DDFXCAPS_OVERLAYFILTER),            \
+    DDCAPDEF(L"DDFXCAPS_OVERLAYMIRRORLEFTRIGHT",    dwFXCaps, DDFXCAPS_OVERLAYMIRRORLEFTRIGHT),   \
+    DDCAPDEF(L"DDFXCAPS_OVERLAYMIRRORUPDOWN",       dwFXCaps, DDFXCAPS_OVERLAYMIRRORUPDOWN),      \
+    DDCAPDEF(L"DDFXCAPS_OVERLAYSHRINKX",            dwFXCaps, DDFXCAPS_OVERLAYSHRINKX),           \
+    DDCAPDEF(L"DDFXCAPS_OVERLAYSHRINKXN",           dwFXCaps, DDFXCAPS_OVERLAYSHRINKXN),          \
+    DDCAPDEF(L"DDFXCAPS_OVERLAYSHRINKY",            dwFXCaps, DDFXCAPS_OVERLAYSHRINKY),           \
+    DDCAPDEF(L"DDFXCAPS_OVERLAYSHRINKYN",           dwFXCaps, DDFXCAPS_OVERLAYSHRINKYN),          \
+    DDCAPDEF(L"DDFXCAPS_OVERLAYSTRETCHX",           dwFXCaps, DDFXCAPS_OVERLAYSTRETCHX),          \
+    DDCAPDEF(L"DDFXCAPS_OVERLAYSTRETCHXN",          dwFXCaps, DDFXCAPS_OVERLAYSTRETCHXN),         \
+    DDCAPDEF(L"DDFXCAPS_OVERLAYSTRETCHY",           dwFXCaps, DDFXCAPS_OVERLAYSTRETCHY),          \
+    DDCAPDEF(L"DDFXCAPS_OVERLAYSTRETCHYN",          dwFXCaps, DDFXCAPS_OVERLAYSTRETCHYN),
 
     CAPDEF FXCapsDefs[] =
     {
         GEN_FXCAPS(dwFXCaps)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
     CAPDEF SVBFXCapsDefs[] =
     {
         GEN_FXCAPS(dwSVBFXCaps)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
     CAPDEF SSBFXCapsDefs[] =
     {
         GEN_FXCAPS(dwSSBFXCaps)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
     CAPDEF NLVBFXCapsDefs[] =
     {
         GEN_FXCAPS(dwNLVBFXCaps)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
 
 
     //-----------------------------------------------------------------------------
     //-----------------------------------------------------------------------------
 #define GEN_FXALPHACAPS(dwFXAlphaCaps)                                                          \
-    DDCAPDEF("DDFXALPHACAPS_BLTALPHAEDGEBLEND",           dwFXAlphaCaps, DDFXALPHACAPS_BLTALPHAEDGEBLEND),    \
-    DDCAPDEF("DDFXALPHACAPS_BLTALPHAPIXELS",              dwFXAlphaCaps, DDFXALPHACAPS_BLTALPHAPIXELS),       \
-    DDCAPDEF("DDFXALPHACAPS_BLTALPHAPIXELSNEG",           dwFXAlphaCaps, DDFXALPHACAPS_BLTALPHAPIXELSNEG),    \
-    DDCAPDEF("DDFXALPHACAPS_BLTALPHASURFACES",            dwFXAlphaCaps, DDFXALPHACAPS_BLTALPHASURFACES),     \
-    DDCAPDEF("DDFXALPHACAPS_BLTALPHASURFACESNEG",         dwFXAlphaCaps, DDFXALPHACAPS_BLTALPHASURFACESNEG),  \
-    DDCAPDEF("DDFXALPHACAPS_OVERLAYALPHAEDGEBLEND",       dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHAEDGEBLEND),\
-    DDCAPDEF("DDFXALPHACAPS_OVERLAYALPHAPIXELS",          dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHAPIXELS),   \
-    DDCAPDEF("DDFXALPHACAPS_OVERLAYALPHAPIXELSNEG",       dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHAPIXELSNEG),\
-    DDCAPDEF("DDFXALPHACAPS_OVERLAYALPHASURFACES",        dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHASURFACES), \
-    DDCAPDEF("DDFXALPHACAPS_OVERLAYALPHASURFACESNEG",     dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHASURFACESNEG),
+    DDCAPDEF(L"DDFXALPHACAPS_BLTALPHAEDGEBLEND",           dwFXAlphaCaps, DDFXALPHACAPS_BLTALPHAEDGEBLEND),    \
+    DDCAPDEF(L"DDFXALPHACAPS_BLTALPHAPIXELS",              dwFXAlphaCaps, DDFXALPHACAPS_BLTALPHAPIXELS),       \
+    DDCAPDEF(L"DDFXALPHACAPS_BLTALPHAPIXELSNEG",           dwFXAlphaCaps, DDFXALPHACAPS_BLTALPHAPIXELSNEG),    \
+    DDCAPDEF(L"DDFXALPHACAPS_BLTALPHASURFACES",            dwFXAlphaCaps, DDFXALPHACAPS_BLTALPHASURFACES),     \
+    DDCAPDEF(L"DDFXALPHACAPS_BLTALPHASURFACESNEG",         dwFXAlphaCaps, DDFXALPHACAPS_BLTALPHASURFACESNEG),  \
+    DDCAPDEF(L"DDFXALPHACAPS_OVERLAYALPHAEDGEBLEND",       dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHAEDGEBLEND),\
+    DDCAPDEF(L"DDFXALPHACAPS_OVERLAYALPHAPIXELS",          dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHAPIXELS),   \
+    DDCAPDEF(L"DDFXALPHACAPS_OVERLAYALPHAPIXELSNEG",       dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHAPIXELSNEG),\
+    DDCAPDEF(L"DDFXALPHACAPS_OVERLAYALPHASURFACES",        dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHASURFACES), \
+    DDCAPDEF(L"DDFXALPHACAPS_OVERLAYALPHASURFACESNEG",     dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHASURFACESNEG),
 
     CAPDEF FXAlphaCapsDefs[] =
     {
         GEN_FXALPHACAPS(dwFXAlphaCaps)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
 
 
@@ -344,17 +344,17 @@ namespace
     //-----------------------------------------------------------------------------
     CAPDEF PalCapsDefs[] =
     {
-        DDCAPDEF("DDPCAPS_1BIT",              dwPalCaps, DDPCAPS_1BIT),
-        DDCAPDEF("DDPCAPS_2BIT",              dwPalCaps, DDPCAPS_2BIT),
-        DDCAPDEF("DDPCAPS_4BIT",              dwPalCaps, DDPCAPS_4BIT),
-        DDCAPDEF("DDPCAPS_8BITENTRIES",       dwPalCaps, DDPCAPS_8BITENTRIES),
-        DDCAPDEF("DDPCAPS_8BIT",              dwPalCaps, DDPCAPS_8BIT),
-        DDCAPDEF("DDPCAPS_ALLOW256",          dwPalCaps, DDPCAPS_ALLOW256),
-        DDCAPDEF("DDPCAPS_ALPHA",             dwPalCaps, DDPCAPS_ALPHA),
-        DDCAPDEF("DDPCAPS_PRIMARYSURFACE",    dwPalCaps, DDPCAPS_PRIMARYSURFACE),
-        DDCAPDEF("DDPCAPS_PRIMARYSURFACELEFT",dwPalCaps, DDPCAPS_PRIMARYSURFACELEFT),
-        DDCAPDEF("DDPCAPS_VSYNC",             dwPalCaps, DDPCAPS_VSYNC),
-        { "", 0, 0}
+        DDCAPDEF(L"DDPCAPS_1BIT",              dwPalCaps, DDPCAPS_1BIT),
+        DDCAPDEF(L"DDPCAPS_2BIT",              dwPalCaps, DDPCAPS_2BIT),
+        DDCAPDEF(L"DDPCAPS_4BIT",              dwPalCaps, DDPCAPS_4BIT),
+        DDCAPDEF(L"DDPCAPS_8BITENTRIES",       dwPalCaps, DDPCAPS_8BITENTRIES),
+        DDCAPDEF(L"DDPCAPS_8BIT",              dwPalCaps, DDPCAPS_8BIT),
+        DDCAPDEF(L"DDPCAPS_ALLOW256",          dwPalCaps, DDPCAPS_ALLOW256),
+        DDCAPDEF(L"DDPCAPS_ALPHA",             dwPalCaps, DDPCAPS_ALPHA),
+        DDCAPDEF(L"DDPCAPS_PRIMARYSURFACE",    dwPalCaps, DDPCAPS_PRIMARYSURFACE),
+        DDCAPDEF(L"DDPCAPS_PRIMARYSURFACELEFT",dwPalCaps, DDPCAPS_PRIMARYSURFACELEFT),
+        DDCAPDEF(L"DDPCAPS_VSYNC",             dwPalCaps, DDPCAPS_VSYNC),
+        { L"", 0, 0}
     };
 
 
@@ -362,45 +362,45 @@ namespace
     //-----------------------------------------------------------------------------
     CAPDEF SurfCapsDefs[] =
     {
-        DDCAPDEF("DDSCAPS_3DDEVICE",             ddsCaps.dwCaps,  DDSCAPS_3DDEVICE),
-        DDCAPDEF("DDSCAPS_ALPHA",                ddsCaps.dwCaps,  DDSCAPS_ALPHA),
-        DDCAPDEF("DDSCAPS_BACKBUFFER",           ddsCaps.dwCaps,  DDSCAPS_BACKBUFFER),
-        DDCAPDEF("DDSCAPS_COMPLEX",              ddsCaps.dwCaps,  DDSCAPS_COMPLEX),
-        DDCAPDEF("DDSCAPS_FLIP",                 ddsCaps.dwCaps,  DDSCAPS_FLIP),
-        DDCAPDEF("DDSCAPS_FRONTBUFFER",          ddsCaps.dwCaps,  DDSCAPS_FRONTBUFFER),
-        DDCAPDEF("DDSCAPS_HWCODEC",              ddsCaps.dwCaps,  DDSCAPS_HWCODEC),
-        DDCAPDEF("DDSCAPS_LIVEVIDEO",            ddsCaps.dwCaps,  DDSCAPS_LIVEVIDEO),
-        DDCAPDEF("DDSCAPS_MIPMAP",               ddsCaps.dwCaps,  DDSCAPS_MIPMAP),
-        DDCAPDEF("DDSCAPS_MODEX",                ddsCaps.dwCaps,  DDSCAPS_MODEX),
-        DDCAPDEF("DDSCAPS_OFFSCREENPLAIN",       ddsCaps.dwCaps,  DDSCAPS_OFFSCREENPLAIN),
-        DDCAPDEF("DDSCAPS_OVERLAY",              ddsCaps.dwCaps,  DDSCAPS_OVERLAY),
-        DDCAPDEF("DDSCAPS_OWNDC",                ddsCaps.dwCaps,  DDSCAPS_OWNDC),
-        DDCAPDEF("DDSCAPS_PALETTE",              ddsCaps.dwCaps,  DDSCAPS_PALETTE),
-        DDCAPDEF("DDSCAPS_PRIMARYSURFACE",       ddsCaps.dwCaps,  DDSCAPS_PRIMARYSURFACE),
-        DDCAPDEF("DDSCAPS_SYSTEMMEMORY",         ddsCaps.dwCaps,  DDSCAPS_SYSTEMMEMORY),
-        DDCAPDEF("DDSCAPS_TEXTURE",              ddsCaps.dwCaps,  DDSCAPS_TEXTURE),
-        DDCAPDEF("DDSCAPS_VIDEOMEMORY",          ddsCaps.dwCaps,  DDSCAPS_VIDEOMEMORY),
-        DDCAPDEF("DDSCAPS_VIDEOPORT",            ddsCaps.dwCaps,  DDSCAPS_VIDEOPORT),
-        DDCAPDEF("DDSCAPS_VISIBLE",              ddsCaps.dwCaps,  DDSCAPS_VISIBLE),
-        DDCAPDEF("DDSCAPS_WRITEONLY",            ddsCaps.dwCaps,  DDSCAPS_WRITEONLY),
-        DDCAPDEF("DDSCAPS_ZBUFFER",              ddsCaps.dwCaps,  DDSCAPS_ZBUFFER),
-        DDCAPDEF("DDSCAPS_ALLOCONLOAD",          ddsCaps.dwCaps,  DDSCAPS_ALLOCONLOAD),
-        DDCAPDEF("DDSCAPS_LOCALVIDMEM",          ddsCaps.dwCaps,  DDSCAPS_LOCALVIDMEM),
-        DDCAPDEF("DDSCAPS_NONLOCALVIDMEM",       ddsCaps.dwCaps,  DDSCAPS_NONLOCALVIDMEM),
-        DDCAPDEF("DDSCAPS_STANDARDVGAMODE",      ddsCaps.dwCaps,  DDSCAPS_STANDARDVGAMODE),
-        DDCAPDEF("DDSCAPS_OPTIMIZED",            ddsCaps.dwCaps,  DDSCAPS_OPTIMIZED),
-        DDCAPDEF("DDSCAPS2_HARDWAREDEINTERLACE",  ddsCaps.dwCaps2, DDSCAPS2_HARDWAREDEINTERLACE),
-        DDCAPDEF("DDSCAPS2_HINTDYNAMIC",          ddsCaps.dwCaps2, DDSCAPS2_HINTDYNAMIC),
-        DDCAPDEF("DDSCAPS2_HINTSTATIC",           ddsCaps.dwCaps2, DDSCAPS2_HINTSTATIC),
-        DDCAPDEF("DDSCAPS2_TEXTUREMANAGE",        ddsCaps.dwCaps2, DDSCAPS2_TEXTUREMANAGE),
-        DDCAPDEF("DDSCAPS2_OPAQUE",               ddsCaps.dwCaps2, DDSCAPS2_OPAQUE),
-        DDCAPDEF("DDSCAPS2_HINTANTIALIASING",     ddsCaps.dwCaps2, DDSCAPS2_HINTANTIALIASING),
-        DDCAPDEF("DDSCAPS2_CUBEMAP",              ddsCaps.dwCaps2, DDSCAPS2_CUBEMAP),
-        DDCAPDEF("DDSCAPS2_MIPMAPSUBLEVEL",       ddsCaps.dwCaps2, DDSCAPS2_MIPMAPSUBLEVEL),
-        DDCAPDEF("DDSCAPS2_D3DTEXTUREMANAGE",     ddsCaps.dwCaps2, DDSCAPS2_D3DTEXTUREMANAGE),
-        DDCAPDEF("DDSCAPS2_DONOTPERSIST",         ddsCaps.dwCaps2, DDSCAPS2_DONOTPERSIST),
-        DDCAPDEF("DDSCAPS2_STEREOSURFACELEFT",    ddsCaps.dwCaps2, DDSCAPS2_STEREOSURFACELEFT),
-        { "", 0, 0}
+        DDCAPDEF(L"DDSCAPS_3DDEVICE",             ddsCaps.dwCaps,  DDSCAPS_3DDEVICE),
+        DDCAPDEF(L"DDSCAPS_ALPHA",                ddsCaps.dwCaps,  DDSCAPS_ALPHA),
+        DDCAPDEF(L"DDSCAPS_BACKBUFFER",           ddsCaps.dwCaps,  DDSCAPS_BACKBUFFER),
+        DDCAPDEF(L"DDSCAPS_COMPLEX",              ddsCaps.dwCaps,  DDSCAPS_COMPLEX),
+        DDCAPDEF(L"DDSCAPS_FLIP",                 ddsCaps.dwCaps,  DDSCAPS_FLIP),
+        DDCAPDEF(L"DDSCAPS_FRONTBUFFER",          ddsCaps.dwCaps,  DDSCAPS_FRONTBUFFER),
+        DDCAPDEF(L"DDSCAPS_HWCODEC",              ddsCaps.dwCaps,  DDSCAPS_HWCODEC),
+        DDCAPDEF(L"DDSCAPS_LIVEVIDEO",            ddsCaps.dwCaps,  DDSCAPS_LIVEVIDEO),
+        DDCAPDEF(L"DDSCAPS_MIPMAP",               ddsCaps.dwCaps,  DDSCAPS_MIPMAP),
+        DDCAPDEF(L"DDSCAPS_MODEX",                ddsCaps.dwCaps,  DDSCAPS_MODEX),
+        DDCAPDEF(L"DDSCAPS_OFFSCREENPLAIN",       ddsCaps.dwCaps,  DDSCAPS_OFFSCREENPLAIN),
+        DDCAPDEF(L"DDSCAPS_OVERLAY",              ddsCaps.dwCaps,  DDSCAPS_OVERLAY),
+        DDCAPDEF(L"DDSCAPS_OWNDC",                ddsCaps.dwCaps,  DDSCAPS_OWNDC),
+        DDCAPDEF(L"DDSCAPS_PALETTE",              ddsCaps.dwCaps,  DDSCAPS_PALETTE),
+        DDCAPDEF(L"DDSCAPS_PRIMARYSURFACE",       ddsCaps.dwCaps,  DDSCAPS_PRIMARYSURFACE),
+        DDCAPDEF(L"DDSCAPS_SYSTEMMEMORY",         ddsCaps.dwCaps,  DDSCAPS_SYSTEMMEMORY),
+        DDCAPDEF(L"DDSCAPS_TEXTURE",              ddsCaps.dwCaps,  DDSCAPS_TEXTURE),
+        DDCAPDEF(L"DDSCAPS_VIDEOMEMORY",          ddsCaps.dwCaps,  DDSCAPS_VIDEOMEMORY),
+        DDCAPDEF(L"DDSCAPS_VIDEOPORT",            ddsCaps.dwCaps,  DDSCAPS_VIDEOPORT),
+        DDCAPDEF(L"DDSCAPS_VISIBLE",              ddsCaps.dwCaps,  DDSCAPS_VISIBLE),
+        DDCAPDEF(L"DDSCAPS_WRITEONLY",            ddsCaps.dwCaps,  DDSCAPS_WRITEONLY),
+        DDCAPDEF(L"DDSCAPS_ZBUFFER",              ddsCaps.dwCaps,  DDSCAPS_ZBUFFER),
+        DDCAPDEF(L"DDSCAPS_ALLOCONLOAD",          ddsCaps.dwCaps,  DDSCAPS_ALLOCONLOAD),
+        DDCAPDEF(L"DDSCAPS_LOCALVIDMEM",          ddsCaps.dwCaps,  DDSCAPS_LOCALVIDMEM),
+        DDCAPDEF(L"DDSCAPS_NONLOCALVIDMEM",       ddsCaps.dwCaps,  DDSCAPS_NONLOCALVIDMEM),
+        DDCAPDEF(L"DDSCAPS_STANDARDVGAMODE",      ddsCaps.dwCaps,  DDSCAPS_STANDARDVGAMODE),
+        DDCAPDEF(L"DDSCAPS_OPTIMIZED",            ddsCaps.dwCaps,  DDSCAPS_OPTIMIZED),
+        DDCAPDEF(L"DDSCAPS2_HARDWAREDEINTERLACE",  ddsCaps.dwCaps2, DDSCAPS2_HARDWAREDEINTERLACE),
+        DDCAPDEF(L"DDSCAPS2_HINTDYNAMIC",          ddsCaps.dwCaps2, DDSCAPS2_HINTDYNAMIC),
+        DDCAPDEF(L"DDSCAPS2_HINTSTATIC",           ddsCaps.dwCaps2, DDSCAPS2_HINTSTATIC),
+        DDCAPDEF(L"DDSCAPS2_TEXTUREMANAGE",        ddsCaps.dwCaps2, DDSCAPS2_TEXTUREMANAGE),
+        DDCAPDEF(L"DDSCAPS2_OPAQUE",               ddsCaps.dwCaps2, DDSCAPS2_OPAQUE),
+        DDCAPDEF(L"DDSCAPS2_HINTANTIALIASING",     ddsCaps.dwCaps2, DDSCAPS2_HINTANTIALIASING),
+        DDCAPDEF(L"DDSCAPS2_CUBEMAP",              ddsCaps.dwCaps2, DDSCAPS2_CUBEMAP),
+        DDCAPDEF(L"DDSCAPS2_MIPMAPSUBLEVEL",       ddsCaps.dwCaps2, DDSCAPS2_MIPMAPSUBLEVEL),
+        DDCAPDEF(L"DDSCAPS2_D3DTEXTUREMANAGE",     ddsCaps.dwCaps2, DDSCAPS2_D3DTEXTUREMANAGE),
+        DDCAPDEF(L"DDSCAPS2_DONOTPERSIST",         ddsCaps.dwCaps2, DDSCAPS2_DONOTPERSIST),
+        DDCAPDEF(L"DDSCAPS2_STEREOSURFACELEFT",    ddsCaps.dwCaps2, DDSCAPS2_STEREOSURFACELEFT),
+        { L"", 0, 0}
     };
 
 
@@ -408,54 +408,54 @@ namespace
     //-----------------------------------------------------------------------------
     CAPDEF SVisionCapsDefs[] =
     {
-        DDCAPDEF("DDSVCAPS_STEREOSEQUENTIAL",  dwSVCaps, DDSVCAPS_STEREOSEQUENTIAL),
-        { "", 0, 0}
+        DDCAPDEF(L"DDSVCAPS_STEREOSEQUENTIAL",  dwSVCaps, DDSVCAPS_STEREOSEQUENTIAL),
+        { L"", 0, 0}
     };
 
 
     //-----------------------------------------------------------------------------
     //-----------------------------------------------------------------------------
 #define GEN_ROPS(dwRops)                        \
-    ROPDEF("SRCCOPY",    dwRops, SRCCOPY),      \
-    ROPDEF("SRCPAINT",   dwRops, SRCPAINT),     \
-    ROPDEF("SRCAND",     dwRops, SRCAND),       \
-    ROPDEF("SRCINVERT",  dwRops, SRCINVERT),    \
-    ROPDEF("SRCERASE",   dwRops, SRCERASE),     \
-    ROPDEF("NOTSRCCOPY", dwRops, NOTSRCCOPY),   \
-    ROPDEF("NOTSRCERASE",dwRops, NOTSRCERASE),  \
-    ROPDEF("MERGECOPY",  dwRops, MERGECOPY),    \
-    ROPDEF("MERGEPAINT", dwRops, MERGEPAINT),   \
-    ROPDEF("PATCOPY",    dwRops, PATCOPY),      \
-    ROPDEF("PATPAINT",   dwRops, PATPAINT),     \
-    ROPDEF("PATINVERT",  dwRops, PATINVERT),    \
-    ROPDEF("DSTINVERT",  dwRops, DSTINVERT),    \
-    ROPDEF("BLACKNESS",  dwRops, BLACKNESS),    \
-    ROPDEF("WHITENESS",  dwRops, WHITENESS),
+    ROPDEF(L"SRCCOPY",    dwRops, SRCCOPY),      \
+    ROPDEF(L"SRCPAINT",   dwRops, SRCPAINT),     \
+    ROPDEF(L"SRCAND",     dwRops, SRCAND),       \
+    ROPDEF(L"SRCINVERT",  dwRops, SRCINVERT),    \
+    ROPDEF(L"SRCERASE",   dwRops, SRCERASE),     \
+    ROPDEF(L"NOTSRCCOPY", dwRops, NOTSRCCOPY),   \
+    ROPDEF(L"NOTSRCERASE",dwRops, NOTSRCERASE),  \
+    ROPDEF(L"MERGECOPY",  dwRops, MERGECOPY),    \
+    ROPDEF(L"MERGEPAINT", dwRops, MERGEPAINT),   \
+    ROPDEF(L"PATCOPY",    dwRops, PATCOPY),      \
+    ROPDEF(L"PATPAINT",   dwRops, PATPAINT),     \
+    ROPDEF(L"PATINVERT",  dwRops, PATINVERT),    \
+    ROPDEF(L"DSTINVERT",  dwRops, DSTINVERT),    \
+    ROPDEF(L"BLACKNESS",  dwRops, BLACKNESS),    \
+    ROPDEF(L"WHITENESS",  dwRops, WHITENESS),
 
     CAPDEF ROPCapsDefs[] =
     {
         GEN_ROPS(dwRops)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
     CAPDEF VSBROPCapsDefs[] =
     {
         GEN_ROPS(dwVSBRops)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
     CAPDEF SVBROPCapsDefs[] =
     {
         GEN_ROPS(dwSVBRops)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
     CAPDEF SSBROPCapsDefs[] =
     {
         GEN_ROPS(dwSSBRops)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
     CAPDEF NLVBROPCapsDefs[] =
     {
         GEN_ROPS(dwNLVBRops)
-        { "", 0, 0 }
+        { L"", 0, 0 }
     };
 
 
@@ -463,76 +463,76 @@ namespace
     //-----------------------------------------------------------------------------
     CAPDEF OverlayCapsDefs[] =
     {
-        DDCAPDEF("DDCAPS_OVERLAY",                         dwCaps, DDCAPS_OVERLAY),
+        DDCAPDEF(L"DDCAPS_OVERLAY",                         dwCaps, DDCAPS_OVERLAY),
 
-        DDCAPDEF("DDCAPS_ALIGNBOUNDARYDEST",               dwCaps, DDCAPS_ALIGNBOUNDARYDEST),
-        DDVALDEF("  dwAlignBoundaryDest",             dwAlignBoundaryDest),
-        DDCAPDEF("DDCAPS_ALIGNSIZEDEST",                   dwCaps, DDCAPS_ALIGNSIZEDEST),
-        DDVALDEF("  dwAlignSizeDest",                 dwAlignSizeDest),
-        DDCAPDEF("DDCAPS_ALIGNBOUNDARYSRC",                dwCaps, DDCAPS_ALIGNBOUNDARYSRC),
-        DDVALDEF("  dwAlignBoundarySrc",              dwAlignBoundarySrc),
-        DDCAPDEF("DDCAPS_ALIGNSIZESRC",                    dwCaps, DDCAPS_ALIGNSIZESRC),
-        DDVALDEF("  dwAlignSizeSrc",                  dwAlignSizeSrc),
-        DDCAPDEF("DDCAPS_ALIGNSTRIDE",                     dwCaps, DDCAPS_ALIGNSTRIDE),
-        DDVALDEF("  dwAlignStrideAlign",              dwAlignStrideAlign),
+        DDCAPDEF(L"DDCAPS_ALIGNBOUNDARYDEST",               dwCaps, DDCAPS_ALIGNBOUNDARYDEST),
+        DDVALDEF(L"  dwAlignBoundaryDest",             dwAlignBoundaryDest),
+        DDCAPDEF(L"DDCAPS_ALIGNSIZEDEST",                   dwCaps, DDCAPS_ALIGNSIZEDEST),
+        DDVALDEF(L"  dwAlignSizeDest",                 dwAlignSizeDest),
+        DDCAPDEF(L"DDCAPS_ALIGNBOUNDARYSRC",                dwCaps, DDCAPS_ALIGNBOUNDARYSRC),
+        DDVALDEF(L"  dwAlignBoundarySrc",              dwAlignBoundarySrc),
+        DDCAPDEF(L"DDCAPS_ALIGNSIZESRC",                    dwCaps, DDCAPS_ALIGNSIZESRC),
+        DDVALDEF(L"  dwAlignSizeSrc",                  dwAlignSizeSrc),
+        DDCAPDEF(L"DDCAPS_ALIGNSTRIDE",                     dwCaps, DDCAPS_ALIGNSTRIDE),
+        DDVALDEF(L"  dwAlignStrideAlign",              dwAlignStrideAlign),
 
-        DDCAPDEF("DDCAPS_OVERLAYCANTCLIP",                 dwCaps, DDCAPS_OVERLAYCANTCLIP),
-        DDCAPDEF("DDCAPS_OVERLAYFOURCC",                   dwCaps, DDCAPS_OVERLAYFOURCC),
-        DDCAPDEF("DDCAPS_OVERLAYSTRETCH",                  dwCaps, DDCAPS_OVERLAYSTRETCH),
-        DDCAPDEF("DDCAPS_ZOVERLAYS",                       dwCaps, DDCAPS_ZOVERLAYS),
-        DDCAPDEF("DDCAPS2_AUTOFLIPOVERLAY",                 dwCaps2,DDCAPS2_AUTOFLIPOVERLAY),
-        DDCAPDEF("DDCAPS2_CANBOBINTERLEAVED",               dwCaps2,DDCAPS2_CANBOBINTERLEAVED),
-        DDCAPDEF("DDCAPS2_CANBOBNONINTERLEAVED",            dwCaps2,DDCAPS2_CANBOBNONINTERLEAVED),
-        DDCAPDEF("DDCAPS2_COLORCONTROLOVERLAY",             dwCaps2,DDCAPS2_COLORCONTROLOVERLAY),
-        DDCAPDEF("DDCKEYCAPS_DESTOVERLAY",                     dwCKeyCaps, DDCKEYCAPS_DESTOVERLAY),
-        DDCAPDEF("DDCKEYCAPS_DESTOVERLAYCLRSPACE",             dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYCLRSPACE),
-        DDCAPDEF("DDCKEYCAPS_DESTOVERLAYCLRSPACEYUV",          dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYCLRSPACEYUV),
-        DDCAPDEF("DDCKEYCAPS_DESTOVERLAYONEACTIVE",            dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYONEACTIVE),
-        DDCAPDEF("DDCKEYCAPS_DESTOVERLAYYUV",                  dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYYUV),
-        DDCAPDEF("DDCKEYCAPS_SRCOVERLAY",                      dwCKeyCaps, DDCKEYCAPS_SRCOVERLAY),
-        DDCAPDEF("DDCKEYCAPS_SRCOVERLAYCLRSPACE",              dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYCLRSPACE),
-        DDCAPDEF("DDCKEYCAPS_SRCOVERLAYCLRSPACEYUV",           dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYCLRSPACEYUV),
-        DDCAPDEF("DDCKEYCAPS_SRCOVERLAYONEACTIVE",             dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYONEACTIVE),
-        DDCAPDEF("DDCKEYCAPS_SRCOVERLAYYUV",                   dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYYUV),
-        DDCAPDEF("DDFXALPHACAPS_OVERLAYALPHAEDGEBLEND",           dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHAEDGEBLEND),
-        DDCAPDEF("DDFXALPHACAPS_OVERLAYALPHAPIXELS",              dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHAPIXELS),
-        DDCAPDEF("DDFXALPHACAPS_OVERLAYALPHAPIXELSNEG",           dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHAPIXELSNEG),
-        DDCAPDEF("DDFXALPHACAPS_OVERLAYALPHASURFACES",            dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHASURFACES),
-        DDCAPDEF("DDFXALPHACAPS_OVERLAYALPHASURFACESNEG",         dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHASURFACESNEG),
-        DDCAPDEF("DDFXCAPS_OVERLAYALPHA",                    dwFXCaps, DDFXCAPS_OVERLAYALPHA),
-        DDCAPDEF("DDFXCAPS_OVERLAYARITHSTRETCHY",            dwFXCaps, DDFXCAPS_OVERLAYARITHSTRETCHY),
-        DDCAPDEF("DDFXCAPS_OVERLAYARITHSTRETCHYN",           dwFXCaps, DDFXCAPS_OVERLAYARITHSTRETCHYN),
-        DDCAPDEF("DDFXCAPS_OVERLAYFILTER",                   dwFXCaps, DDFXCAPS_OVERLAYFILTER),
-        DDCAPDEF("DDFXCAPS_OVERLAYMIRRORLEFTRIGHT",          dwFXCaps, DDFXCAPS_OVERLAYMIRRORLEFTRIGHT),
-        DDCAPDEF("DDFXCAPS_OVERLAYMIRRORUPDOWN",             dwFXCaps, DDFXCAPS_OVERLAYMIRRORUPDOWN),
-        DDCAPDEF("DDFXCAPS_OVERLAYSHRINKX",                  dwFXCaps, DDFXCAPS_OVERLAYSHRINKX),
-        DDCAPDEF("DDFXCAPS_OVERLAYSHRINKXN",                 dwFXCaps, DDFXCAPS_OVERLAYSHRINKXN),
-        DDCAPDEF("DDFXCAPS_OVERLAYSHRINKY",                  dwFXCaps, DDFXCAPS_OVERLAYSHRINKY),
-        DDCAPDEF("DDFXCAPS_OVERLAYSHRINKYN",                 dwFXCaps, DDFXCAPS_OVERLAYSHRINKYN),
-        DDCAPDEF("DDFXCAPS_OVERLAYSTRETCHX",                 dwFXCaps, DDFXCAPS_OVERLAYSTRETCHX),
-        DDCAPDEF("DDFXCAPS_OVERLAYSTRETCHXN",                dwFXCaps, DDFXCAPS_OVERLAYSTRETCHXN),
-        DDCAPDEF("DDFXCAPS_OVERLAYSTRETCHY",                 dwFXCaps, DDFXCAPS_OVERLAYSTRETCHY),
-        DDCAPDEF("DDFXCAPS_OVERLAYSTRETCHYN",                dwFXCaps, DDFXCAPS_OVERLAYSTRETCHYN),
-        DDHEXDEF("dwAlphaOverlayConstBitDepths",      dwAlphaOverlayConstBitDepths),
-        DDCAPDEF("  DDBD_8",                             dwAlphaOverlayConstBitDepths, DDBD_8),
-        DDCAPDEF("  DDBD_16",                            dwAlphaOverlayConstBitDepths, DDBD_16),
-        DDCAPDEF("  DDBD_24",                            dwAlphaOverlayConstBitDepths, DDBD_24),
-        DDCAPDEF("  DDBD_32",                            dwAlphaOverlayConstBitDepths, DDBD_32),
-        DDHEXDEF("dwAlphaOverlayPixelBitDepths",      dwAlphaOverlayPixelBitDepths),
-        DDCAPDEF("  DDBD_8",                             dwAlphaOverlayPixelBitDepths, DDBD_8),
-        DDCAPDEF("  DDBD_16",                            dwAlphaOverlayPixelBitDepths, DDBD_16),
-        DDCAPDEF("  DDBD_24",                            dwAlphaOverlayPixelBitDepths, DDBD_24),
-        DDCAPDEF("  DDBD_32",                            dwAlphaOverlayPixelBitDepths, DDBD_32),
-        DDHEXDEF("dwAlphaOverlaySurfaceBitDepths",    dwAlphaOverlaySurfaceBitDepths),
-        DDCAPDEF("  DDBD_8",                             dwAlphaOverlaySurfaceBitDepths, DDBD_8),
-        DDCAPDEF("  DDBD_16",                            dwAlphaOverlaySurfaceBitDepths, DDBD_16),
-        DDCAPDEF("  DDBD_24",                            dwAlphaOverlaySurfaceBitDepths, DDBD_24),
-        DDCAPDEF("  DDBD_32",                            dwAlphaOverlaySurfaceBitDepths, DDBD_32),
-        DDVALDEF("dwMaxVisibleOverlays",              dwMaxVisibleOverlays),
-        DDVALDEF("dwCurrVisibleOverlays",             dwCurrVisibleOverlays),
-        DDVALDEF("dwMinOverlayStretch",               dwMinOverlayStretch),
-        DDVALDEF("dwMaxOverlayStretch",               dwMaxOverlayStretch),
-        { "", 0, 0}
+        DDCAPDEF(L"DDCAPS_OVERLAYCANTCLIP",                 dwCaps, DDCAPS_OVERLAYCANTCLIP),
+        DDCAPDEF(L"DDCAPS_OVERLAYFOURCC",                   dwCaps, DDCAPS_OVERLAYFOURCC),
+        DDCAPDEF(L"DDCAPS_OVERLAYSTRETCH",                  dwCaps, DDCAPS_OVERLAYSTRETCH),
+        DDCAPDEF(L"DDCAPS_ZOVERLAYS",                       dwCaps, DDCAPS_ZOVERLAYS),
+        DDCAPDEF(L"DDCAPS2_AUTOFLIPOVERLAY",                 dwCaps2,DDCAPS2_AUTOFLIPOVERLAY),
+        DDCAPDEF(L"DDCAPS2_CANBOBINTERLEAVED",               dwCaps2,DDCAPS2_CANBOBINTERLEAVED),
+        DDCAPDEF(L"DDCAPS2_CANBOBNONINTERLEAVED",            dwCaps2,DDCAPS2_CANBOBNONINTERLEAVED),
+        DDCAPDEF(L"DDCAPS2_COLORCONTROLOVERLAY",             dwCaps2,DDCAPS2_COLORCONTROLOVERLAY),
+        DDCAPDEF(L"DDCKEYCAPS_DESTOVERLAY",                     dwCKeyCaps, DDCKEYCAPS_DESTOVERLAY),
+        DDCAPDEF(L"DDCKEYCAPS_DESTOVERLAYCLRSPACE",             dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYCLRSPACE),
+        DDCAPDEF(L"DDCKEYCAPS_DESTOVERLAYCLRSPACEYUV",          dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYCLRSPACEYUV),
+        DDCAPDEF(L"DDCKEYCAPS_DESTOVERLAYONEACTIVE",            dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYONEACTIVE),
+        DDCAPDEF(L"DDCKEYCAPS_DESTOVERLAYYUV",                  dwCKeyCaps, DDCKEYCAPS_DESTOVERLAYYUV),
+        DDCAPDEF(L"DDCKEYCAPS_SRCOVERLAY",                      dwCKeyCaps, DDCKEYCAPS_SRCOVERLAY),
+        DDCAPDEF(L"DDCKEYCAPS_SRCOVERLAYCLRSPACE",              dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYCLRSPACE),
+        DDCAPDEF(L"DDCKEYCAPS_SRCOVERLAYCLRSPACEYUV",           dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYCLRSPACEYUV),
+        DDCAPDEF(L"DDCKEYCAPS_SRCOVERLAYONEACTIVE",             dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYONEACTIVE),
+        DDCAPDEF(L"DDCKEYCAPS_SRCOVERLAYYUV",                   dwCKeyCaps, DDCKEYCAPS_SRCOVERLAYYUV),
+        DDCAPDEF(L"DDFXALPHACAPS_OVERLAYALPHAEDGEBLEND",           dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHAEDGEBLEND),
+        DDCAPDEF(L"DDFXALPHACAPS_OVERLAYALPHAPIXELS",              dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHAPIXELS),
+        DDCAPDEF(L"DDFXALPHACAPS_OVERLAYALPHAPIXELSNEG",           dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHAPIXELSNEG),
+        DDCAPDEF(L"DDFXALPHACAPS_OVERLAYALPHASURFACES",            dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHASURFACES),
+        DDCAPDEF(L"DDFXALPHACAPS_OVERLAYALPHASURFACESNEG",         dwFXAlphaCaps, DDFXALPHACAPS_OVERLAYALPHASURFACESNEG),
+        DDCAPDEF(L"DDFXCAPS_OVERLAYALPHA",                    dwFXCaps, DDFXCAPS_OVERLAYALPHA),
+        DDCAPDEF(L"DDFXCAPS_OVERLAYARITHSTRETCHY",            dwFXCaps, DDFXCAPS_OVERLAYARITHSTRETCHY),
+        DDCAPDEF(L"DDFXCAPS_OVERLAYARITHSTRETCHYN",           dwFXCaps, DDFXCAPS_OVERLAYARITHSTRETCHYN),
+        DDCAPDEF(L"DDFXCAPS_OVERLAYFILTER",                   dwFXCaps, DDFXCAPS_OVERLAYFILTER),
+        DDCAPDEF(L"DDFXCAPS_OVERLAYMIRRORLEFTRIGHT",          dwFXCaps, DDFXCAPS_OVERLAYMIRRORLEFTRIGHT),
+        DDCAPDEF(L"DDFXCAPS_OVERLAYMIRRORUPDOWN",             dwFXCaps, DDFXCAPS_OVERLAYMIRRORUPDOWN),
+        DDCAPDEF(L"DDFXCAPS_OVERLAYSHRINKX",                  dwFXCaps, DDFXCAPS_OVERLAYSHRINKX),
+        DDCAPDEF(L"DDFXCAPS_OVERLAYSHRINKXN",                 dwFXCaps, DDFXCAPS_OVERLAYSHRINKXN),
+        DDCAPDEF(L"DDFXCAPS_OVERLAYSHRINKY",                  dwFXCaps, DDFXCAPS_OVERLAYSHRINKY),
+        DDCAPDEF(L"DDFXCAPS_OVERLAYSHRINKYN",                 dwFXCaps, DDFXCAPS_OVERLAYSHRINKYN),
+        DDCAPDEF(L"DDFXCAPS_OVERLAYSTRETCHX",                 dwFXCaps, DDFXCAPS_OVERLAYSTRETCHX),
+        DDCAPDEF(L"DDFXCAPS_OVERLAYSTRETCHXN",                dwFXCaps, DDFXCAPS_OVERLAYSTRETCHXN),
+        DDCAPDEF(L"DDFXCAPS_OVERLAYSTRETCHY",                 dwFXCaps, DDFXCAPS_OVERLAYSTRETCHY),
+        DDCAPDEF(L"DDFXCAPS_OVERLAYSTRETCHYN",                dwFXCaps, DDFXCAPS_OVERLAYSTRETCHYN),
+        DDHEXDEF(L"dwAlphaOverlayConstBitDepths",      dwAlphaOverlayConstBitDepths),
+        DDCAPDEF(L"  DDBD_8",                             dwAlphaOverlayConstBitDepths, DDBD_8),
+        DDCAPDEF(L"  DDBD_16",                            dwAlphaOverlayConstBitDepths, DDBD_16),
+        DDCAPDEF(L"  DDBD_24",                            dwAlphaOverlayConstBitDepths, DDBD_24),
+        DDCAPDEF(L"  DDBD_32",                            dwAlphaOverlayConstBitDepths, DDBD_32),
+        DDHEXDEF(L"dwAlphaOverlayPixelBitDepths",      dwAlphaOverlayPixelBitDepths),
+        DDCAPDEF(L"  DDBD_8",                             dwAlphaOverlayPixelBitDepths, DDBD_8),
+        DDCAPDEF(L"  DDBD_16",                            dwAlphaOverlayPixelBitDepths, DDBD_16),
+        DDCAPDEF(L"  DDBD_24",                            dwAlphaOverlayPixelBitDepths, DDBD_24),
+        DDCAPDEF(L"  DDBD_32",                            dwAlphaOverlayPixelBitDepths, DDBD_32),
+        DDHEXDEF(L"dwAlphaOverlaySurfaceBitDepths",    dwAlphaOverlaySurfaceBitDepths),
+        DDCAPDEF(L"  DDBD_8",                             dwAlphaOverlaySurfaceBitDepths, DDBD_8),
+        DDCAPDEF(L"  DDBD_16",                            dwAlphaOverlaySurfaceBitDepths, DDBD_16),
+        DDCAPDEF(L"  DDBD_24",                            dwAlphaOverlaySurfaceBitDepths, DDBD_24),
+        DDCAPDEF(L"  DDBD_32",                            dwAlphaOverlaySurfaceBitDepths, DDBD_32),
+        DDVALDEF(L"dwMaxVisibleOverlays",              dwMaxVisibleOverlays),
+        DDVALDEF(L"dwCurrVisibleOverlays",             dwCurrVisibleOverlays),
+        DDVALDEF(L"dwMinOverlayStretch",               dwMinOverlayStretch),
+        DDVALDEF(L"dwMaxOverlayStretch",               dwMaxOverlayStretch),
+        { L"", 0, 0}
     };
 
 
@@ -540,16 +540,16 @@ namespace
     //-----------------------------------------------------------------------------
     CAPDEF VideoPortCapsDefs[] =
     {
-        DDCAPDEF("DDCAPS2_VIDEOPORT",               dwCaps2,DDCAPS2_VIDEOPORT),
-        DDCAPDEF("DDSCAPS_VIDEOPORT",               ddsCaps.dwCaps, DDSCAPS_VIDEOPORT),
-        DDCAPDEF("DDSCAPS_LIVEVIDEO",                       ddsCaps.dwCaps, DDSCAPS_LIVEVIDEO),
-        DDCAPDEF("DDSCAPS2_HARDWAREDEINTERLACE",             dwCaps2,DDSCAPS2_HARDWAREDEINTERLACE),
-        DDCAPDEF("DDSCAPS2_AUTOFLIPOVERLAY",                 dwCaps2,DDCAPS2_AUTOFLIPOVERLAY),
-        DDVALDEF("dwMinLiveVideoStretch",             dwMinLiveVideoStretch),
-        DDVALDEF("dwMaxLiveVideoStretch",             dwMaxLiveVideoStretch),
-        DDVALDEF("dwMaxVideoPorts",                   dwMaxVideoPorts),
-        DDVALDEF("dwCurrVideoPorts",                  dwCurrVideoPorts),
-        { "", 0, 0}
+        DDCAPDEF(L"DDCAPS2_VIDEOPORT",               dwCaps2,DDCAPS2_VIDEOPORT),
+        DDCAPDEF(L"DDSCAPS_VIDEOPORT",               ddsCaps.dwCaps, DDSCAPS_VIDEOPORT),
+        DDCAPDEF(L"DDSCAPS_LIVEVIDEO",                       ddsCaps.dwCaps, DDSCAPS_LIVEVIDEO),
+        DDCAPDEF(L"DDSCAPS2_HARDWAREDEINTERLACE",             dwCaps2,DDSCAPS2_HARDWAREDEINTERLACE),
+        DDCAPDEF(L"DDSCAPS2_AUTOFLIPOVERLAY",                 dwCaps2,DDCAPS2_AUTOFLIPOVERLAY),
+        DDVALDEF(L"dwMinLiveVideoStretch",             dwMinLiveVideoStretch),
+        DDVALDEF(L"dwMaxLiveVideoStretch",             dwMaxLiveVideoStretch),
+        DDVALDEF(L"dwMaxVideoPorts",                   dwMaxVideoPorts),
+        DDVALDEF(L"dwCurrVideoPorts",                  dwCurrVideoPorts),
+        { L"", 0, 0}
     };
 
 
@@ -557,61 +557,61 @@ namespace
     //-----------------------------------------------------------------------------
     CAPDEFS DDCapDefs[] =
     {
-        {"",                    nullptr,            (LPARAM)0,                  },
-        {"Memory",              DDDisplayVidMem,    (LPARAM)0,                  },
+        {L"",                    nullptr,            (LPARAM)0,                  },
+        {L"Memory",              DDDisplayVidMem,    (LPARAM)0,                  },
 
-        {"+Caps",               nullptr,            (LPARAM)0,                  },
-        {"General",             DDDisplayCaps,      (LPARAM)GenCaps,            },
-        {"FX Alpha Caps",       DDDisplayCaps,      (LPARAM)FXAlphaCapsDefs,    },
-        {"Palette Caps",        DDDisplayCaps,      (LPARAM)PalCapsDefs,        },
-        {"Overlay Caps",        DDDisplayCaps,      (LPARAM)OverlayCapsDefs,    },
-        {"Surface Caps",        DDDisplayCaps,      (LPARAM)SurfCapsDefs,       },
-        {"Stereo Vision Caps",  DDDisplayCaps,      (LPARAM)SVisionCapsDefs,    },
-        {"Video Port Caps",     DDDisplayCaps,      (LPARAM)VideoPortCapsDefs,  },
+        {L"+Caps",               nullptr,            (LPARAM)0,                  },
+        {L"General",             DDDisplayCaps,      (LPARAM)GenCaps,            },
+        {L"FX Alpha Caps",       DDDisplayCaps,      (LPARAM)FXAlphaCapsDefs,    },
+        {L"Palette Caps",        DDDisplayCaps,      (LPARAM)PalCapsDefs,        },
+        {L"Overlay Caps",        DDDisplayCaps,      (LPARAM)OverlayCapsDefs,    },
+        {L"Surface Caps",        DDDisplayCaps,      (LPARAM)SurfCapsDefs,       },
+        {L"Stereo Vision Caps",  DDDisplayCaps,      (LPARAM)SVisionCapsDefs,    },
+        {L"Video Port Caps",     DDDisplayCaps,      (LPARAM)VideoPortCapsDefs,  },
 
-        {"+BLT Caps",           nullptr,            (LPARAM)0,                  },
+        {L"+BLT Caps",           nullptr,            (LPARAM)0,                  },
 
-        {"+Video - Video",      nullptr,            (LPARAM)0,                  },
-        {"General",             DDDisplayCaps,      (LPARAM)CapsDefs,           },
-        {"Color Key",           DDDisplayCaps,      (LPARAM)CKeyCapsDefs,       },
-        {"FX",                  DDDisplayCaps,      (LPARAM)FXCapsDefs,         },
-        {"ROPS",                DDDisplayCaps,      (LPARAM)ROPCapsDefs,        },
-        {"-",                   nullptr,            (LPARAM)0,                  },
+        {L"+Video - Video",      nullptr,            (LPARAM)0,                  },
+        {L"General",             DDDisplayCaps,      (LPARAM)CapsDefs,           },
+        {L"Color Key",           DDDisplayCaps,      (LPARAM)CKeyCapsDefs,       },
+        {L"FX",                  DDDisplayCaps,      (LPARAM)FXCapsDefs,         },
+        {L"ROPS",                DDDisplayCaps,      (LPARAM)ROPCapsDefs,        },
+        {L"-",                   nullptr,            (LPARAM)0,                  },
 
-        {"+System - Video",     nullptr,            (LPARAM)0,                  },
-        {"General",             DDDisplayCaps,      (LPARAM)SVBCapsDefs,        },
-        {"Color Key",           DDDisplayCaps,      (LPARAM)SVBCKeyCapsDefs,    },
-        {"FX",                  DDDisplayCaps,      (LPARAM)SVBFXCapsDefs,      },
-        {"ROPS",                DDDisplayCaps,      (LPARAM)SVBROPCapsDefs,     },
-        {"-",                   nullptr,            (LPARAM)0,                  },
+        {L"+System - Video",     nullptr,            (LPARAM)0,                  },
+        {L"General",             DDDisplayCaps,      (LPARAM)SVBCapsDefs,        },
+        {L"Color Key",           DDDisplayCaps,      (LPARAM)SVBCKeyCapsDefs,    },
+        {L"FX",                  DDDisplayCaps,      (LPARAM)SVBFXCapsDefs,      },
+        {L"ROPS",                DDDisplayCaps,      (LPARAM)SVBROPCapsDefs,     },
+        {L"-",                   nullptr,            (LPARAM)0,                  },
 
-        {"+Video - System",     nullptr,            (LPARAM)0,                  },
-        {"General",             DDDisplayCaps,      (LPARAM)VSBCapsDefs,        },
-        {"Color Key",           DDDisplayCaps,      (LPARAM)SSBCKeyCapsDefs,    },
-        {"FX",                  DDDisplayCaps,      (LPARAM)SSBFXCapsDefs,      },
-        {"ROPS",                DDDisplayCaps,      (LPARAM)VSBROPCapsDefs,     },
-        {"-",                   nullptr,            (LPARAM)0,                  },
+        {L"+Video - System",     nullptr,            (LPARAM)0,                  },
+        {L"General",             DDDisplayCaps,      (LPARAM)VSBCapsDefs,        },
+        {L"Color Key",           DDDisplayCaps,      (LPARAM)SSBCKeyCapsDefs,    },
+        {L"FX",                  DDDisplayCaps,      (LPARAM)SSBFXCapsDefs,      },
+        {L"ROPS",                DDDisplayCaps,      (LPARAM)VSBROPCapsDefs,     },
+        {L"-",                   nullptr,            (LPARAM)0,                  },
 
-        {"+System - System",    nullptr,            (LPARAM)0,                  },
-        {"General",             DDDisplayCaps,      (LPARAM)SSBCapsDefs,        },
-        {"Color Key",           DDDisplayCaps,      (LPARAM)SSBCKeyCapsDefs,    },
-        {"FX",                  DDDisplayCaps,      (LPARAM)SSBFXCapsDefs,      },
-        {"ROPS",                DDDisplayCaps,      (LPARAM)SSBROPCapsDefs,     },
-        {"-",                   nullptr,            (LPARAM)0,                  },
+        {L"+System - System",    nullptr,            (LPARAM)0,                  },
+        {L"General",             DDDisplayCaps,      (LPARAM)SSBCapsDefs,        },
+        {L"Color Key",           DDDisplayCaps,      (LPARAM)SSBCKeyCapsDefs,    },
+        {L"FX",                  DDDisplayCaps,      (LPARAM)SSBFXCapsDefs,      },
+        {L"ROPS",                DDDisplayCaps,      (LPARAM)SSBROPCapsDefs,     },
+        {L"-",                   nullptr,            (LPARAM)0,                  },
 
-        {"+NonLocal - Video",   nullptr,            (LPARAM)0,                  },
-        {"General",             DDDisplayCaps,      (LPARAM)NLVBCapsDefs,       },
-        {"Color Key",           DDDisplayCaps,      (LPARAM)NLVBCKeyCapsDefs,   },
-        {"FX",                  DDDisplayCaps,      (LPARAM)NLVBFXCapsDefs,     },
-        {"ROPS",                DDDisplayCaps,      (LPARAM)NLVBROPCapsDefs,    },
-        {"-",                   nullptr,            (LPARAM)0,                  },
+        {L"+NonLocal - Video",   nullptr,            (LPARAM)0,                  },
+        {L"General",             DDDisplayCaps,      (LPARAM)NLVBCapsDefs,       },
+        {L"Color Key",           DDDisplayCaps,      (LPARAM)NLVBCKeyCapsDefs,   },
+        {L"FX",                  DDDisplayCaps,      (LPARAM)NLVBFXCapsDefs,     },
+        {L"ROPS",                DDDisplayCaps,      (LPARAM)NLVBROPCapsDefs,    },
+        {L"-",                   nullptr,            (LPARAM)0,                  },
 
-        {"-",                   nullptr,            (LPARAM)0,                  },
-        {"-",                   nullptr,            (LPARAM)0,                  },
+        {L"-",                   nullptr,            (LPARAM)0,                  },
+        {L"-",                   nullptr,            (LPARAM)0,                  },
 
-        {"Video Modes",         DDDisplayVideoModes,(LPARAM)0,                  },
-        {"FourCC Formats",      DDDisplayFourCCFormat,(LPARAM)0,                },
-        {"Other",               DDDisplayCaps,      (LPARAM)OtherInfoDefs,      },
+        {L"Video Modes",         DDDisplayVideoModes,(LPARAM)0,                  },
+        {L"FourCC Formats",      DDDisplayFourCCFormat,(LPARAM)0,                },
+        {L"Other",               DDDisplayCaps,      (LPARAM)OtherInfoDefs,      },
 
         { nullptr, 0, 0 }
     };
@@ -693,46 +693,46 @@ namespace
 
             if (pPrintInfo)
             {
-                PrintValueLine("dwTotalVidMem", dwTotalVidMem, pPrintInfo);
-                PrintValueLine("dwFreeVidMem", dwFreeVidMem, pPrintInfo);
-                PrintValueLine("dwTotalLocMem", dwTotalLocMem, pPrintInfo);
-                PrintValueLine("dwFreeLocMem", dwFreeLocMem, pPrintInfo);
-                PrintValueLine("dwTotalAGPMem", dwTotalAGPMem, pPrintInfo);
-                PrintValueLine("dwFreeAGPMem", dwFreeAGPMem, pPrintInfo);
-                PrintValueLine("dwTotalTexMem", dwTotalTexMem, pPrintInfo);
-                PrintValueLine("dwFreeTexMem", dwFreeTexMem, pPrintInfo);
+                PrintValueLine(L"dwTotalVidMem", dwTotalVidMem, pPrintInfo);
+                PrintValueLine(L"dwFreeVidMem", dwFreeVidMem, pPrintInfo);
+                PrintValueLine(L"dwTotalLocMem", dwTotalLocMem, pPrintInfo);
+                PrintValueLine(L"dwFreeLocMem", dwFreeLocMem, pPrintInfo);
+                PrintValueLine(L"dwTotalAGPMem", dwTotalAGPMem, pPrintInfo);
+                PrintValueLine(L"dwFreeAGPMem", dwFreeAGPMem, pPrintInfo);
+                PrintValueLine(L"dwTotalTexMem", dwTotalTexMem, pPrintInfo);
+                PrintValueLine(L"dwFreeTexMem", dwFreeTexMem, pPrintInfo);
             }
             else
             {
-                CHAR strBuff[64];
+                WCHAR strBuff[64];
 
-                LVAddColumn(g_hwndLV, 0, "Type", 24);
-                LVAddColumn(g_hwndLV, 1, "Total", 10);
-                LVAddColumn(g_hwndLV, 2, "Free", 10);
+                LVAddColumn(g_hwndLV, 0, L"Type", 24);
+                LVAddColumn(g_hwndLV, 1, L"Total", 10);
+                LVAddColumn(g_hwndLV, 2, L"Free", 10);
 
-                LVAddText(g_hwndLV, 0, "Video");
+                LVAddText(g_hwndLV, 0, L"Video");
                 Int2Str(strBuff, 64, dwTotalVidMem);
-                LVAddText(g_hwndLV, 1, "%s", strBuff);
+                LVAddText(g_hwndLV, 1, L"%s", strBuff);
                 Int2Str(strBuff, 64, dwFreeVidMem);
-                LVAddText(g_hwndLV, 2, "%s", strBuff);
+                LVAddText(g_hwndLV, 2, L"%s", strBuff);
 
-                LVAddText(g_hwndLV, 0, "Video (local)");
+                LVAddText(g_hwndLV, 0, L"Video (local)");
                 Int2Str(strBuff, 64, dwTotalLocMem);
-                LVAddText(g_hwndLV, 1, "%s", strBuff);
+                LVAddText(g_hwndLV, 1, L"%s", strBuff);
                 Int2Str(strBuff, 64, dwFreeLocMem);
-                LVAddText(g_hwndLV, 2, "%s", strBuff);
+                LVAddText(g_hwndLV, 2, L"%s", strBuff);
 
-                LVAddText(g_hwndLV, 0, "Video (non-local)");
+                LVAddText(g_hwndLV, 0, L"Video (non-local)");
                 Int2Str(strBuff, 64, dwTotalAGPMem);
-                LVAddText(g_hwndLV, 1, "%s", strBuff);
+                LVAddText(g_hwndLV, 1, L"%s", strBuff);
                 Int2Str(strBuff, 64, dwFreeAGPMem);
-                LVAddText(g_hwndLV, 2, "%s", strBuff);
+                LVAddText(g_hwndLV, 2, L"%s", strBuff);
 
-                LVAddText(g_hwndLV, 0, "Texture");
+                LVAddText(g_hwndLV, 0, L"Texture");
                 Int2Str(strBuff, 64, dwTotalTexMem);
-                LVAddText(g_hwndLV, 1, "%s", strBuff);
+                LVAddText(g_hwndLV, 1, L"%s", strBuff);
                 Int2Str(strBuff, 64, dwFreeTexMem);
-                LVAddText(g_hwndLV, 2, "%s", strBuff);
+                LVAddText(g_hwndLV, 2, L"%s", strBuff);
             }
         }
 
@@ -794,8 +794,8 @@ namespace
         // Add columns
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Codes", 24);
-            LVAddColumn(g_hwndLV, 1, "", 24);
+            LVAddColumn(g_hwndLV, 0, L"Codes", 24);
+            LVAddColumn(g_hwndLV, 1, L"", 24);
         }
 
         // Assume all FourCC values are ascii strings
@@ -803,10 +803,15 @@ namespace
         {
             CHAR strText[5] = {};
             memcpy(strText, &FourCC[dwCount], 4);
+            WCHAR szText[5] = {};
+            szText[0] = strText[0];
+            szText[1] = strText[1];
+            szText[2] = strText[2];
+            szText[3] = strText[3];
 
             if (!pPrintInfo)
             {
-                LVAddText(g_hwndLV, 0, "%s", strText);
+                LVAddText(g_hwndLV, 0, L"%s", szText);
             }
             else
             {
@@ -814,7 +819,7 @@ namespace
                 int yLine = (pPrintInfo->dwCurrLine * pPrintInfo->dwLineHeight);
 
                 // Print Code
-                if (FAILED(PrintLine(xCode, yLine, strText, 4, pPrintInfo)))
+                if (FAILED(PrintLine(xCode, yLine, szText, 4, pPrintInfo)))
                     return E_FAIL;
 
                 if (FAILED(PrintNextLine(pPrintInfo)))
@@ -833,19 +838,19 @@ namespace
     {
         if (pddsd->ddsCaps.dwCaps & DDSCAPS_STANDARDVGAMODE)
         {
-            LVAddText(g_hwndLV, 0, "%dx%dx%d (StandardVGA)",
+            LVAddText(g_hwndLV, 0, L"%dx%dx%d (StandardVGA)",
                 pddsd->dwWidth, pddsd->dwHeight,
                 pddsd->ddpfPixelFormat.dwRGBBitCount);
         }
         else if (pddsd->ddsCaps.dwCaps & DDSCAPS_MODEX)
         {
-            LVAddText(g_hwndLV, 0, "%dx%dx%d (ModeX)",
+            LVAddText(g_hwndLV, 0, L"%dx%dx%d (ModeX)",
                 pddsd->dwWidth, pddsd->dwHeight,
                 pddsd->ddpfPixelFormat.dwRGBBitCount);
         }
         else
         {
-            LVAddText(g_hwndLV, 0, "%dx%dx%d ",
+            LVAddText(g_hwndLV, 0, L"%dx%dx%d ",
                 pddsd->dwWidth, pddsd->dwHeight,
                 pddsd->ddpfPixelFormat.dwRGBBitCount);
         }
@@ -857,7 +862,7 @@ namespace
     //-----------------------------------------------------------------------------
     HRESULT CALLBACK EnumDisplayModesCallbackPrint(DDSURFACEDESC2* pddsd, VOID* Context)
     {
-        TCHAR szBuff[80];
+        WCHAR szBuff[80];
         DWORD cchLen;
         auto lpInfo = reinterpret_cast<PRINTCBINFO*>(Context);
         int xMode, yLine;
@@ -870,18 +875,18 @@ namespace
 
         if (pddsd->ddsCaps.dwCaps & DDSCAPS_STANDARDVGAMODE)
         {
-            sprintf_s(szBuff, sizeof(szBuff), TEXT("%ux%ux%u (StandardVGA)"), pddsd->dwWidth, pddsd->dwHeight, pddsd->ddpfPixelFormat.dwRGBBitCount);
+            swprintf_s(szBuff, 80, L"%ux%ux%u (StandardVGA)", pddsd->dwWidth, pddsd->dwHeight, pddsd->ddpfPixelFormat.dwRGBBitCount);
         }
         else if (pddsd->ddsCaps.dwCaps & DDSCAPS_MODEX)
         {
-            sprintf_s(szBuff, sizeof(szBuff), TEXT("%ux%ux%u (ModeX)"), pddsd->dwWidth, pddsd->dwHeight, pddsd->ddpfPixelFormat.dwRGBBitCount);
+            swprintf_s(szBuff, 80, L"%ux%ux%u (ModeX)", pddsd->dwWidth, pddsd->dwHeight, pddsd->ddpfPixelFormat.dwRGBBitCount);
         }
         else
         {
-            sprintf_s(szBuff, sizeof(szBuff), TEXT("%ux%ux%u "), pddsd->dwWidth, pddsd->dwHeight, pddsd->ddpfPixelFormat.dwRGBBitCount);
+            swprintf_s(szBuff, 80, L"%ux%ux%u ", pddsd->dwWidth, pddsd->dwHeight, pddsd->ddpfPixelFormat.dwRGBBitCount);
         }
         // Print Mode Info
-        cchLen = static_cast<DWORD>(_tcslen(szBuff));
+        cchLen = static_cast<DWORD>(wcslen(szBuff));
         if (FAILED(PrintLine(xMode, yLine, szBuff, cchLen, lpInfo)))
             return DDENUMRET_CANCEL;
         // Advance to next line
@@ -901,8 +906,8 @@ namespace
 
         if (!pPrintInfo)
         {
-            LVAddColumn(g_hwndLV, 0, "Mode", 24);
-            LVAddColumn(g_hwndLV, 1, "", 24);
+            LVAddColumn(g_hwndLV, 0, L"Mode", 24);
+            LVAddColumn(g_hwndLV, 1, L"", 24);
         }
 
         // lParam1 is the GUID for the driver we should open
@@ -941,7 +946,7 @@ namespace
         _In_opt_ LPSTR lpDriverName, _In_opt_ VOID* lpContext, _In_opt_ HMONITOR)
     {
         HTREEITEM hParent = (HTREEITEM)lpContext;
-        TCHAR szText[256];
+        char szText[256];
 
         if (pid != (GUID*)-2)
             if (HIWORD(pid) != 0)
@@ -954,12 +959,13 @@ namespace
 
         // Add subnode to treeview
         if (lpDriverName && *lpDriverName)
-            sprintf_s(szText, sizeof(szText), "%s (%s)", lpDriverDesc, lpDriverName);
+            sprintf_s(szText, 256, "%s (%s)", lpDriverDesc, lpDriverName);
         else
-            strcpy_s(szText, sizeof(szText), lpDriverDesc);
-        szText[255] = TEXT('\0');
+            strcpy_s(szText, 256, lpDriverDesc);
+        szText[255] = '\0';
 
-        DDCapDefs[0].strName = szText;
+        WideString strText(szText);
+        DDCapDefs[0].strName = strText.c_str();
         AddCapsToTV(hParent, DDCapDefs, (LPARAM)pid);
 
         return(DDENUMRET_OK);
@@ -971,7 +977,7 @@ namespace
 //-----------------------------------------------------------------------------
 VOID DD_Init()
 {
-    g_hInstDDraw = LoadLibraryEx("ddraw.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+    g_hInstDDraw = LoadLibraryEx(L"ddraw.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
     if (g_hInstDDraw)
     {
         g_directDrawCreateEx = reinterpret_cast<LPDIRECTDRAWCREATEEX>(GetProcAddress(g_hInstDDraw, "DirectDrawCreateEx"));
@@ -991,7 +997,7 @@ VOID DD_FillTree(HWND hwndTV)
     HTREEITEM hTree;
 
     // Add DirectDraw devices
-    hTree = TVAddNode(TVI_ROOT, "DirectDraw Devices", TRUE, IDI_DIRECTX,
+    hTree = TVAddNode(TVI_ROOT, L"DirectDraw Devices", TRUE, IDI_DIRECTX,
         nullptr, 0, 0);
 
     // Add Display Driver node(s) and capability nodes to treeview
