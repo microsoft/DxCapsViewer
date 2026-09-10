@@ -12,7 +12,6 @@
 
 #include <mmsystem.h>
 #include <commctrl.h>
-#include <tchar.h>
 
 #include <ctime>
 #include <cstdio>
@@ -74,7 +73,7 @@ struct NODEINFO
 
 struct CAPDEF
 {
-    const CHAR*  strName;        // Name of cap
+    const WCHAR* strName;        // Name of cap
     LONG         dwOffset;       // Offset to cap
     DWORD        dwFlag;         // Bit flag for cal
     DWORD        dwCapsFlags;	   // used for optional caps and such (see DXV_ values above)
@@ -82,7 +81,7 @@ struct CAPDEF
 
 struct CAPDEFS
 {
-    const CHAR*           strName;        // Name of cap
+    const WCHAR*          strName;        // Name of cap
     DISPLAYCALLBACK       fnDisplayCallback;
     LPARAM                lParam2;
 };
@@ -99,23 +98,66 @@ struct LOCALAPP
 {
     LOCALAPP* pNext;
     GUID      guidApplication;
-    CHAR      strAppNameA[1];
+    WCHAR     strAppNameW[1];
 };
 
+
+class WideString {
+public:
+    explicit inline WideString(const char* str) : WideString(str, -1)
+    {
+    }
+    explicit inline WideString(const char* str, int strLen) : strBuffer(NULL), szCap(0), szLength(0)
+    {
+        const int cnt = MultiByteToWideChar(CP_ACP, 0, str, strLen, NULL, 0);
+        if (cnt <= 0)
+            return;
+        szCap = (SIZE_T)(cnt + 1);
+        strBuffer = (WCHAR*)HeapAlloc(GetProcessHeap(), 0, szCap * sizeof(WCHAR));
+        if (strBuffer == NULL)
+        {
+            szCap = 0;
+            return;
+        }
+        ZeroMemory(strBuffer, szCap * sizeof(WCHAR));
+        const int len = MultiByteToWideChar(CP_ACP, 0, str, strLen, strBuffer, cnt);
+        if (len != cnt)
+        {
+            HeapFree(GetProcessHeap(), 0, strBuffer);
+            strBuffer = NULL;
+            szCap = 0;
+            return;
+        }
+        szLength = (SIZE_T)len;
+    }
+    explicit inline WideString(const char* str, SIZE_T strLen) : WideString(str, (int)strLen)
+    {
+    }
+    inline ~WideString()
+    {
+        if (strBuffer)
+            HeapFree(GetProcessHeap(), 0, strBuffer);
+    }
+    const WCHAR* c_str() const { return strBuffer ? strBuffer : L""; }
+private:
+    WCHAR* strBuffer;
+    SIZE_T szCap;
+    SIZE_T szLength;
+};
 
 
 
 //-----------------------------------------------------------------------------
 // DXView treeview/listview helper functions
 //-----------------------------------------------------------------------------
-VOID    LVAddColumn( HWND hwndLV, int i, const CHAR* strName, int width );
-int     LVAddText( HWND hwndLV, int col, const CHAR* str, ... );
+VOID    LVAddColumn( HWND hwndLV, int i, const WCHAR* strName, int width );
+int     LVAddText( HWND hwndLV, int col, const WCHAR* str, ... );
 VOID    LVDeleteAllItems( HWND hwndLV );
-HTREEITEM TVAddNode(HTREEITEM hParent, LPCSTR strText, BOOL bKids, int iImage,
+HTREEITEM TVAddNode(HTREEITEM hParent, LPCWSTR strText, BOOL bKids, int iImage,
                     DISPLAYCALLBACK Callback, LPARAM lParam1, LPARAM lParam2 );
-HTREEITEM TVAddNodeEx(HTREEITEM hParent, LPCSTR strText, BOOL bKids, int iImage,
-                        DISPLAYCALLBACKEX Callback, LPARAM lParam1, LPARAM lParam2,
-                        LPARAM lParam3 );
+HTREEITEM TVAddNodeEx(HTREEITEM hParent, LPCWSTR strText, BOOL bKids, int iImage,
+                    DISPLAYCALLBACKEX Callback, LPARAM lParam1, LPARAM lParam2,
+                    LPARAM lParam3 );
 VOID    AddCapsToTV( HTREEITEM hParent, CAPDEFS *pcds, LPARAM lParam1 );
 VOID    AddColsToLV();
 VOID    AddCapsToLV( CAPDEF* pcd, VOID* pv );
@@ -123,12 +165,12 @@ VOID    AddMoreCapsToLV( CAPDEF* pcd, VOID* pv );
 HRESULT PrintCapsToDC( CAPDEF* pcd, VOID* pv, _In_ PRINTCBINFO* pInfo );
 
 // Printer Helper functions
-HRESULT PrintLine(int x, int y, _In_count_(cchBuff) LPCTSTR lpszBuff, size_t cchBuff, _In_ PRINTCBINFO* pci);
+HRESULT PrintLine(int x, int y, _In_count_(cchBuff) LPCWSTR lpszBuff, size_t cchBuff, _In_ PRINTCBINFO* pci);
 HRESULT PrintNextLine(_In_ PRINTCBINFO* pci );
-HRESULT PrintValueLine(_In_z_ const char* szText, DWORD dwValue, _In_ PRINTCBINFO* lpInfo);
-HRESULT PrintHexValueLine(_In_z_ const CHAR* szText, DWORD dwValue, _In_ PRINTCBINFO* lpInfo);
-HRESULT PrintStringValueLine(_In_z_ const CHAR* szText, const CHAR* szText2, _In_ PRINTCBINFO* lpInfo);
-HRESULT PrintStringLine(_In_z_ const CHAR* szText, _In_ PRINTCBINFO* lpInfo);
+HRESULT PrintValueLine(_In_z_ const WCHAR* szText, DWORD dwValue, _In_ PRINTCBINFO* lpInfo);
+HRESULT PrintHexValueLine(_In_z_ const WCHAR* szText, DWORD dwValue, _In_ PRINTCBINFO* lpInfo);
+HRESULT PrintStringValueLine(_In_z_ const WCHAR* szText, const WCHAR* szText2, _In_ PRINTCBINFO* lpInfo);
+HRESULT PrintStringLine(_In_z_ const WCHAR* szText, _In_ PRINTCBINFO* lpInfo);
 
 
 //-----------------------------------------------------------------------------
